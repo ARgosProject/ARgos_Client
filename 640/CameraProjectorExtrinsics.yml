@@ -1,0 +1,13 @@
+%YAML:1.0
+Rotation_Vector: !!opencv-matrix
+   rows: 3
+   cols: 1
+   dt: d
+   data: [ 7.7557532195447997e-03, 2.1901819759983096e-01,
+       3.0840309682180402e+00 ]
+Translation_Vector: !!opencv-matrix
+   rows: 3
+   cols: 1
+   dt: d
+   data: [ -3.0353984344054181e+00, -6.3812907507569949e-01,
+       5.3007733155953858e+00 ]

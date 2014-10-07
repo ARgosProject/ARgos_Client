@@ -1,0 +1,10 @@
+varying highp vec2 textureCoordinate;
+const highp vec2 center = vec2(1.0, 1.0);
+const highp float radius = 1.0;
+uniform vec4 u_color;
+
+void main() {
+	highp float distanceFromCenter = distance(center, textureCoordinate);
+	lowp float checkForPresenceWithinCircle = step(distanceFromCenter, radius);
+	gl_FragColor = u_color * checkForPresenceWithinCircle;
+}
