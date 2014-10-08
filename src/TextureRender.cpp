@@ -8,7 +8,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "TextureRender.h"
-#include "MainGLWindow.h"
+#include "GLContext.h"
 
 TextureRender::TextureRender(GLfloat width, GLfloat height)
   : _indices(NULL), _framebufferObject(-1), _depthRenderbuffer(-1), _texture(-1),
@@ -20,8 +20,8 @@ TextureRender::TextureRender(GLfloat width, GLfloat height)
    *    0__3
    */
   // Screen resolution
-  _screenWidth = MainGLWindow::getSingleton().getWidth();
-  _screenHeight = MainGLWindow::getSingleton().getHeight();
+  _screenWidth = GLContext::getInstance().getWidth();
+  _screenHeight = GLContext::getInstance().getHeight();
 
   GLushort indices[] = { 0, 1, 2, 0, 2, 3 };
   GLfloat vertexData[] = { -_texWidth/(GLfloat)_screenWidth,-_texHeight/(GLfloat)_screenHeight, 0.0f, // Position 0
@@ -127,7 +127,7 @@ void TextureRender::drawTexture() {
 	// Draw the new texture into the framebuffer
 	_shader.useProgram();
 
-	glUniformMatrix4fv(_mvpHandler, 1, GL_FALSE, glm::value_ptr(_projectionMatrix * _modelViewMatrix));
+	glUniformMatrix4fv(_mvpHandler, 1, GL_FALSE, glm::value_ptr(_projectionMatrix * _modelViewMatrix * _model));
 
 	// Load the vertex data
 	glVertexAttribPointer(_vertexHandler, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), _vertexData);

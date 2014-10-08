@@ -8,65 +8,116 @@
 
 #include "EGLconfig.h"
 
+/**
+ * A virtual EGL Window class used to initialize the OpenGL ES 2.0 context
+ */
 class EGLWindow {
 public:
+  /**
+   * Constructs a new OpenGL ES 2.0 context
+   * @param config The config we want for the context. If NULL, a default
+   * config is built
+   */
   EGLWindow(EGLconfig* config = NULL);
+
+  /**
+   * Destroys the EGL window and its surface
+   */
   virtual ~EGLWindow();
 
-  // Must be implemented by the user. This will be
-  // called after the ctor once we have a valid GL context
+  /**
+   * It must be implemented by the user. This will be called
+   * after the constructor once we have a valid GL context
+   */
   virtual void render() = 0;
 
-  // Tells EGL to re-draw the current buffer
+  /**
+   * Tells EGL to re-draw the current buffer
+   */
   virtual void swapBuffers() const;
 
-  // Resizes the screen with origin at 0,0
+  /**
+   * Resizes the screen with origin at 0,0
+   * @param w The width of the screen
+   * @param h The height of the screen
+   */
   virtual void resizeScreen(uint32_t w, uint32_t h);
 
-  // Sets screen using x,y and w,h
+  /**
+   * (Re)Initializes the screen using X, Y coordinates and W, H size
+   * @param x The X coordinate
+   * @param y The Y coordinate
+   * @param w The width of the screen
+   * @param h The height of the screen
+   */
   virtual void setScreen(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
 
-  // Gets the width
+  /**
+   * Gets the width of the screen
+   * @return the width of the screen
+   */
   virtual uint32_t getWidth() const;
 
-  // Gets the height
+  /**
+   * Gets the height of the screen
+   * @return the height of the screen
+   */
   virtual uint32_t getHeight() const;
 
-  // Sets the flag to upscale the screen dst rectangle.
-  // By default this is not set
+  /**
+   * Sets the flag to upscale the screen destination rectangle
+   * It's not set by default
+   * @param f Whether set the flag or not
+   */
   virtual void setUpscale(bool f);
 
-  // This must be implemented by the user. It is called only
-  // once when the window is created
+  /**
+   * Sets up specific properties for the context
+   */
   virtual void start() = 0;
 
+  /**
+   * Gets the EGL display
+   * @return the EGL display
+   */
 	virtual EGLDisplay& getEGLDisplay();
+
+  /**
+   * Gets the EGL context
+   * @return the EGL context
+   */
 	virtual EGLContext& getEGLContext();
 
 protected:
-  // Make our surface
+  /**
+   * Make a new surface
+   */
   void makeSurface();
 
-  uint32_t _width;
-  uint32_t _height;
-  EGLDisplay _display;
-  EGLSurface _surface;
-  EGLContext _context;
-  EGLconfig* _config;
+  uint32_t _width; ///< The width of the screen
+  uint32_t _height; ///< The height of the screen
+  EGLDisplay _display; ///< The current EGL display
+  EGLSurface _surface; ///< The current EGL surface
+  EGLContext _context; ///< The current EGL context
+  EGLconfig* _config; ///< The EGL config for this window
 
-  DISPMANX_ELEMENT_HANDLE_T _dispmanElement;
-  DISPMANX_DISPLAY_HANDLE_T _dispmanDisplay;
-  DISPMANX_UPDATE_HANDLE_T _dispmanUpdate;
+  DISPMANX_ELEMENT_HANDLE_T _dispmanElement; ///< The dispmanx representation of a visual object
+  DISPMANX_DISPLAY_HANDLE_T _dispmanDisplay; ///< The dispmanx 'handle' on the display
+  DISPMANX_UPDATE_HANDLE_T _dispmanUpdate; ///< The dispmanx transaction object
 
 private:
-  // Destroy the surface if it exists
+  /**
+   * Destroys the surface if it exists
+   */
   void destroySurface();
 
-  // This is the main function to create our surface
+  /**
+   * Actually, this is the main function to create our surface
+   */
   void makeSurface(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
 
-  bool _activeSurface;
-  bool _upscale;
+  bool _activeSurface; ///< Whether we have an active surface or not
+  bool _upscale; ///< Whether to upscale the screen or not
 };
 
 #endif

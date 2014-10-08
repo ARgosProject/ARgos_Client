@@ -1,5 +1,4 @@
 #include "VideoStreamComponent.h"
-#include "MainGLWindow.h"
 #include "Log.h"
 
 #include <iostream>
@@ -165,7 +164,7 @@ void VideoStreamComponent::setUpShader() {
 
 void VideoStreamComponent::render() {
   _end = std::chrono::high_resolution_clock::now();
-  if(chrono::duration_cast<chrono::seconds>(_end - _begin).count() > 1) {
+  if(std::chrono::duration_cast<std::chrono::seconds>(_end - _begin).count() > 1) {
     _ready = false;
   }
 
@@ -177,7 +176,7 @@ void VideoStreamComponent::render() {
     glVertexAttribPointer(_texHandler, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), &_vertexData[3]);
     glEnableVertexAttribArray(_texHandler);
 
-    glUniformMatrix4fv(_mvpHandler, 1, GL_FALSE, glm::value_ptr(_projectionMatrix * _modelViewMatrix));
+    glUniformMatrix4fv(_mvpHandler, 1, GL_FALSE, glm::value_ptr(_projectionMatrix * _modelViewMatrix * _model));
 
     if(!_receive) {
       makeVideoTexture(_receivedFrame);

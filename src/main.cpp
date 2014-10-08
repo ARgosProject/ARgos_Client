@@ -26,7 +26,7 @@ extern "C"
 
 // Task delegation and OpenGL Stuff
 #include "TaskDelegation.h"
-#include "MainGLWindow.h"
+#include "GLContext.h"
 
 // RaspberryPi stuff
 #include "bcm_host.h"
@@ -111,13 +111,13 @@ int main(int argc, char **argv) {
     };*/
 
   // OpenGL stuff
-  MainGLWindow* win = new MainGLWindow();
-  //uint32_t w = win->getWidth();
-  //uint32_t h = win->getHeight();
-  win->setUpscale(false);
-  win->setScreen(0, 0, SCREEN_W, SCREEN_H);
-  win->setProjectionMatrix(glm::make_mat4(projection_matrix));
-  win->start();
+  GLContext& glContext = GLContext::getInstance();
+  //uint32_t w = glContext.getWidth();
+  //uint32_t h = glContext.getHeight();
+  glContext.setUpscale(false);
+  glContext.setScreen(0, 0, SCREEN_W, SCREEN_H);
+  glContext.setProjectionMatrix(glm::make_mat4(projection_matrix));
+  glContext.start();
 
   //-- Main Loop -------------------------------------------------------------------------
   while(1) {
@@ -138,10 +138,10 @@ int main(int argc, char **argv) {
       }
     }
 
-    win->setFrame(&currentFrame);
+    glContext.setFrame(&currentFrame);
     //win->update(glm::make_mat4(paper.modelview_matrix));
-    win->update(paper);
-    win->render();
+    glContext.update(paper);
+    glContext.render();
 
     //cv::imshow(projectorWindow, projectorFrame);
     //cv::waitKey(1);

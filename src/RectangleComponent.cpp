@@ -49,7 +49,7 @@ void RectangleComponent::render() {
   glVertexAttribPointer(_colorHandler, 3, GL_FLOAT, GL_FALSE, 0, _vertexData);
   glEnableVertexAttribArray(_colorHandler);
 
-  glUniformMatrix4fv(_mvpHandler, 1, GL_FALSE, glm::value_ptr(_projectionMatrix * _modelViewMatrix));
+  glUniformMatrix4fv(_mvpHandler, 1, GL_FALSE, glm::value_ptr(_projectionMatrix * _modelViewMatrix * _model));
 
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, _indices);
 }

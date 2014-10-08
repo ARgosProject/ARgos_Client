@@ -1,5 +1,5 @@
 #include "VideoComponent.h"
-#include "MainGLWindow.h"
+#include "GLContext.h"
 #include "VideoThread.h"
 
 #include <iostream>
@@ -57,7 +57,7 @@ VideoComponent::~VideoComponent() {
 	glDeleteTextures(1, &_textureId);
 
 	if(_eglImage != 0) {
-		eglDestroyImageKHR(MainGLWindow::getSingleton().getEGLDisplay(), _eglImage);
+		eglDestroyImageKHR(GLContext::getInstance().getEGLDisplay(), _eglImage);
 	}
 }
 
@@ -95,8 +95,8 @@ void VideoComponent::loadVideoFromFile(const std::string& fileName) {
 							 GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
 	// Create an EGL Image
-	_eglImage = eglCreateImageKHR(MainGLWindow::getSingleton().getEGLDisplay(),
-																MainGLWindow::getSingleton().getEGLContext(),
+	_eglImage = eglCreateImageKHR(GLContext::getInstance().getEGLDisplay(),
+																GLContext::getInstance().getEGLContext(),
 																EGL_GL_TEXTURE_2D_KHR,
 																(EGLClientBuffer)_textureId,
 																0);
@@ -131,7 +131,7 @@ void VideoComponent::render() {
 	glVertexAttribPointer(_texHandler, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), &_vertexData[3]);
 	glEnableVertexAttribArray(_texHandler);
 
-	glUniformMatrix4fv(_mvpHandler, 1, GL_FALSE, glm::value_ptr(_projectionMatrix * _modelViewMatrix));
+	glUniformMatrix4fv(_mvpHandler, 1, GL_FALSE, glm::value_ptr(_projectionMatrix * _modelViewMatrix * _model));
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, _textureId);

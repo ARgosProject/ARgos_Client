@@ -6,7 +6,6 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "TextComponent.h"
-#include "MainGLWindow.h"
 
 TextComponent::TextComponent(std::string filename, GLint fontSize)
   : _vector(NULL), _font(NULL), _atlas(NULL) {
@@ -19,11 +18,7 @@ TextComponent::TextComponent(std::string filename, GLint fontSize)
   _pen.y = 0;
 
 	// Load font and cache glyphs
-	_font = texture_font_new(_atlas, filename.c_str(), fontSize);
-	texture_font_load_glyphs(_font,
-													 L" !\"#$%&'()*+,-./0123456789:;<=>?"
-													 L"@ABCDEFGHIJKLMNÑOPQRSTUVWXYZ[\\]^_"
-													 L"`abcdefghijklmnñopqrstuvwxyz{|}~");
+  setFont(filename, fontSize);
 
 	// Set the shader
 	this->loadGLProgram("shaders/text.glvs", "shaders/text.glfs");

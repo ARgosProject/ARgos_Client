@@ -6,7 +6,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "MainGLWindow.h"
+#include "GLContext.h"
 #include "GraphicComponent.h"
 #include "LineComponent.h"
 #include "TextComponent.h"
@@ -17,20 +17,18 @@
 #include "VideoStreamComponent.h"
 #include "Log.h"
 
-template<> MainGLWindow* Singleton<MainGLWindow>::_singleton = 0;
-
-MainGLWindow::MainGLWindow(EGLconfig* config)
-  : EGLWindow(config), _paper(NULL), _frame(NULL) {
+GLContext::GLContext(EGLconfig* config)
+  : EGLWindow(config), _frame(NULL), _projectionMatrix(glm::mat4(1.0f)) {
 
 }
 
-MainGLWindow::~MainGLWindow() {
+GLContext::~GLContext() {
   for(GraphicComponent* gc : _gc) {
     delete gc;
   }
 }
 
-void MainGLWindow::start() {
+void GLContext::start() {
   // Texture render
   /*_rectangleComponent = new RectangleComponent(1.0f, 1.0f, true); // Size [0..1]
     _rectangleComponent->setColor(1.0f, 0.0f, 0.0f, 1.0f);
@@ -91,25 +89,41 @@ void MainGLWindow::start() {
   videoStream->setProjectionMatrix(_projectionMatrix);
   _gc.push_back(videoStream);
 
-  // Axis
-  LineComponent* x_line = new LineComponent(glm::vec3(0, 0, 0), glm::vec3(2, 0, 0));
+  makeCorners(2.0f, 1.0f, 0.0f, 0.0f);
+  makeAxis(2.0f);
+
+  TextComponent* text = new TextComponent("/usr/share/fonts/truetype/freefont/FreeMono.ttf", 32);
+  text->setProjectionMatrix(_projectionMatrix);
+  text->setScale(glm::vec3(0.05, 0.05, 0.05));
+  text->setText(L"Holaaa asdasd asd", 1, 0, 0);
+  _gc.push_back(text);
+
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  std::cout << "GLContext initialized" << std::endl;
+}
+
+void GLContext::makeAxis(GLfloat axis_length) {
+  // Lines
+  LineComponent* x_line = new LineComponent(glm::vec3(0, 0, 0), glm::vec3(axis_length, 0, 0));
   x_line->setColor(1, 0, 0, 1);
   x_line->setProjectionMatrix(_projectionMatrix);
-  LineComponent* y_line = new LineComponent(glm::vec3(0, 0, 0), glm::vec3(0, 2, 0));
+  LineComponent* y_line = new LineComponent(glm::vec3(0, 0, 0), glm::vec3(0, axis_length, 0));
   y_line->setColor(0, 1, 0, 1);
   y_line->setProjectionMatrix(_projectionMatrix);
-  LineComponent* z_line = new LineComponent(glm::vec3(0, 0, 0), glm::vec3(0, 0, 2));
+  LineComponent* z_line = new LineComponent(glm::vec3(0, 0, 0), glm::vec3(0, 0, axis_length));
   z_line->setColor(0, 0, 1, 1);
   z_line->setProjectionMatrix(_projectionMatrix);
-  _axis.push_back(x_line);
-  _axis.push_back(y_line);
-  _axis.push_back(z_line);
 
+  _gc.push_back(x_line);
+  _gc.push_back(y_line);
+  _gc.push_back(z_line);
+}
+
+void GLContext::makeCorners(GLfloat axis_length, GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
   // Corners
-  const float axis_length = 2.0f;
   LineComponent* corners[8] = {
     // Top-Left
-    new LineComponent(glm::vec3(0, 0, 0), glm::vec3(axis_length, 0, 0)), // 0
+    new LineComponent(glm::vec3(0, 0, 0), glm::vec3(axis_length, 0, 0)),   // 0
     new LineComponent(glm::vec3(0, 0, 0), glm::vec3(0, -axis_length, 0)),  // 1
 
     // Top-Right
@@ -117,42 +131,15 @@ void MainGLWindow::start() {
     new LineComponent(glm::vec3(0, 0, 0), glm::vec3(0, -axis_length, 0)),  // 3
 
     // Bot-Left
-    new LineComponent(glm::vec3(0, 0, 0), glm::vec3(axis_length, 0, 0)), // 4
-    new LineComponent(glm::vec3(0, 0, 0), glm::vec3(0, axis_length, 0)), // 5
+    new LineComponent(glm::vec3(0, 0, 0), glm::vec3(axis_length, 0, 0)),   // 4
+    new LineComponent(glm::vec3(0, 0, 0), glm::vec3(0, axis_length, 0)),   // 5
 
     // Bot-Right
     new LineComponent(glm::vec3(0, 0, 0), glm::vec3(-axis_length, 0, 0)),  // 6
-    new LineComponent(glm::vec3(0, 0, 0), glm::vec3(0, axis_length, 0))  // 7
+    new LineComponent(glm::vec3(0, 0, 0), glm::vec3(0, axis_length, 0))    // 7
   };
-  for(int i = 0; i < 8; ++i) {
-    corners[i]->setColor(1, 0, 0, 1);
-    corners[i]->setProjectionMatrix(_projectionMatrix);
-    _corners.push_back(corners[i]);
-  }
 
-  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-  std::cout << "MainGLWindow initialized" << std::endl;
-}
-
-void MainGLWindow::update(paper_t& paper) {
-  std::cout << "- id: " << paper.id << std::endl;
-  Logger::Log::matrix(paper.modelview_matrix);
-
-  size_t gc_length = _gc.size();
-  for(size_t i = 1; i < gc_length; ++i) {
-    _gc[i]->setModelViewMatrix(glm::make_mat4(paper.modelview_matrix));
-  }
-
-  size_t axis_length = _axis.size();
-  for(size_t i = 0; i < axis_length; ++i) {
-    _axis[i]->setModelViewMatrix(glm::make_mat4(paper.modelview_matrix));
-  }
-
-  size_t corners_length = _corners.size();
-  for(size_t i = 0; i < corners_length; ++i) {
-    _corners[i]->setModelViewMatrix(glm::make_mat4(paper.modelview_matrix));
-  }
-
+  // Positions
   float width = 21.0f;
   float height = 29.7f;
   glm::vec3 topLeftCorner(-width / 2.0f, height / 2.0f, 0.0f);
@@ -160,22 +147,33 @@ void MainGLWindow::update(paper_t& paper) {
   glm::vec3 botLeftCorner(-width / 2.0f, -height / 2.0f, 0);
   glm::vec3 botRightCorner(width / 2.0f, -height / 2.0f, 0);
 
-  _corners[0]->translate(topLeftCorner);
-  _corners[1]->translate(topLeftCorner);
-  _corners[2]->translate(topRightCorner);
-  _corners[3]->translate(topRightCorner);
-  _corners[4]->translate(botLeftCorner);
-  _corners[5]->translate(botLeftCorner);
-  _corners[6]->translate(botRightCorner);
-  _corners[7]->translate(botRightCorner);
+  corners[0]->setPosition(topLeftCorner);
+  corners[1]->setPosition(topLeftCorner);
+  corners[2]->setPosition(topRightCorner);
+  corners[3]->setPosition(topRightCorner);
+  corners[4]->setPosition(botLeftCorner);
+  corners[5]->setPosition(botLeftCorner);
+  corners[6]->setPosition(botRightCorner);
+  corners[7]->setPosition(botRightCorner);
 
-  //_gc[1]->translate(botLeftCorner);  // Bottom-Left
-  //_gc[2]->translate(topLeftCorner);  // Top-Left
-  //_gc[3]->translate(botRightCorner); // Bottom-Right
-  //_gc[4]->translate(topRightCorner); // Top-Right
+  for(int i = 0; i < 8; ++i) {
+    corners[i]->setColor(r, g, b, a);
+    corners[i]->setProjectionMatrix(_projectionMatrix);
+    _gc.push_back(corners[i]);
+  }
 }
 
-void MainGLWindow::render() {
+void GLContext::update(paper_t& paper) {
+  std::cout << "- id: " << paper.id << std::endl;
+  Logger::Log::matrix(paper.modelview_matrix);
+
+  size_t gc_length = _gc.size();
+  for(size_t i = 1; i < gc_length; ++i) {
+    _gc[i]->setModelViewMatrix(glm::make_mat4(paper.modelview_matrix));
+  }
+}
+
+void GLContext::render() {
   // Clears the screen
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glViewport(0, 0, _width, _height);
@@ -191,53 +189,28 @@ void MainGLWindow::render() {
     _gc[i]->render();
   }
 
-  // Axis
-  size_t axis_length = _axis.size();
-  for(size_t i = 0; i < axis_length; ++i) {
-    _axis[i]->render();
-  }
-
-  // Corners
-  size_t corners_length = _corners.size();
-  for(size_t i = 0; i < corners_length; ++i) {
-    _corners[i]->render();
-  }
-
   // To update we need to swap the buffers
   swapBuffers();
 }
 
-void MainGLWindow::setPaper(Paper* p) {
-  _paper = p;
-}
-
-void MainGLWindow::setFrame(cv::Mat* currentFrame) {
+void GLContext::setFrame(cv::Mat* currentFrame) {
   _frame = currentFrame;
 }
 
-cv::Mat& MainGLWindow::getFrame() {
+cv::Mat& GLContext::getFrame() {
   return *_frame;
 }
 
-void MainGLWindow::setProjectionMatrix(glm::mat4 projectionMatrix) {
+void GLContext::setProjectionMatrix(glm::mat4 projectionMatrix) {
   _projectionMatrix = projectionMatrix;
 }
 
-const glm::mat4& MainGLWindow::getProjectionMatrix() const {
+const glm::mat4& GLContext::getProjectionMatrix() const {
   return _projectionMatrix;
 }
 
-void MainGLWindow::setFps(float fps) {
+void GLContext::setFps(float fps) {
   wchar_t buffer[24];
   swprintf(buffer, 24, L"%.2f FPS", fps);
   //_fpsComponent->setText(buffer);
-}
-
-MainGLWindow* MainGLWindow::getSingletonPtr() {
-  return _singleton;
-}
-
-MainGLWindow& MainGLWindow::getSingleton() {
-  assert(_singleton);
-  return *_singleton;
 }
