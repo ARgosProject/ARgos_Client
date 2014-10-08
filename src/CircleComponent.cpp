@@ -14,13 +14,13 @@ CircleComponent::CircleComponent(GLfloat radius)
   GLushort indices[] = { 0, 1, 2, 0, 2, 3 };
   GLfloat vertexData[] = {
 		-radius,  radius, 0.0f, // Position 0
-		 0.0f,  0.0f,        	  // TexCoord 0
+    0.0f,  0.0f,        	  // TexCoord 0
 		-radius, -radius, 0.0f, // Position 1
-		 0.0f,  1.0f,        	  // TexCoord 1
-		 radius, -radius, 0.0f, // Position 2
-		 1.0f,  1.0f,        	  // TexCoord 2
-		 radius,  radius, 0.0f, // Position 3
-		 1.0f,  0.0f         	  // TexCoord 3
+    0.0f,  1.0f,        	  // TexCoord 1
+    radius, -radius, 0.0f, // Position 2
+    1.0f,  1.0f,        	  // TexCoord 2
+    radius,  radius, 0.0f, // Position 3
+    1.0f,  0.0f         	  // TexCoord 3
 	};
 
   // Copy aux arrays to the class' members

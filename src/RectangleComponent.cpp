@@ -15,8 +15,8 @@ RectangleComponent::RectangleComponent(GLfloat width, GLfloat height)
   GLfloat vertexData[] = {
     -width,  height, 0.0f,  // Position 0
     -width, -height, 0.0f,  // Position 1
-     width, -height, 0.0f,  // Position 2
-     width,  height, 0.0f,  // Position 3
+    width, -height, 0.0f,  // Position 2
+    width,  height, 0.0f,  // Position 3
   };
 
   // Copy aux arrays to the class' members

@@ -64,9 +64,9 @@ void TextComponent::translate(glm::vec3 const & translation) {
 void TextComponent::setFont(const std::string& filename, GLfloat size) {
   _font = texture_font_new(_atlas, filename.c_str(), size);
   texture_font_load_glyphs(_font,
-			   L" !\"#$%&'()*+,-./0123456789:;<=>?"
-			   L"@ABCDEFGHIJKLMNÑOPQRSTUVWXYZ[\\]^_"
-			   L"`abcdefghijklmnñopqrstuvwxyz{|}~");
+                           L" !\"#$%&'()*+,-./0123456789:;<=>?"
+                           L"@ABCDEFGHIJKLMNÑOPQRSTUVWXYZ[\\]^_"
+                           L"`abcdefghijklmnñopqrstuvwxyz{|}~");
 }
 
 void TextComponent::setText(std::wstring strtext, GLfloat r, GLfloat g, GLfloat b, GLfloat a) {

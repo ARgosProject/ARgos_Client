@@ -7,20 +7,39 @@
 #include "GraphicComponent.h"
 #include "GfxProgram.h"
 
+/**
+ * A class representing a rectangle
+ */
 class RectangleComponent : public GraphicComponent {
 public:
+  /**
+   * Constructs a new rectangle
+   * @param width The width of this graphic component
+   * @param height The height of this graphic component
+   */
   RectangleComponent(GLfloat width, GLfloat height);
+
+  /**
+   * Destroys the rectangle
+   */
   ~RectangleComponent();
 
+  /**
+   * Draws this graphic component
+   */
   void render() override;
 
 private:
+  /**
+   * Sets up the shader for this graphic component
+   */
   void setUpShader() override;
 
 private:
-  GLushort* _indices;
-  GLfloat* _vertexData;
-  GLfloat _width, _height;
+  GLushort* _indices; ///< Indices defining the shared vertex of the triangles
+  GLfloat* _vertexData; ///< Positions of the vertex and their uv mapping
+  GLfloat _width; ///< The width of this graphic component
+  GLfloat _height; ///< The height of this graphic component
 };
 
 #endif

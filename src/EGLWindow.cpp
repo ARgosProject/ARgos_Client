@@ -107,9 +107,9 @@ void EGLWindow::makeSurface(uint32_t x, uint32_t y, uint32_t w, uint32_t h) {
   _dispmanDisplay = vc_dispmanx_display_open(0);
   _dispmanUpdate = vc_dispmanx_update_start(0);
   _dispmanElement = vc_dispmanx_element_add(_dispmanUpdate, _dispmanDisplay,
-					    0, &dstRect, 0, &srcRect,
-					    DISPMANX_PROTECTION_NONE, 0,
-					    0, DISPMANX_NO_ROTATE);
+                                            0, &dstRect, 0, &srcRect,
+                                            DISPMANX_PROTECTION_NONE, 0,
+                                            0, DISPMANX_NO_ROTATE);
 
   nativeWindow.element = _dispmanElement;
   nativeWindow.width = w;

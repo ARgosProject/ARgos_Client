@@ -24,7 +24,7 @@ public:
   ~CircleComponent();
 
   /**
-   * Drawing method
+   * Draws this graphic component
    */
   void render() override;
 

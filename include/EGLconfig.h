@@ -42,8 +42,6 @@ public:
    */
   void setDepth(EGLint d);
 
-  // Sets the surface type. Combination | of EGL_WINDOW_BIT,
-  // EGL_PBUFFER_BIT, and EGL_PIXMAP_BIT
   /**
    * Sets the surface type
    * @param s A combination (with ORs |) of EGL_WINDOW_BIG, EGL_PBUFFER_BIT, and EGL_PIXMAP_BIT
@@ -59,13 +57,14 @@ public:
 
   /**
    * Gets the created config
+   * @return the actual config
    */
   EGLConfig getConfig() const;
 
   /**
    * Prints the current config
    */
-   void print() const;
+  void print() const;
 
 private:
   std::map<EGLint, EGLint> _attributes; ///< A map of attributes
