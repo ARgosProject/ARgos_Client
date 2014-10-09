@@ -7,37 +7,41 @@
 #include "GraphicComponent.h"
 #include "GfxProgram.h"
 
-/**
- * A class representing a single straight line
- */
-class LineComponent : public GraphicComponent {
-public:
-  /**
-   * Constructs a new straight line
-   * @param src The starting point of the line
-   * @param dst The end point of the line
-   */
-  LineComponent(glm::vec3 const & src, glm::vec3 const & dst);
+namespace argosClient {
 
   /**
-   * Destroys the line
+   * A class representing a single straight line
    */
-  ~LineComponent();
+  class LineComponent : public GraphicComponent {
+  public:
+    /**
+     * Constructs a new straight line
+     * @param src The starting point of the line
+     * @param dst The end point of the line
+     */
+    LineComponent(glm::vec3 const & src, glm::vec3 const & dst);
 
-  /**
-   * Draws this graphic component
-   */
-  void render() override;
+    /**
+     * Destroys the line
+     */
+    ~LineComponent();
 
-private:
-  /**
-   * Sets up the shader for this graphic component
-   */
-  void setUpShader() override;
+    /**
+     * Draws this graphic component
+     */
+    void render() override;
 
-private:
-  GLushort* _indices; ///< Indices defining the shared vertex of the triangles
-  GLfloat* _vertexData; ///< Positions of the vertex and their uv mapping
-};
+  private:
+    /**
+     * Sets up the shader for this graphic component
+     */
+    void setUpShader() override;
+
+  private:
+    GLushort* _indices; ///< Indices defining the shared vertex of the triangles
+    GLfloat* _vertexData; ///< Positions of the vertex and their uv mapping
+  };
+
+}
 
 #endif

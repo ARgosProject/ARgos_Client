@@ -8,116 +8,120 @@
 
 #include "EGLconfig.h"
 
-/**
- * A virtual EGL Window class used to initialize the OpenGL ES 2.0 context
- */
-class EGLWindow {
-public:
-  /**
-   * Constructs a new OpenGL ES 2.0 context
-   * @param config The config we want for the context. If NULL, a default
-   * config is built
-   */
-  EGLWindow(EGLconfig* config = NULL);
+namespace argosClient {
 
   /**
-   * Destroys the EGL window and its surface
+   * A virtual EGL Window class used to initialize the OpenGL ES 2.0 context
    */
-  virtual ~EGLWindow();
+  class EGLWindow {
+  public:
+    /**
+     * Constructs a new OpenGL ES 2.0 context
+     * @param config The config we want for the context. If NULL, a default
+     * config is built
+     */
+    EGLWindow(EGLconfig* config = NULL);
 
-  /**
-   * It must be implemented by the user. This will be called
-   * after the constructor once we have a valid GL context
-   */
-  virtual void render() = 0;
+    /**
+     * Destroys the EGL window and its surface
+     */
+    virtual ~EGLWindow();
 
-  /**
-   * Tells EGL to re-draw the current buffer
-   */
-  virtual void swapBuffers() const;
+    /**
+     * It must be implemented by the user. This will be called
+     * after the constructor once we have a valid GL context
+     */
+    virtual void render() = 0;
 
-  /**
-   * Resizes the screen with origin at 0,0
-   * @param w The width of the screen
-   * @param h The height of the screen
-   */
-  virtual void resizeScreen(uint32_t w, uint32_t h);
+    /**
+     * Tells EGL to re-draw the current buffer
+     */
+    virtual void swapBuffers() const;
 
-  /**
-   * (Re)Initializes the screen using X, Y coordinates and W, H size
-   * @param x The X coordinate
-   * @param y The Y coordinate
-   * @param w The width of the screen
-   * @param h The height of the screen
-   */
-  virtual void setScreen(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
+    /**
+     * Resizes the screen with origin at 0,0
+     * @param w The width of the screen
+     * @param h The height of the screen
+     */
+    virtual void resizeScreen(uint32_t w, uint32_t h);
 
-  /**
-   * Gets the width of the screen
-   * @return the width of the screen
-   */
-  virtual uint32_t getWidth() const;
+    /**
+     * (Re)Initializes the screen using X, Y coordinates and W, H size
+     * @param x The X coordinate
+     * @param y The Y coordinate
+     * @param w The width of the screen
+     * @param h The height of the screen
+     */
+    virtual void setScreen(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
 
-  /**
-   * Gets the height of the screen
-   * @return the height of the screen
-   */
-  virtual uint32_t getHeight() const;
+    /**
+     * Gets the width of the screen
+     * @return the width of the screen
+     */
+    virtual uint32_t getWidth() const;
 
-  /**
-   * Sets the flag to upscale the screen destination rectangle
-   * It's not set by default
-   * @param f Whether set the flag or not
-   */
-  virtual void setUpscale(bool f);
+    /**
+     * Gets the height of the screen
+     * @return the height of the screen
+     */
+    virtual uint32_t getHeight() const;
 
-  /**
-   * Sets up specific properties for the context
-   */
-  virtual void start() = 0;
+    /**
+     * Sets the flag to upscale the screen destination rectangle
+     * It's not set by default
+     * @param f Whether set the flag or not
+     */
+    virtual void setUpscale(bool f);
 
-  /**
-   * Gets the EGL display
-   * @return the EGL display
-   */
-  virtual EGLDisplay& getEGLDisplay();
+    /**
+     * Sets up specific properties for the context
+     */
+    virtual void start() = 0;
 
-  /**
-   * Gets the EGL context
-   * @return the EGL context
-   */
-  virtual EGLContext& getEGLContext();
+    /**
+     * Gets the EGL display
+     * @return the EGL display
+     */
+    virtual EGLDisplay& getEGLDisplay();
 
-protected:
-  /**
-   * Make a new surface
-   */
-  void makeSurface();
+    /**
+     * Gets the EGL context
+     * @return the EGL context
+     */
+    virtual EGLContext& getEGLContext();
 
-  uint32_t _width; ///< The width of the screen
-  uint32_t _height; ///< The height of the screen
-  EGLDisplay _display; ///< The current EGL display
-  EGLSurface _surface; ///< The current EGL surface
-  EGLContext _context; ///< The current EGL context
-  EGLconfig* _config; ///< The EGL config for this window
+  protected:
+    /**
+     * Make a new surface
+     */
+    void makeSurface();
 
-  DISPMANX_ELEMENT_HANDLE_T _dispmanElement; ///< The dispmanx representation of a visual object
-  DISPMANX_DISPLAY_HANDLE_T _dispmanDisplay; ///< The dispmanx 'handle' on the display
-  DISPMANX_UPDATE_HANDLE_T _dispmanUpdate; ///< The dispmanx transaction object
+    uint32_t _width; ///< The width of the screen
+    uint32_t _height; ///< The height of the screen
+    EGLDisplay _display; ///< The current EGL display
+    EGLSurface _surface; ///< The current EGL surface
+    EGLContext _context; ///< The current EGL context
+    EGLconfig* _config; ///< The EGL config for this window
 
-private:
-  /**
-   * Destroys the surface if it exists
-   */
-  void destroySurface();
+    DISPMANX_ELEMENT_HANDLE_T _dispmanElement; ///< The dispmanx representation of a visual object
+    DISPMANX_DISPLAY_HANDLE_T _dispmanDisplay; ///< The dispmanx 'handle' on the display
+    DISPMANX_UPDATE_HANDLE_T _dispmanUpdate; ///< The dispmanx transaction object
 
-  /**
-   * Actually, this is the main function to create our surface
-   */
-  void makeSurface(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
+  private:
+    /**
+     * Destroys the surface if it exists
+     */
+    void destroySurface();
 
-  bool _activeSurface; ///< Whether we have an active surface or not
-  bool _upscale; ///< Whether to upscale the screen or not
-};
+    /**
+     * Actually, this is the main function to create our surface
+     */
+    void makeSurface(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
+
+    bool _activeSurface; ///< Whether we have an active surface or not
+    bool _upscale; ///< Whether to upscale the screen or not
+  };
+
+}
 
 #endif

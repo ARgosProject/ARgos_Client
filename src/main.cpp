@@ -23,6 +23,7 @@ extern "C"
 
 // Camera stuff
 #include <raspicam/raspicam_cv.h>
+#include <CameraProjectorSystem.hpp>
 
 // Task delegation and OpenGL Stuff
 #include "TaskDelegation.h"
@@ -41,12 +42,13 @@ extern "C"
 
 using namespace std;
 using namespace cv;
+using namespace argosClient;
 
 int main(int argc, char **argv) {
   atexit(bcm_host_deinit);
   bcm_host_init();
-  Logger::Log::setColouredOutput(isatty(fileno(stdout)));
-  Logger::Log::info("Inicializando ARgos...");
+  Log::setColouredOutput(isatty(fileno(stdout)));
+  Log::info("Inicializando ARgos...");
 
   // Task delegation stuff (client)
   TaskDelegation* td = NULL;
@@ -83,14 +85,14 @@ int main(int argc, char **argv) {
   Camera.set(CV_CAP_PROP_SATURATION, 55);
   //Camera.set(CV_CAP_PROP_GAIN, 55);
 
-  Logger::Log::info("Abriendo cámara...");
+  Log::info("Abriendo cámara...");
   Camera.open();
   if(!Camera.isOpened()) {
-    Logger::Log::error("Ocurrió un error al abrir el dispositivo.");
+    Log::error("Ocurrió un error al abrir el dispositivo.");
     return -1;
   }
-  Logger::Log::info("Cámara abierta correctamente.");
-  Logger::Log::info("ARgos en ejecución.");
+  Log::info("Cámara abierta correctamente.");
+  Log::info("ARgos en ejecución.");
 
   //Set the appropriate projection matrix so that rendering is done in a enrvironment like the real camera (without distorsion)
   cv::Size imgSize(SCREEN_W_CAMERA, SCREEN_H_CAMERA);
@@ -101,14 +103,7 @@ int main(int argc, char **argv) {
 
   float projection_matrix[16];
   cameraProjector.getProjector().glGetProjectionMatrix(imgSize, GlWindowSize, projection_matrix, 0.05f, 1000.0f);
-  Logger::Log::matrix(projection_matrix);
-
-  /*float projection_matrix[16] = {
-    1.0f, 0.0f, 0.0f, 0.0f,
-    0.0f, 1.0f, 0.0f, 0.0f,
-    0.0f, 0.0f, 1.0f, 0.0f,
-    0.0f, 0.0f, 0.0f, 1.0f
-    };*/
+  Log::matrix(projection_matrix);
 
   // OpenGL stuff
   GLContext& glContext = GLContext::getInstance();
@@ -148,9 +143,10 @@ int main(int argc, char **argv) {
 
     //---------------------------------------------------------------------
   }
-  Logger::Log::info("Deteniendo la cámara...");
+
+  Log::info("Deteniendo la cámara...");
   Camera.release();
-  Logger::Log::info("Todo apagado correctamente.");
+  Log::info("Todo apagado correctamente.");
 
   return 0;
 }

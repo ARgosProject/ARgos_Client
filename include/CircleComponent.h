@@ -7,37 +7,41 @@
 #include "GraphicComponent.h"
 #include "GfxProgram.h"
 
-/**
- * A circle graphic component defined by a radius
- */
-class CircleComponent : public GraphicComponent {
-public:
-  /**
-   * Constructs a new circle
-   * @param radius The radius defining the size of the circle
-   */
-  CircleComponent(GLfloat radius);
+namespace argosClient {
 
   /**
-   * Destroys the circle
+   * A circle graphic component defined by a radius
    */
-  ~CircleComponent();
+  class CircleComponent : public GraphicComponent {
+  public:
+    /**
+     * Constructs a new circle
+     * @param radius The radius defining the size of the circle
+     */
+    CircleComponent(GLfloat radius);
 
-  /**
-   * Draws this graphic component
-   */
-  void render() override;
+    /**
+     * Destroys the circle
+     */
+    ~CircleComponent();
 
-private:
-  /**
-   * Sets up the shader for this graphic component
-   */
-  void setUpShader() override;
+    /**
+     * Draws this graphic component
+     */
+    void render() override;
 
-private:
-  GLushort* _indices; ///< Indices defining the shared vertex of the triangles
-  GLfloat* _vertexData; ///< Positions of the vertex and their uv mapping
-  GLfloat _radius; ///< The radius of the circle
-};
+  private:
+    /**
+     * Sets up the shader for this graphic component
+     */
+    void setUpShader() override;
+
+  private:
+    GLushort* _indices; ///< Indices defining the shared vertex of the triangles
+    GLfloat* _vertexData; ///< Positions of the vertex and their uv mapping
+    GLfloat _radius; ///< The radius of the circle
+  };
+
+}
 
 #endif

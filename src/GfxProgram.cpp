@@ -1,42 +1,46 @@
 #include <cassert>
 #include "GfxProgram.h"
 
-GfxProgram::GfxProgram() {
-  _vertexShader = new GfxShader();
-  _fragmentShader = new GfxShader();
-}
+namespace argosClient {
 
-GfxProgram::~GfxProgram() {
-  glDeleteProgram(_id);
+  GfxProgram::GfxProgram() {
+    _vertexShader = new GfxShader();
+    _fragmentShader = new GfxShader();
+  }
 
-  delete _vertexShader;
-  delete _fragmentShader;
-}
+  GfxProgram::~GfxProgram() {
+    glDeleteProgram(_id);
 
-GLuint GfxProgram::loadShaders(const std::string& vertex_file_path, const std::string& fragment_file_path) {
-  _vertexShader->loadVertexShader(vertex_file_path);
-  _fragmentShader->loadFragmentShader(fragment_file_path);
-  _id = glCreateProgram();
+    delete _vertexShader;
+    delete _fragmentShader;
+  }
 
-  glAttachShader(_id, _vertexShader->getId());
-  glAttachShader(_id, _fragmentShader->getId());
-  glLinkProgram(_id);
+  GLuint GfxProgram::loadShaders(const std::string& vertex_file_path, const std::string& fragment_file_path) {
+    _vertexShader->loadVertexShader(vertex_file_path);
+    _fragmentShader->loadFragmentShader(fragment_file_path);
+    _id = glCreateProgram();
 
-  glDetachShader(_id, _vertexShader->getId());
-  glDetachShader(_id, _fragmentShader->getId());
-  glDeleteShader(_vertexShader->getId());
-  glDeleteShader(_fragmentShader->getId());
+    glAttachShader(_id, _vertexShader->getId());
+    glAttachShader(_id, _fragmentShader->getId());
+    glLinkProgram(_id);
 
-  assert(glGetError() == 0);
+    glDetachShader(_id, _vertexShader->getId());
+    glDetachShader(_id, _fragmentShader->getId());
+    glDeleteShader(_vertexShader->getId());
+    glDeleteShader(_fragmentShader->getId());
 
-  return _id;
-}
+    assert(glGetError() == 0);
 
-GLuint GfxProgram::getId() const {
-  return _id;
-}
+    return _id;
+  }
 
-void GfxProgram::useProgram() const {
-  glUseProgram(_id);
-  assert(glGetError() == 0);
+  GLuint GfxProgram::getId() const {
+    return _id;
+  }
+
+  void GfxProgram::useProgram() const {
+    glUseProgram(_id);
+    assert(glGetError() == 0);
+  }
+
 }

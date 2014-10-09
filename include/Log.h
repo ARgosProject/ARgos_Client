@@ -6,6 +6,7 @@
 #include <vector>
 
 namespace argosClient {
+
   /**
    * A utility class for logging
    * It's capable to provide coloured output and a timestamp with every message
@@ -119,6 +120,7 @@ namespace argosClient {
       std::cout << "] " << std::endl;
     }
   }
+
 }
 
 #endif
