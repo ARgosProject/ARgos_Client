@@ -10,7 +10,7 @@ using boost::asio::ip::udp;
 
 VideoStreamComponent::VideoStreamComponent(GLfloat width, GLfloat height)
   : _indices(NULL), _vertexData(NULL), _width(width), _height(height),
-    _textureId(-1), _ready(false), _receive(true), _videoThread(NULL) {
+    _textureId(-1), _ready(false), _receive(false), _videoThread(NULL) {
   /**
    *    0__3
    *    |\ |
@@ -67,7 +67,6 @@ void VideoStreamComponent::receiveVideo(unsigned short port) {
     unsigned char* data_buf;
     int size, type;
 
-
     Logger::Log::video("Esperando nuevo fotograma de vídeo.");
 
     _begin = std::chrono::high_resolution_clock::now();
@@ -88,12 +87,10 @@ void VideoStreamComponent::receiveVideo(unsigned short port) {
 
     _receivedFrame = cv::imdecode(transformed, CV_LOAD_IMAGE_UNCHANGED);
 
-    //sendVideo(MainGLWindow::getSingleton().getFrame(), udpSocket, udpSenderEndpoint);
-
     Logger::Log::video(std::to_string(type) + " " + std::to_string(size) + " == " + std::to_string(bytes) + " bytes de video recibidos.");
 
     _ready = true;
-    _receive = false;
+    _receive = true;
   }
 }
 
@@ -178,7 +175,7 @@ void VideoStreamComponent::render() {
 
     glUniformMatrix4fv(_mvpHandler, 1, GL_FALSE, glm::value_ptr(_projectionMatrix * _modelViewMatrix * _model));
 
-    if(!_receive) {
+    if(_receive) {
       makeVideoTexture(_receivedFrame);
     }
 
@@ -188,6 +185,6 @@ void VideoStreamComponent::render() {
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, _indices);
 
-    _receive = true;
+    _receive = false;
   }
 }

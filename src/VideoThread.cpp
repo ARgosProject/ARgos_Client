@@ -6,8 +6,8 @@
 #ifdef __cplusplus
 extern "C"
 {
-  #include <libavcodec/avcodec.h>
-  #include <libavformat/avformat.h>
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
 }
 #endif
 
@@ -196,8 +196,8 @@ void VideoThread::videoDecode1() {
 	format.eCompressionFormat = OMX_VIDEO_CodingAVC;
 
 	if(status == 0 &&
-		OMX_SetParameter(ILC_GET_HANDLE(video_decode), OMX_IndexParamVideoPortFormat, &format) == OMX_ErrorNone &&
-		ilclient_enable_port_buffers(video_decode, 130, NULL, NULL, NULL) == 0) {
+     OMX_SetParameter(ILC_GET_HANDLE(video_decode), OMX_IndexParamVideoPortFormat, &format) == OMX_ErrorNone &&
+     ilclient_enable_port_buffers(video_decode, 130, NULL, NULL, NULL) == 0) {
 		OMX_BUFFERHEADERTYPE *buf;
 		int port_settings_changed = 0;
 		int first_packet = 1;
@@ -246,16 +246,16 @@ void VideoThread::videoDecode1() {
 							nRetry++;
 						}
 						if(nRetry == 5)
-						{
-							printf("Failed, OMX_EmptyThisBuffer, error: 0x%08x , buf allocate: %d, buf lenght: %d \n", r, buf->nAllocLen, buf->nFilledLen);
-							return;
-						}
+              {
+                printf("Failed, OMX_EmptyThisBuffer, error: 0x%08x , buf allocate: %d, buf lenght: %d \n", r, buf->nAllocLen, buf->nFilledLen);
+                return;
+              }
 					}
 
 					if(port_settings_changed == 0 &&
-						((preaded > 0 && ilclient_remove_event(video_decode, OMX_EventPortSettingsChanged, 131, 0, 0, 1) == 0) ||
+             ((preaded > 0 && ilclient_remove_event(video_decode, OMX_EventPortSettingsChanged, 131, 0, 0, 1) == 0) ||
 							(preaded == 0 && ilclient_wait_for_event(video_decode, OMX_EventPortSettingsChanged, 131, 0, 0, 1,
-								ILCLIENT_EVENT_ERROR | ILCLIENT_PARAMETER_CHANGED, 10000) == 0))) {
+                                                       ILCLIENT_EVENT_ERROR | ILCLIENT_PARAMETER_CHANGED, 10000) == 0))) {
 						port_settings_changed = 1;
 					  std::cout << "->Triggered" << std::endl;
 
