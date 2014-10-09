@@ -17,11 +17,11 @@ TextComponent::TextComponent(std::string filename, GLint fontSize)
   _pen.x = 0;
   _pen.y = 0;
 
-	// Load font and cache glyphs
+  // Load font and cache glyphs
   setFont(filename, fontSize);
 
-	// Set the shader
-	this->loadGLProgram("shaders/text.glvs", "shaders/text.glfs");
+  // Set the shader
+  this->loadGLProgram("shaders/text.glvs", "shaders/text.glfs");
 }
 
 TextComponent::~TextComponent() {
@@ -86,7 +86,7 @@ void TextComponent::addText(std::wstring strtext, GLfloat r, GLfloat g, GLfloat 
       int kerning = 0;
 
       if(i > 0) {
-				kerning = texture_glyph_get_kerning(glyph, text[i-1]);
+        kerning = texture_glyph_get_kerning(glyph, text[i-1]);
       }
 
       _pen.x += kerning;
@@ -101,24 +101,24 @@ void TextComponent::addText(std::wstring strtext, GLfloat r, GLfloat g, GLfloat 
 
       // Data is x,y,z,s,t,r,g,b,a
       GLfloat vertices[] = {
-				(GLfloat)x0,(GLfloat)y0,0,
-				s0,t0,
-				r, g, b, a,
-				(GLfloat)x0,(GLfloat)y1,0,
-				s0,t1,
-				r, g, b, a,
-				(GLfloat)x1,(GLfloat)y1,0,
-				s1,t1,
-				r, g, b, a,
-				(GLfloat)x0,(GLfloat)y0,0,
-				s0,t0,
-				r, g, b, a,
-				(GLfloat)x1,(GLfloat)y1,0,
-				s1,t1,
-				r, g, b, a,
-				(GLfloat)x1,(GLfloat)y0,0,
-				s1,t0,
-				r, g, b, a
+        (GLfloat)x0,(GLfloat)y0,0,
+        s0,t0,
+        r, g, b, a,
+        (GLfloat)x0,(GLfloat)y1,0,
+        s0,t1,
+        r, g, b, a,
+        (GLfloat)x1,(GLfloat)y1,0,
+        s1,t1,
+        r, g, b, a,
+        (GLfloat)x0,(GLfloat)y0,0,
+        s0,t0,
+        r, g, b, a,
+        (GLfloat)x1,(GLfloat)y1,0,
+        s1,t1,
+        r, g, b, a,
+        (GLfloat)x1,(GLfloat)y0,0,
+        s1,t0,
+        r, g, b, a
       };
 
       vector_push_back_data(_vector, vertices, 54);
@@ -152,5 +152,5 @@ void TextComponent::render() {
 
   glDrawArrays(GL_TRIANGLES, 0, _vector->size/9);
 
-	glDisable(GL_BLEND);
+  glDisable(GL_BLEND);
 }

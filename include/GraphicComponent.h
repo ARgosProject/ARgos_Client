@@ -52,7 +52,7 @@ public:
    * Scales this graphic component relatively
    * @param factors The 3 axis with the scale factors added
    */
-	virtual void scale(glm::vec3 const & factors);
+  virtual void scale(glm::vec3 const & factors);
 
   /**
    * Translates this graphic component relatively

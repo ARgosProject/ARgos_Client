@@ -29,7 +29,7 @@ public:
    * @param height The height of this graphic component
    * @see loadVideoFromFile()
    */
-	VideoComponent(const std::string& fileName, GLfloat width, GLfloat height);
+  VideoComponent(const std::string& fileName, GLfloat width, GLfloat height);
 
   /**
    * Destroys the video
@@ -40,13 +40,13 @@ public:
    * Sets whether the video should start again on finish or not
    * @param loop True whether the video should start again on finish. False otherwise
    */
-	void setLoop(bool loop);
+  void setLoop(bool loop);
 
   /**
    * Loads a video from disk
    * @param fileName The path of the video file to load
    */
-	void loadVideoFromFile(const std::string& fileName);
+  void loadVideoFromFile(const std::string& fileName);
 
   /**
    * Draws this graphic component
@@ -66,10 +66,10 @@ private:
   GLfloat _height; ///< The height of this graphic component
   GLuint _textureId; ///< The OpenGL texture id used to render the video
 
-	bool _loop; ///< Whether loop the video or not
-	std::string _fileName; ///< The file name of the video
-	void* _eglImage; ///< An EGL surface used to render the video
-	VideoThread* _videoThread; ///< An auxiliar thread used to decode the video
+  bool _loop; ///< Whether loop the video or not
+  std::string _fileName; ///< The file name of the video
+  void* _eglImage; ///< An EGL surface used to render the video
+  VideoThread* _videoThread; ///< An auxiliar thread used to decode the video
 };
 
 #endif

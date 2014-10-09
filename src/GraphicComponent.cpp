@@ -8,8 +8,8 @@
 
 GraphicComponent::GraphicComponent()
   : _model(glm::mat4(1.0f)), _modelViewMatrix(glm::mat4(1.0f)), _projectionMatrix(glm::mat4(1.0f)),
-		_vertexHandler(-1), _texHandler(-1), _samplerHandler(-1), _colorHandler(-1),
-		_mvpHandler(-1) {
+    _vertexHandler(-1), _texHandler(-1), _samplerHandler(-1), _colorHandler(-1),
+    _mvpHandler(-1) {
 
 }
 

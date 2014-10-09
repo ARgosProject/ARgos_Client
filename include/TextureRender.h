@@ -55,12 +55,12 @@ private:
    * Generates a new frame buffer object
    * @return 0 if everything was right
    */
-	int genFrameBufferObject();
+  int genFrameBufferObject();
 
   /**
    * Sets the framebuffer of this render to texture and draws all the graphic components
    */
-	void renderToTexture();
+  void renderToTexture();
 
   /**
    * Draw the whole texture to the main frame buffer

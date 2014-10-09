@@ -20,15 +20,15 @@ RectangleComponent::RectangleComponent(GLfloat width, GLfloat height)
   };
 
   // Copy aux arrays to the class' members
-	size_t length = 6*sizeof(GLushort);
-	_indices = new GLushort[length];
-	memcpy(_indices, indices, length);
-	length = 12*sizeof(GLfloat);
-	_vertexData = new GLfloat[length];
-	memcpy(_vertexData, vertexData, length);
+  size_t length = 6*sizeof(GLushort);
+  _indices = new GLushort[length];
+  memcpy(_indices, indices, length);
+  length = 12*sizeof(GLfloat);
+  _vertexData = new GLfloat[length];
+  memcpy(_vertexData, vertexData, length);
 
-	// Set the shader
-	this->loadGLProgram("shaders/rectangle.glvs", "shaders/rectangle.glfs");
+  // Set the shader
+  this->loadGLProgram("shaders/rectangle.glvs", "shaders/rectangle.glfs");
 }
 
 RectangleComponent::~RectangleComponent() {

@@ -7,7 +7,7 @@ using namespace Logger;
 bool Log::coloured_output = false;
 
 void Log::plain(const std::string& msg) {
-	std::cout << currentDateTime() << " " << msg << std::endl;
+  std::cout << currentDateTime() << " " << msg << std::endl;
 }
 
 void Log::info(const std::string& msg) {
@@ -47,14 +47,14 @@ void Log::video(const std::string& msg) {
 }
 
 const std::string Log::currentDateTime() {
-	time_t now = time(0);
-	tm tstruct;
-	char buf[80];
+  time_t now = time(0);
+  tm tstruct;
+  char buf[80];
 
-	tstruct = *localtime(&now);
-	strftime(buf, sizeof(buf), "[%d-%m-%Y %X]", &tstruct);
+  tstruct = *localtime(&now);
+  strftime(buf, sizeof(buf), "[%d-%m-%Y %X]", &tstruct);
 
-	return buf;
+  return buf;
 }
 
 void Log::setColouredOutput(bool coloured) {

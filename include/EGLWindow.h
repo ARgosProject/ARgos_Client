@@ -80,13 +80,13 @@ public:
    * Gets the EGL display
    * @return the EGL display
    */
-	virtual EGLDisplay& getEGLDisplay();
+  virtual EGLDisplay& getEGLDisplay();
 
   /**
    * Gets the EGL context
    * @return the EGL context
    */
-	virtual EGLContext& getEGLContext();
+  virtual EGLContext& getEGLContext();
 
 protected:
   /**

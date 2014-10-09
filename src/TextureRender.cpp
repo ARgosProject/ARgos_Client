@@ -25,25 +25,25 @@ TextureRender::TextureRender(GLfloat width, GLfloat height)
 
   GLushort indices[] = { 0, 1, 2, 0, 2, 3 };
   GLfloat vertexData[] = { -_texWidth/(GLfloat)_screenWidth,-_texHeight/(GLfloat)_screenHeight, 0.0f, // Position 0
-													 0.0f,  0.0f, // TexCoord 0
-													 -_texWidth/(GLfloat)_screenWidth, _texHeight/(GLfloat)_screenHeight, 0.0f, // Position 1
-													 0.0f,  1.0f, // TexCoord 1
-													 _texWidth/(GLfloat)_screenWidth, _texHeight/(GLfloat)_screenHeight, 0.0f,  // Position 2
-													 1.0f,  1.0f, // TexCoord 2
-													 _texWidth/(GLfloat)_screenWidth,-_texHeight/(GLfloat)_screenHeight, 0.0f,  // Position 3
-													 1.0f,  0.0f  // TexCoord 3
-	};
+                           0.0f,  0.0f, // TexCoord 0
+                           -_texWidth/(GLfloat)_screenWidth, _texHeight/(GLfloat)_screenHeight, 0.0f, // Position 1
+                           0.0f,  1.0f, // TexCoord 1
+                           _texWidth/(GLfloat)_screenWidth, _texHeight/(GLfloat)_screenHeight, 0.0f,  // Position 2
+                           1.0f,  1.0f, // TexCoord 2
+                           _texWidth/(GLfloat)_screenWidth,-_texHeight/(GLfloat)_screenHeight, 0.0f,  // Position 3
+                           1.0f,  0.0f  // TexCoord 3
+  };
 
   // Copy aux arrays to the class' members
-	size_t length = 6*sizeof(GLushort);
-	_indices = new GLushort[length];
-	memcpy(_indices, indices, length);
-	length = 20*sizeof(GLfloat);
-	_vertexData = new GLfloat[length];
-	memcpy(_vertexData, vertexData, length);
+  size_t length = 6*sizeof(GLushort);
+  _indices = new GLushort[length];
+  memcpy(_indices, indices, length);
+  length = 20*sizeof(GLfloat);
+  _vertexData = new GLfloat[length];
+  memcpy(_vertexData, vertexData, length);
 
-	// Set the shader
-	this->loadGLProgram("shaders/fbo.glvs", "shaders/fbo.glfs");
+  // Set the shader
+  this->loadGLProgram("shaders/fbo.glvs", "shaders/fbo.glfs");
 
   this->genFrameBufferObject();
 }
@@ -88,14 +88,14 @@ int TextureRender::genFrameBufferObject() {
   glBindFramebuffer(GL_FRAMEBUFFER, _framebufferObject);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _texture, 0);
 
-	// Bind renderbuffer, create a 16-bit depth buffer and specify depth_renderbufer as depth attachment
+  // Bind renderbuffer, create a 16-bit depth buffer and specify depth_renderbufer as depth attachment
   // Width and Height of renderbuffer = Width and Height of the texture
   glBindRenderbuffer(GL_RENDERBUFFER, _depthRenderbuffer);
   glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, _texWidth, _texHeight);
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _depthRenderbuffer);
 
-	// All went ok?
-	assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+  // All went ok?
+  assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
 
   // Reinitialize
   glBindTexture(GL_TEXTURE_2D, 0);
@@ -106,44 +106,44 @@ int TextureRender::genFrameBufferObject() {
 }
 
 void TextureRender::renderToTexture() {
-	// Bind the framebuffer
+  // Bind the framebuffer
   glBindFramebuffer(GL_FRAMEBUFFER, _framebufferObject);
 
-	// Set viewport to size of texture map and erase previous image
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glViewport(0, 0, _texWidth, _texHeight);
+  // Set viewport to size of texture map and erase previous image
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glViewport(0, 0, _texWidth, _texHeight);
 
-	// Render every GraphicComponents to the FBO
-	for(GraphicComponent* gc : _graphicComponents) {
-		gc->render();
-	}
+  // Render every GraphicComponents to the FBO
+  for(GraphicComponent* gc : _graphicComponents) {
+    gc->render();
+  }
 
-	// Unbind the FBO so rendering will return to the backbuffer
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glViewport(0, 0, _screenWidth, _screenHeight);
+  // Unbind the FBO so rendering will return to the backbuffer
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glViewport(0, 0, _screenWidth, _screenHeight);
 }
 
 void TextureRender::drawTexture() {
-	// Draw the new texture into the framebuffer
-	_shader.useProgram();
+  // Draw the new texture into the framebuffer
+  _shader.useProgram();
 
-	glUniformMatrix4fv(_mvpHandler, 1, GL_FALSE, glm::value_ptr(_projectionMatrix * _modelViewMatrix * _model));
+  glUniformMatrix4fv(_mvpHandler, 1, GL_FALSE, glm::value_ptr(_projectionMatrix * _modelViewMatrix * _model));
 
-	// Load the vertex data
-	glVertexAttribPointer(_vertexHandler, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), _vertexData);
-	glEnableVertexAttribArray(_vertexHandler);
-	glVertexAttribPointer(_texHandler, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), &_vertexData[3]);
-	glEnableVertexAttribArray(_texHandler);
+  // Load the vertex data
+  glVertexAttribPointer(_vertexHandler, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), _vertexData);
+  glEnableVertexAttribArray(_vertexHandler);
+  glVertexAttribPointer(_texHandler, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), &_vertexData[3]);
+  glEnableVertexAttribArray(_texHandler);
 
-	// Bind the texture
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, _texture);
+  // Bind the texture
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, _texture);
 
-	// Set the sampler texture unit to 0
-	glUniform1i(_samplerHandler, 0);
+  // Set the sampler texture unit to 0
+  glUniform1i(_samplerHandler, 0);
 
-	// Draw it
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, _indices);
+  // Draw it
+  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, _indices);
 
   assert(glGetError() == 0);
 }
@@ -166,6 +166,6 @@ void TextureRender::addGraphicComponent(GraphicComponent* graphicComponent) {
 }
 
 void TextureRender::render() {
-	this->renderToTexture();
-	this->drawTexture();
+  this->renderToTexture();
+  this->drawTexture();
 }

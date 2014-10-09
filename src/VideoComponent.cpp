@@ -104,38 +104,38 @@ void VideoComponent::loadVideoFromFile(const std::string& fileName) {
 	assert(_eglImage != EGL_NO_IMAGE_KHR);
 
 	// Texture is correctly created; thread can start decoding the video
-	_videoThread->next(_eglImage);
+  _videoThread->next(_eglImage);
 }
 
 void VideoComponent::setUpShader() {
   GLint id = _shader.getId();
 
-	_vertexHandler = glGetAttribLocation(id, "a_position");
+  _vertexHandler = glGetAttribLocation(id, "a_position");
   _texHandler = glGetAttribLocation(id, "a_texCoord");
   _mvpHandler = glGetUniformLocation(id, "u_mvp");
-	_samplerHandler = glGetUniformLocation(id, "s_texture");
+  _samplerHandler = glGetUniformLocation(id, "s_texture");
 }
 
 void VideoComponent::render() {
   _shader.useProgram();
 
-	if(_loop) {
-		if(_videoThread && !_videoThread->isRunning()) {
-			_videoThread->interrupt();
-			_videoThread->start();
-		}
-	}
+  if(_loop) {
+    if(_videoThread && !_videoThread->isRunning()) {
+      _videoThread->interrupt();
+      _videoThread->start();
+    }
+  }
 
-	glVertexAttribPointer(_vertexHandler, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), _vertexData);
-	glEnableVertexAttribArray(_vertexHandler);
-	glVertexAttribPointer(_texHandler, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), &_vertexData[3]);
-	glEnableVertexAttribArray(_texHandler);
+  glVertexAttribPointer(_vertexHandler, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), _vertexData);
+  glEnableVertexAttribArray(_vertexHandler);
+  glVertexAttribPointer(_texHandler, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), &_vertexData[3]);
+  glEnableVertexAttribArray(_texHandler);
 
-	glUniformMatrix4fv(_mvpHandler, 1, GL_FALSE, glm::value_ptr(_projectionMatrix * _modelViewMatrix * _model));
+  glUniformMatrix4fv(_mvpHandler, 1, GL_FALSE, glm::value_ptr(_projectionMatrix * _modelViewMatrix * _model));
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, _textureId);
-	glUniform1i(_samplerHandler, 0);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, _textureId);
+  glUniform1i(_samplerHandler, 0);
 
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, _indices);
 }

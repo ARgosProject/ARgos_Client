@@ -161,9 +161,9 @@ void EGLWindow::setUpscale(bool f) {
 }
 
 EGLDisplay& EGLWindow::getEGLDisplay() {
-	return _display;
+  return _display;
 }
 
 EGLContext& EGLWindow::getEGLContext() {
-	return _context;
+  return _context;
 }
