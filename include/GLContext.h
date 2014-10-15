@@ -49,13 +49,13 @@ namespace argosClient {
      * Updates the Model View matrix of all graphic components according to a paper
      * @param paper The paper we want to center all the graphic components
      */
-    void update(paper_t& paper);
+    void update(cv::Mat& currentFrame, paper_t& paper);
 
     /**
      * Passes a retrieved frame from the camera to stream it on video stream trigger
      * @param currentFrame A frame from the camera
      */
-    void setFrame(cv::Mat* currentFrame);
+    void setFrame(cv::Mat& currentFrame);
 
     /**
      * Retrieves the reference of the saved frame

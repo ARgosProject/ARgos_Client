@@ -29,11 +29,13 @@ namespace argosClient {
      * class can handle
      */
     enum Type {
+      SKIP          = -1,
+
       VECTOR_I      =  0,
       MATRIX_16F    =  1,
       CV_MAT        =  2,
       VIDEO_STREAM  =  3,
-      PAPER         =  4,
+      PAPER         =  4
     };
 
   public:
@@ -79,6 +81,20 @@ namespace argosClient {
     int reconnect();
 
     /**
+     * Starts the main loop of the Task Delegation
+     *
+     */
+    void run(const cv::Mat& mat, paper_t& paper);
+
+    /**
+     * Read a StreamType structure from the socket
+     * @param socket The socket from read
+     * @param st The StreamType structure to fill
+     * @return The number of bytes received
+     */
+    int readStreamTypeFromSocket(tcp::socket &socket, StreamType &st);
+
+    /**
      * Starts to receive paper's data from the server and process it
      * @param paper A reference to the paper we want to save the received data
      * @return the number of received bytes
@@ -90,28 +106,28 @@ namespace argosClient {
      * @param st The raw data structure
      * @param mat A reference to the OpenCV::Mat we want to build against
      */
-    void proccessCvMat(StreamType& st, cv::Mat& mat);
+    void processCvMat(StreamType& st, cv::Mat& mat);
 
     /**
      * Processes and build a paper from raw data
      * @param st The raw data structure
      * @param paper A reference to the paper we want to build against
      */
-    void proccessPaper(StreamType& st, paper_t& paper);
+    void processPaper(StreamType& st, paper_t& paper);
 
     /**
      * Processes and build an integer value from raw data
      * @param st The raw data structure
      * @param paper A reference to the integer variable we want to build against
      */
-    void proccessInt(StreamType& st, int& value);
+    void processInt(StreamType& st, int& value);
 
     /**
      * Processes and build a 16 floats array (matrix) from raw data
      * @param st The raw data structure
      * @param paper A reference to the floats array we want to build against
      */
-    void proccessMatrix16f(StreamType& st, float* matrix);
+    void processMatrix16f(StreamType& st, float* matrix);
 
     /**
      * Sends the built _buff object to the server
@@ -139,9 +155,9 @@ namespace argosClient {
 
     /**
      * Checks the _error variable looking for errors
-     * @return true if there was any error
+     * @return < 0 if there was any error
      */
-    bool error();
+    int error() const;
 
   private:
     boost::asio::io_service _ioService; ///< The needed I/O service for establishing communications
@@ -150,7 +166,7 @@ namespace argosClient {
     std::vector<unsigned char> _buff; ///< Raw data buffer used to be sent to the server
     std::string _ip; ///< The IP of the connected endpoint
     std::string _port; ///< The Port of the connected endpoint
-    bool _error; ///< Control variable used to handle errors
+    int _error; ///< Control variable used to handle errors
   };
 
 }

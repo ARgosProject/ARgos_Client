@@ -115,9 +115,14 @@ namespace argosClient {
   template<typename T>
   void Log::matrix(const T* matrix) {
     for(int i = 0; i < 16; i += 4) {
-      std::cout << currentDateTime() << " [ ";
+      if(i < 4) {
+        std::cout << currentDateTime() << " [ ";
+      }
+      else {
+        std::cout << "                      [ ";
+      }
       std::cout << matrix[i] << " " << matrix[i+1] << " " << matrix[i+2] << " " << matrix[i+3];
-      std::cout << "] " << std::endl;
+      std::cout << " ] " << std::endl;
     }
   }
 

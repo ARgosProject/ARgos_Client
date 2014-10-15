@@ -9,7 +9,7 @@ DIRSHADERS := shaders/
 CXX := g++
 
 CXXFLAGS := `pkg-config --cflags opencv`
-CXXFLAGS += -Wall -fexceptions -ggdb -O0 -std=c++0x
+CXXFLAGS += -Wall -fexceptions -ggdb -O0 -std=c++0x -MMD -MP
 CXXFLAGS += -DGLM_FORCE_RADIANS
 
 INCLUDES := -I$(SDKSTAGE)/opt/vc/include/ -I$(SDKSTAGE)/opt/vc/include/interface/vcos/pthreads -I$(SDKSTAGE)/opt/vc/include/interface/vmcs_host/linux
@@ -32,6 +32,7 @@ LDLIBS += -lavcodec -lavformat
 
 OBJS := $(subst $(DIRSRC), $(DIROBJ), $(patsubst %.cpp, %.o, $(wildcard $(DIRSRC)*.cpp)))
 OBJS += $(subst $(DIRLIBS)freetypeGlesRpi/, $(DIROBJ), $(patsubst %.cpp, %.o, $(wildcard $(DIRLIBS)freetypeGlesRpi/*.cpp)))
+DEPS :=  $(OBJS:.o=.d)
 
 COLOR_FIN := \033[00m
 COLOR_OK := \033[01;32m
@@ -54,6 +55,8 @@ $(EXEC): $(OBJS)
 	@echo -e '$(COLOR_ENL)Enlazando$(COLOR_FIN): $(notdir $<)'
 	@$(CXX) -o $@ $^ $(LDLIBS)
 	@echo -e '$(COLOR_OK)Terminado.$(COLOR_FIN)'
+
+-include $(DEPS)
 
 $(DIROBJ)%.o: $(DIRSRC)%.cpp
 	@echo -e '$(COLOR_COMP)Compilando$(COLOR_FIN): $(notdir $<)'

@@ -60,8 +60,8 @@ int main(int argc, char **argv) {
   }
 
   // Images
-  cv::Mat currentFrame;		  // current frame
-  cv::Mat projectorFrame;	  // projector openCV frame
+  cv::Mat currentFrame;     // current frame
+  cv::Mat projectorFrame;   // projector openCV frame
 
   // Window
   const string projectorWindow = "Projector";
@@ -114,34 +114,15 @@ int main(int argc, char **argv) {
   glContext.setProjectionMatrix(glm::make_mat4(projection_matrix));
   glContext.start();
 
-  //-- Main Loop -------------------------------------------------------------------------
   while(1) {
-    // New Frame
-    Camera.grab(); Camera.retrieve(currentFrame);
+    Camera.grab();
+    Camera.retrieve(currentFrame);
+
     paper_t paper;
+    td->run(currentFrame, paper);
 
-    if(!td->error()) {
-      td->addCvMat(currentFrame);
-
-      if(td->send() != 0) {
-        td->receive(paper);
-      }
-    }
-    else {
-      while(td->reconnect() < 0) {
-        usleep(1 * 1000 * 1000); // Wait 1 second before trying to reconnect
-      }
-    }
-
-    glContext.setFrame(&currentFrame);
-    //win->update(glm::make_mat4(paper.modelview_matrix));
-    glContext.update(paper);
+    glContext.update(currentFrame, paper);
     glContext.render();
-
-    //cv::imshow(projectorWindow, projectorFrame);
-    //cv::waitKey(1);
-
-    //---------------------------------------------------------------------
   }
 
   Log::info("Deteniendo la cámara...");

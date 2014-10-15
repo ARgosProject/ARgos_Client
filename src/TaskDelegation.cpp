@@ -24,44 +24,55 @@ namespace argosClient {
 
   int TaskDelegation::connect(const std::string& ip, const std::string& port) {
     try {
-      _error = false;
+      _error = 0;
 
       Log::info("Intentando conectar al servidor " + ip + ":" + port + "...");
       boost::asio::connect(*_tcpSocket, _tcpResolver->resolve({ip, port}));
       Log::success("Conectado satisfactoriamente.");
       _ip = ip; _port = port;
-
-      return 0;
     }
     catch(boost::system::system_error const& e) {
       Log::error("No se pudo conectar al servidor de ARgos. " + std::string(e.what()));
-      _error = true;
+      _error = -1;
     }
 
-    return -1;
+    return _error;
   }
 
   int TaskDelegation::reconnect() {
     try {
-      _error = false;
+      _error = 0;
 
       Log::info("Intentando reconectar al servidor de ARgos...");
       boost::asio::connect(*_tcpSocket, _tcpResolver->resolve({_ip, _port}));
       Log::success("Reconectado satisfactoriamente.");
-
-      return 0;
     }
     catch(boost::system::system_error const& e) {
       Log::error("No se pudo reconectar al servidor de ARgos. " + std::string(e.what()));
-      _error = true;
+      _error = -1;
     }
 
-    return -1;
+    return _error;
+  }
+
+  void TaskDelegation::run(const cv::Mat& mat, paper_t& paper) {
+    if(_error >= 0) {
+      addCvMat(mat);
+
+      if(send() != 0) {
+        receive(paper);
+      }
+    }
+    else {
+      while(reconnect() < 0) {
+        usleep(1 * 1000 * 1000); // Wait 1 second before trying to reconnect
+      }
+    }
   }
 
   int TaskDelegation::send() {
     try {
-      _error = false;
+      _error = 0;
 
       int buff_size = _buff.size();
       Log::info("Intentando enviar " + std::to_string(buff_size) + " bytes...");
@@ -74,7 +85,7 @@ namespace argosClient {
     catch(boost::system::system_error const& e) {
       Log::error("Se perdió la conexión al servidor de ARgos al enviar. " + std::string(e.what()));
       _buff.clear();
-      _error = true;
+      _error = -1;
     }
 
     return 0;
@@ -135,39 +146,44 @@ namespace argosClient {
     _buff.insert(_buff.end(), mat_buff.begin(), mat_buff.end());           // Datos
   }
 
-  bool TaskDelegation::error() {
+  int TaskDelegation::error() const {
     return _error;
   }
 
-  int TaskDelegation::receive(paper_t& paper) {
-    StreamType st;
+  int TaskDelegation::readStreamTypeFromSocket(tcp::socket &socket, StreamType &st) {
+    int bytes = 0;
+
     unsigned char type_buf[sizeof(int)];
     unsigned char size_buf[sizeof(int)];
     unsigned char* data_buf;
+
+    bytes += boost::asio::read(socket, boost::asio::buffer(&type_buf, sizeof(int)));  // Type
+    memcpy(&st.type, &type_buf, sizeof(int));
+
+    if(st.type != Type::SKIP) {
+      bytes += boost::asio::read(socket, boost::asio::buffer(&size_buf, sizeof(int))); // Size
+      memcpy(&st.size, &size_buf, sizeof(int));
+      data_buf = new unsigned char[st.size];
+      bytes += boost::asio::read(socket, boost::asio::buffer(data_buf, st.size)); // Data
+      st.data.insert(st.data.end(), &data_buf[0], &data_buf[st.size]);
+      delete [] data_buf;
+    }
+
+    return bytes;
+  }
+
+  int TaskDelegation::receive(paper_t& paper) {
     int bytes = 0;
 
     try {
-      _error = false;
+      _error = 0;
 
-      bytes += boost::asio::read(*_tcpSocket, boost::asio::buffer(&type_buf, sizeof(int)));  // Type
-      memcpy(&st.type, &type_buf, sizeof(int));
-      bytes += boost::asio::read(*_tcpSocket, boost::asio::buffer(&size_buf, sizeof(int))); // Size
-      memcpy(&st.size, &size_buf, sizeof(int));
-
-      data_buf = new unsigned char[st.size];
-      bytes += boost::asio::read(*_tcpSocket, boost::asio::buffer(data_buf, st.size)); // Data
-      st.data.insert(st.data.end(), &data_buf[0], &data_buf[st.size]);
-      delete [] data_buf;
+      StreamType st;
+      bytes += readStreamTypeFromSocket(*_tcpSocket, st);
 
       switch(st.type) {
-      case Type::VECTOR_I:
-      case Type::MATRIX_16F:
-        break;
-      case Type::CV_MAT:
-        //proccessCvMat(st, mat);
-        break;
       case Type::PAPER:
-        proccessPaper(st, paper);
+        processPaper(st, paper);
         break;
       default:
         break;
@@ -176,38 +192,31 @@ namespace argosClient {
     catch(boost::system::system_error const& e) {
       Log::error("Se perdió la conexión al servidor de ARgos al recibir. " + std::string(e.what()));
       _tcpSocket->close();
-      //mat = cv::Scalar::all(0);
-      _error = true;
+      _error = -1;
     }
 
     return bytes;
   }
 
-  void TaskDelegation::proccessCvMat(StreamType& st, cv::Mat& mat) {
+  void TaskDelegation::processCvMat(StreamType& st, cv::Mat& mat) {
     Log::success("Nueva cv::Mat recibida. Size: " + std::to_string(st.size));
     mat = cv::imdecode(st.data, CV_LOAD_IMAGE_COLOR);
   }
 
-  void TaskDelegation::proccessPaper(StreamType& st, paper_t& paper) {
-    Log::success("Nuevo Paper recibido. Size: " + std::to_string(st.size));
+  void TaskDelegation::processPaper(StreamType& st, paper_t& paper) {
+    processInt(st, paper.id);
+    processMatrix16f(st, paper.modelview_matrix);
 
-    proccessInt(st, paper.id);
-    proccessMatrix16f(st, paper.modelview_matrix);
+    Log::success("Nuevo Paper recibido, id: " + std::to_string(paper.id));
+    Log::matrix(paper.modelview_matri);
   }
 
-  void TaskDelegation::proccessInt(StreamType& st, int& value) {
+  void TaskDelegation::processInt(StreamType& st, int& value) {
     memcpy(&value, &st.data[0], sizeof(int));
   }
 
-  void TaskDelegation::proccessMatrix16f(StreamType& st, float* matrix) {
-    Log::success("Nueva matriz de 16 float recibida. Size: " + std::to_string(st.size));
-
-    //int num_floats = st.size/sizeof(float);
-    //float tmp[num_floats];
+  void TaskDelegation::processMatrix16f(StreamType& st, float* matrix) {
     memcpy(&matrix[0], &st.data[sizeof(int)], sizeof(float)*(16));
-
-    // Procesar matriz (tmp) aquí
-
   }
 
 }

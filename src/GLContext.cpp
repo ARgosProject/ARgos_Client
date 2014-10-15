@@ -96,7 +96,7 @@ namespace argosClient {
     _gc.insert(_gc.end(), corners.begin(), corners.end());
 
     // Sample text
-    _gc.push_back(makeText(L"Prueba de texto", 1.0f, 1.0f, 1.0f));
+    _gc.push_back(makeText(L"Archivar en Carpeta Roja", 1.0f, 1.0f, 1.0f));
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     Log::success("Contexto OpenGL ES 2.0 inicializado");
@@ -145,6 +145,8 @@ namespace argosClient {
     // Positions
     float width = 21.0f;
     float height = 29.7f;
+    //float width = 14.8f;
+    //float height = 21.0f;
     glm::vec3 topLeftCorner(-width / 2.0f, height / 2.0f, 0.0f);
     glm::vec3 topRightCorner(width / 2.0f, height / 2.0f, 0.0f);
     glm::vec3 botLeftCorner(-width / 2.0f, -height / 2.0f, 0.0f);
@@ -173,7 +175,7 @@ namespace argosClient {
 
     // 1.5f, 24.0f
     float offsetX = 3.7;
-    float offsetY = 2.5f;
+    float offsetY = 4.5f;
     float scaleFactor = 0.012;
     float x = (-width + offsetX) / scaleFactor; // -600
     float y = (-height + offsetY) / scaleFactor; // -700
@@ -187,12 +189,24 @@ namespace argosClient {
     return text;
   }
 
-  void GLContext::update(paper_t& paper) {
-    Log::matrix(paper.modelview_matrix);
-
+  void GLContext::update(cv::Mat& currentFrame, paper_t& paper) {
     size_t gc_length = _gc.size();
     for(size_t i = 1; i < gc_length; ++i) {
       _gc[i]->setModelViewMatrix(glm::make_mat4(paper.modelview_matrix));
+    }
+
+    _frame = &currentFrame;
+
+    TextComponent* tc = static_cast<TextComponent*>(_gc.back());
+    switch(paper.id) {
+    case 3:
+      tc->setText(L"Archivar en carpeta ROJA", 1.0f, 1.0f, 1.0f);
+      break;
+    case 4:
+      tc->setText(L"Archivar en carpeta VERDE", 1.0f, 1.0f, 1.0f);
+      break;
+    default:
+      break;
     }
   }
 
@@ -216,8 +230,8 @@ namespace argosClient {
     swapBuffers();
   }
 
-  void GLContext::setFrame(cv::Mat* currentFrame) {
-    _frame = currentFrame;
+  void GLContext::setFrame(cv::Mat& currentFrame) {
+    _frame = &currentFrame;
   }
 
   cv::Mat& GLContext::getFrame() {
