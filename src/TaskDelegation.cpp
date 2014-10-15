@@ -56,18 +56,15 @@ namespace argosClient {
   }
 
   void TaskDelegation::run(const cv::Mat& mat, paper_t& paper) {
-    if(_error >= 0) {
-      addCvMat(mat);
-
-      if(send() != 0) {
-        receive(paper);
-      }
-    }
-    else {
+    if(_error < 0) {
       while(reconnect() < 0) {
         usleep(1 * 1000 * 1000); // Wait 1 second before trying to reconnect
       }
     }
+
+    addCvMat(mat);
+    send();
+    receive(paper);
   }
 
   int TaskDelegation::send() {
@@ -157,6 +154,7 @@ namespace argosClient {
     unsigned char size_buf[sizeof(int)];
     unsigned char* data_buf;
 
+    Log::info("Esperando nuevo paper...");
     bytes += boost::asio::read(socket, boost::asio::buffer(&type_buf, sizeof(int)));  // Type
     memcpy(&st.type, &type_buf, sizeof(int));
 
@@ -208,7 +206,7 @@ namespace argosClient {
     processMatrix16f(st, paper.modelview_matrix);
 
     Log::success("Nuevo Paper recibido, id: " + std::to_string(paper.id));
-    Log::matrix(paper.modelview_matri);
+    Log::matrix(paper.modelview_matrix);
   }
 
   void TaskDelegation::processInt(StreamType& st, int& value) {

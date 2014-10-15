@@ -51,7 +51,7 @@ namespace argosClient {
      * @param b The blue component
      * @param a The alpha component
      */
-    void setText(std::wstring strtext, GLfloat r, GLfloat g, GLfloat b, GLfloat a = 1.0f);
+    void setText(std::wstring strtext, GLfloat r = 1.0f, GLfloat g = 1.0f, GLfloat b = 1.0f, GLfloat a = 1.0f);
 
     /**
      * Adds a string to the text object and a colour for it
@@ -61,7 +61,7 @@ namespace argosClient {
      * @param b The blue component
      * @param a The alpha component
      */
-    void addText(std::wstring strtext, GLfloat r, GLfloat g, GLfloat b, GLfloat a = 1.0f);
+    void addText(std::wstring strtext, GLfloat r = 1.0f, GLfloat g = 1.0f, GLfloat b = 1.0f, GLfloat a = 1.0f);
 
     /**
      * Draws this graphic component

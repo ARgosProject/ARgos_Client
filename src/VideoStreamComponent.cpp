@@ -73,7 +73,7 @@ namespace argosClient {
 
       _begin = std::chrono::high_resolution_clock::now();
 
-      // Type. Should be CV_MAT.
+      // Type.
       udpSocket.receive_from(boost::asio::buffer(&type_buf, sizeof(int)), udpSenderEndpoint);
       memcpy(&type, &type_buf, sizeof(int));
 
@@ -89,7 +89,7 @@ namespace argosClient {
 
       _receivedFrame = cv::imdecode(transformed, CV_LOAD_IMAGE_UNCHANGED);
 
-      Log::video(std::to_string(type) + " " + std::to_string(size) + " == " + std::to_string(bytes) + " bytes de video recibidos.");
+      Log::video(std::to_string(bytes) + " bytes de video recibidos.");
 
       _ready = true;
       _receive = true;
@@ -162,10 +162,13 @@ namespace argosClient {
   }
 
   void VideoStreamComponent::render() {
+    Log::info("pre-clock");
     _end = std::chrono::high_resolution_clock::now();
     if(std::chrono::duration_cast<std::chrono::seconds>(_end - _begin).count() > 1) {
       _ready = false;
     }
+
+    Log::info("post-clock | pre-ready-render");
 
     if(_ready) {
       _shader.useProgram();

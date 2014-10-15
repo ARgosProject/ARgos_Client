@@ -80,13 +80,19 @@ namespace argosClient {
     //video->setProjectionMatrix(_projectionMatrix);
     //_gc.push_back(video);
 
+    // Background
+    ImageComponent* bg = new ImageComponent("background.jpg", 1.0, 1.0);
+    _gc.push_back(bg);
+
     // Camera frame
-    ImageComponent* im = new ImageComponent(1.0, 1.0);
+    //ImageComponent* im = new ImageComponent(1.0, 1.0);
     //im->setProjectionMatrix(_projectionMatrix);
-    _gc.push_back(im);
+    //_gc.push_back(im);
 
     // Video stream
-    VideoStreamComponent* videoStream = new VideoStreamComponent(0.5f, 0.5f);
+    float width = 21.0f / 2.0f;
+    float height = 29.7f / 2.0f;
+    VideoStreamComponent* videoStream = new VideoStreamComponent(width, height);
     videoStream->startReceivingVideo(9999);
     videoStream->setProjectionMatrix(_projectionMatrix);
     _gc.push_back(videoStream);
@@ -182,7 +188,7 @@ namespace argosClient {
 
     TextComponent* text = new TextComponent("/usr/share/fonts/truetype/freefont/FreeMono.ttf", 64);
     text->setProjectionMatrix(_projectionMatrix);
-    text->setScale(glm::vec3(scaleFactor, scaleFactor, scaleFactor));
+    text->setScale(glm::vec3(-scaleFactor, scaleFactor, scaleFactor));
     text->setPosition(glm::vec3(x, y, 0.0f));
     text->setText(strtext, r, g, b, a);
 
@@ -199,13 +205,17 @@ namespace argosClient {
 
     TextComponent* tc = static_cast<TextComponent*>(_gc.back());
     switch(paper.id) {
-    case 3:
-      tc->setText(L"Archivar en carpeta ROJA", 1.0f, 1.0f, 1.0f);
+    case 1:
+      tc->setText(L"Archivar en carpeta AZUL");
       break;
-    case 4:
-      tc->setText(L"Archivar en carpeta VERDE", 1.0f, 1.0f, 1.0f);
+    case 2:
+      tc->setText(L"Archivar en carpeta ROJA");
+      break;
+    case 3:
+      tc->setText(L"Archivar en carpeta VERDE");
       break;
     default:
+      tc->setText(L"");
       break;
     }
   }
@@ -222,7 +232,7 @@ namespace argosClient {
 
     // Renderizamos todos los objetos
     size_t gc_length = _gc.size();
-    for(size_t i = 1; i < gc_length; ++i) {
+    for(size_t i = 0; i < gc_length; ++i) {
       _gc[i]->render();
     }
 
