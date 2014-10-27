@@ -11,7 +11,7 @@ namespace argosClient {
   GraphicComponent::GraphicComponent()
     : _model(glm::mat4(1.0f)), _modelViewMatrix(glm::mat4(1.0f)), _projectionMatrix(glm::mat4(1.0f)),
       _vertexHandler(-1), _texHandler(-1), _samplerHandler(-1), _colorHandler(-1),
-      _mvpHandler(-1) {
+      _mvpHandler(-1), _show(true) {
 
   }
 
@@ -61,6 +61,10 @@ namespace argosClient {
 
   void GraphicComponent::setProjectionMatrix(glm::mat4 projectionMatrix) {
     _projectionMatrix = projectionMatrix;
+  }
+
+  void GraphicComponent::show(bool show) {
+    _show = show;
   }
 
 }

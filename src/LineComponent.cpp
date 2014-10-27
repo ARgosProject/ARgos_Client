@@ -44,6 +44,8 @@ namespace argosClient {
   }
 
   void LineComponent::render() {
+    if(!_show) return;
+
     _shader.useProgram();
 
     glVertexAttribPointer(_colorHandler, 3, GL_FLOAT, GL_FALSE, 0, _vertexData);
@@ -51,6 +53,7 @@ namespace argosClient {
 
     glUniformMatrix4fv(_mvpHandler, 1, GL_FALSE, glm::value_ptr(_projectionMatrix * _modelViewMatrix * _model));
 
+    glLineWidth(3.0f);
     glDrawElements(GL_LINES, 2, GL_UNSIGNED_SHORT, _indices);
   }
 

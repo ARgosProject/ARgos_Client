@@ -140,6 +140,8 @@ namespace argosClient {
   }
 
   void ImageComponent::render() {
+    if(!_show) return;
+
     _shader.useProgram();
 
     glVertexAttribPointer(_vertexHandler, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), _vertexData);

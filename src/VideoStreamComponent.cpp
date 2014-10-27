@@ -162,13 +162,12 @@ namespace argosClient {
   }
 
   void VideoStreamComponent::render() {
-    Log::info("pre-clock");
+    if(!_show) return;
+
     _end = std::chrono::high_resolution_clock::now();
     if(std::chrono::duration_cast<std::chrono::seconds>(_end - _begin).count() > 1) {
       _ready = false;
     }
-
-    Log::info("post-clock | pre-ready-render");
 
     if(_ready) {
       _shader.useProgram();

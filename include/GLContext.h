@@ -11,6 +11,7 @@
 #include "TaskDelegation.h"
 
 namespace argosClient {
+  class TextComponent;
 
   /**
    * The OpenGL ES 2.0 context
@@ -50,6 +51,8 @@ namespace argosClient {
      * @param paper The paper we want to center all the graphic components
      */
     void update(cv::Mat& currentFrame, paper_t& paper);
+
+    void fetchPaperId(int id);
 
     /**
      * Passes a retrieved frame from the camera to stream it on video stream trigger
@@ -97,10 +100,11 @@ namespace argosClient {
      * A utility method used to draw text
      * @return a graphic component with the text
      */
-    GraphicComponent* makeText(std::wstring strtext, GLfloat r, GLfloat g, GLfloat b, GLfloat a = 1.0f);
+    std::vector<GraphicComponent*> makeText(std::wstring strtext, GLfloat r, GLfloat g, GLfloat b, GLfloat a = 1.0f);
 
   private:
-    std::vector<GraphicComponent*> _gc; ///< The list of graphic components to be updated
+    std::vector<GraphicComponent*> _gcList; ///< The list of graphic components to be updated
+    std::map<std::string, GraphicComponent*> _gcMap; ///< A map of the created graphic components
     cv::Mat* _frame; ///< The current frame of the camera used on video streaming
     glm::mat4 _projectionMatrix; ///< The projection matrix used to update the graphic components transformations
   };

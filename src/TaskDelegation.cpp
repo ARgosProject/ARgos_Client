@@ -180,6 +180,7 @@ namespace argosClient {
       bytes += readStreamTypeFromSocket(*_tcpSocket, st);
 
       switch(st.type) {
+      case Type::SKIP:
       case Type::PAPER:
         processPaper(st, paper);
         break;
@@ -202,11 +203,17 @@ namespace argosClient {
   }
 
   void TaskDelegation::processPaper(StreamType& st, paper_t& paper) {
-    processInt(st, paper.id);
-    processMatrix16f(st, paper.modelview_matrix);
-
-    Log::success("Nuevo Paper recibido, id: " + std::to_string(paper.id));
-    Log::matrix(paper.modelview_matrix);
+    if(st.type == Type::SKIP) {
+      paper.id = 0;
+      for(int i = 0; i < 16; ++i)
+        paper.modelview_matrix[i] = 0.0f;
+    }
+    else {
+      processInt(st, paper.id);
+      processMatrix16f(st, paper.modelview_matrix);
+      Log::success("Nuevo Paper recibido, id: " + std::to_string(paper.id));
+      Log::matrix(paper.modelview_matrix);
+    }
   }
 
   void TaskDelegation::processInt(StreamType& st, int& value) {

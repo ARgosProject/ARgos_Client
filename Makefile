@@ -28,6 +28,7 @@ LDLIBS += `pkg-config --libs opencv`
 LDLIBS += -lraspicam -lraspicam_cv
 LDLIBS += -lmmal -lmmal_core -lmmal_util
 LDLIBS += -lSOIL # sudo apt-get install libsoil-dev
+LDLIBS += -lSDL -lSDL_mixer # sudo apt-get install libsdl-1.2-dev libsdl-mixer-1.2-dev
 LDLIBS += -lavcodec -lavformat
 
 OBJS := $(subst $(DIRSRC), $(DIROBJ), $(patsubst %.cpp, %.o, $(wildcard $(DIRSRC)*.cpp)))

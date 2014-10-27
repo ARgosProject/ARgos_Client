@@ -72,6 +72,11 @@ namespace argosClient {
   }
 
   void TextComponent::setText(std::wstring strtext, GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
+    if(strtext == L"")
+      _show = false;
+    else
+      _show = true;
+
     _pen.x = _orig.x;
     _pen.y = _orig.y;
     vector_clear(_vector);
@@ -131,6 +136,8 @@ namespace argosClient {
   }
 
   void TextComponent::render() {
+    if(!_show) return;
+
     // Use the program object
     _shader.useProgram();
 

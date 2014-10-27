@@ -46,6 +46,8 @@ namespace argosClient {
   }
 
   void RectangleComponent::render() {
+    if(!_show) return;
+
     _shader.useProgram();
 
     glVertexAttribPointer(_colorHandler, 3, GL_FLOAT, GL_FALSE, 0, _vertexData);

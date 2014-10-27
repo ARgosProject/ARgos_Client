@@ -119,6 +119,8 @@ namespace argosClient {
   }
 
   void VideoComponent::render() {
+    if(!_show) return;
+
     _shader.useProgram();
 
     if(_loop) {

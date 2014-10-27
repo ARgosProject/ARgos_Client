@@ -94,6 +94,12 @@ namespace argosClient {
     virtual void setProjectionMatrix(glm::mat4 projectionMatrix);
 
     /**
+     * States if this GC should be drawed or not
+     * @param show Whether this GC should be drawed or not
+     */
+    virtual void show(bool show = true);
+
+    /**
      * Draws this graphic component
      */
     virtual void render() = 0;
@@ -114,6 +120,7 @@ namespace argosClient {
     GLint _samplerHandler; ///< The sampler handler for the shader
     GLint _colorHandler; ///< The colour handler for the shader
     GLint _mvpHandler; ///< The model view projection matrix handler for the shader
+    bool _show; ///< Whether the GC should be drawed or not
   };
 
 }

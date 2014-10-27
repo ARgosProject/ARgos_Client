@@ -168,6 +168,8 @@ namespace argosClient {
   }
 
   void RenderToTextureComponent::render() {
+    if(!_show) return;
+
     this->renderToTexture();
     this->drawTexture();
   }
