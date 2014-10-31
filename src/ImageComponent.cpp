@@ -49,7 +49,7 @@ namespace argosClient {
   ImageComponent::~ImageComponent() {
     delete [] _indices;
     delete [] _vertexData;
-    glDeleteTextures(1, &_textureId);
+    deleteTexture();
   }
 
   void ImageComponent::loadImageFromFile(const std::string& file_name) {
@@ -139,9 +139,7 @@ namespace argosClient {
     _samplerHandler = glGetUniformLocation(id, "s_texture");
   }
 
-  void ImageComponent::render() {
-    if(!_show) return;
-
+  void ImageComponent::specificRender() {
     _shader.useProgram();
 
     glVertexAttribPointer(_vertexHandler, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), _vertexData);
@@ -156,6 +154,8 @@ namespace argosClient {
     glUniform1i(_samplerHandler, 0);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, _indices);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
   }
 
   void ImageComponent::deleteTexture() {

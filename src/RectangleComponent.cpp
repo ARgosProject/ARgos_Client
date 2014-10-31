@@ -45,9 +45,7 @@ namespace argosClient {
     _mvpHandler = glGetUniformLocation(id, "u_mvp");
   }
 
-  void RectangleComponent::render() {
-    if(!_show) return;
-
+  void RectangleComponent::specificRender() {
     _shader.useProgram();
 
     glVertexAttribPointer(_colorHandler, 3, GL_FLOAT, GL_FALSE, 0, _vertexData);

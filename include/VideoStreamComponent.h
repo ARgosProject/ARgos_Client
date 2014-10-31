@@ -49,12 +49,12 @@ namespace argosClient {
      */
     void makeVideoTexture(const cv::Mat& mat);
 
-    /**
-     * Draws this graphic component
-     */
-    void render() override;
-
   private:
+    /**
+     * The specific logic used to draw this graphic component
+     */
+    void specificRender() override;
+
     /**
      * A method used as a thread which continuously waits for video frames
      * @param port The listening port

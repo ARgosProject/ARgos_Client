@@ -100,11 +100,23 @@ namespace argosClient {
     virtual void show(bool show = true);
 
     /**
+     * States if this GC should be updated or not
+     * @param update Whether this GC should be updated or not
+     */
+    virtual void noUpdate(bool noUpdate = true);
+
+    /**
      * Draws this graphic component
      */
-    virtual void render() = 0;
+    virtual void render();
+
 
   protected:
+    /**
+     * The specific logic used to draw this graphic component
+     */
+    virtual void specificRender() = 0;
+
     /**
      * Sets up the shader for this graphic component
      */
@@ -121,6 +133,7 @@ namespace argosClient {
     GLint _colorHandler; ///< The colour handler for the shader
     GLint _mvpHandler; ///< The model view projection matrix handler for the shader
     bool _show; ///< Whether the GC should be drawed or not
+    bool _noUpdate; ///< Whether the GC should be updated with any new model view matrix or not
   };
 
 }

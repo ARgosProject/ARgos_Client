@@ -50,16 +50,16 @@ namespace argosClient {
     void loadImageFromMat(cv::Mat& mat);
 
     /**
-     * Draws this graphic component
-     */
-    void render() override;
-
-    /**
      * Deletes the OpenGL texture used for this image
      */
     void deleteTexture();
 
   private:
+    /**
+     * The specific logic used to draw this graphic component
+     */
+    void specificRender() override;
+
     /**
      * Sets up the shader for this graphic component
      */

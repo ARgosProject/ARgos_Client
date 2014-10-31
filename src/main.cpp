@@ -2,6 +2,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <iostream>
+#include <chrono>
 
 // ffmpeg
 #ifdef __cplusplus
@@ -28,6 +29,8 @@ extern "C"
 // Task delegation and OpenGL Stuff
 #include "TaskDelegation.h"
 #include "GLContext.h"
+#include "GraphicComponent.h"
+#include "ImageComponent.h"
 
 // RaspberryPi stuff
 #include "bcm_host.h"
@@ -43,6 +46,8 @@ extern "C"
 using namespace std;
 using namespace cv;
 using namespace argosClient;
+
+void makeIntroduction(GLContext& glContext, raspicam::RaspiCam_Cv& cam, TaskDelegation* td, float duration, float* projection_matrix);
 
 int main(int argc, char **argv) {
   atexit(bcm_host_deinit);
@@ -98,7 +103,7 @@ int main(int argc, char **argv) {
   cv::Size imgSize(SCREEN_W_CAMERA, SCREEN_H_CAMERA);
   cv::Size GlWindowSize(SCREEN_W, SCREEN_H);
 
-  vector<string> invoices = {"NONE","NEOBIZ","SINOVO","ACTIVE"};
+  vector<string> invoices = { "NONE", "NEOBIZ", "SINOVO", "ACTIVE" };
   string lastSearch = "NONE";
 
   float projection_matrix[16];
@@ -112,8 +117,10 @@ int main(int argc, char **argv) {
   glContext.setUpscale(false);
   glContext.setScreen(0, 0, SCREEN_W, SCREEN_H);
   glContext.setProjectionMatrix(glm::make_mat4(projection_matrix));
-  glContext.start();
 
+  //makeIntroduction(glContext, Camera, td, 10, projection_matrix);
+
+  glContext.start();
   while(1) {
     Camera.grab();
     Camera.retrieve(currentFrame);
@@ -130,4 +137,40 @@ int main(int argc, char **argv) {
   Log::info("Todo apagado correctamente.");
 
   return 0;
+}
+
+void makeIntroduction(GLContext& glContext, raspicam::RaspiCam_Cv& cam, TaskDelegation* td, float duration, float* projection_matrix) {
+  float width = 21.0f / 2.0f;
+  float height = 29.7f / 2.0f;
+  bool next = true;
+  cv::Mat currentFrame;
+  GraphicComponent* cover = new ImageComponent("cover.jpg", width, height);
+  cover->setProjectionMatrix(glm::make_mat4(projection_matrix));
+  cover->setScale(glm::vec3(-1.0f, 1.0f, 1.0f));
+  glContext.addGraphicComponent("Cover", cover);
+  glContext.setState(GLContext::State::INTRODUCTION);
+
+  /*
+  std::chrono::time_point<std::chrono::high_resolution_clock> begin = std::chrono::high_resolution_clock::now();;
+  std::chrono::time_point<std::chrono::high_resolution_clock> end;
+  */
+  while(next) {
+    cam.grab();
+    cam.retrieve(currentFrame);
+
+    paper_t paper;
+    td->run(currentFrame, paper);
+
+    next = glContext.update(currentFrame, paper);
+    glContext.render();
+
+    /*
+    end = std::chrono::high_resolution_clock::now();
+    if(std::chrono::duration_cast<std::chrono::seconds>(end - begin).count() > duration) {
+      exit = true;
+    }
+    */
+  }
+
+  glContext.removeGraphicComponent("Cover");
 }

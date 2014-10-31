@@ -63,12 +63,12 @@ namespace argosClient {
      */
     void addText(std::wstring strtext, GLfloat r = 1.0f, GLfloat g = 1.0f, GLfloat b = 1.0f, GLfloat a = 1.0f);
 
-    /**
-     * Draws this graphic component
-     */
-    void render() override;
-
   private:
+    /**
+     * The specific logic used to draw this graphic component
+     */
+    void specificRender() override;
+
     /**
      * Sets up the shader for this graphic component
      */

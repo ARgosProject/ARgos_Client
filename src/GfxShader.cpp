@@ -14,8 +14,6 @@ namespace argosClient {
     if(_src) {
       delete [] _src;
     }
-
-    glDeleteShader(_id);
   }
 
   bool GfxShader::loadVertexShader(const std::string& filename) {

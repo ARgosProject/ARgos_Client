@@ -135,13 +135,9 @@ namespace argosClient {
     }
   }
 
-  void TextComponent::render() {
-    if(!_show) return;
-
-    // Use the program object
+  void TextComponent::specificRender() {
     _shader.useProgram();
 
-    // Load the vertex data
     glVertexAttribPointer(_vertexHandler, 3, GL_FLOAT, GL_FALSE, 9*sizeof(GLfloat), _vector->items);
     glEnableVertexAttribArray(_vertexHandler);
     glVertexAttribPointer(_texHandler, 2, GL_FLOAT, GL_FALSE, 9*sizeof(GLfloat), (GLfloat*)_vector->items+3);

@@ -146,8 +146,6 @@ namespace argosClient {
 
     // Draw it
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, _indices);
-
-    assert(glGetError() == 0);
   }
 
   void RenderToTextureComponent::setUpShader() {
@@ -167,9 +165,7 @@ namespace argosClient {
     _graphicComponents.push_back(graphicComponent);
   }
 
-  void RenderToTextureComponent::render() {
-    if(!_show) return;
-
+  void RenderToTextureComponent::specificRender() {
     this->renderToTexture();
     this->drawTexture();
   }

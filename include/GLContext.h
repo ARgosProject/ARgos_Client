@@ -19,8 +19,14 @@ namespace argosClient {
    * graphic components
    */
   class GLContext : public EGLWindow, public Singleton<GLContext> {
-    /** An alias for a vector of graphic components pointers */
-    typedef std::vector<GraphicComponent*> GraphicComponentList;
+    /** An alias for a map of graphic components pointers */
+    typedef std::map<std::string, GraphicComponent*> GraphicComponentMap;
+
+  public:
+    enum State {
+      INTRODUCTION,
+      FETCH_PAPERS
+    };
 
   public:
     /**
@@ -50,8 +56,12 @@ namespace argosClient {
      * Updates the Model View matrix of all graphic components according to a paper
      * @param paper The paper we want to center all the graphic components
      */
-    void update(cv::Mat& currentFrame, paper_t& paper);
+    bool update(cv::Mat& currentFrame, paper_t& paper);
 
+    /**
+     * Matches a paper ID to difference among various
+     * @param id The ID of the paper
+     */
     void fetchPaperId(int id);
 
     /**
@@ -86,25 +96,66 @@ namespace argosClient {
 
     /**
      * A utility method used to draw an axis
+     * @param axis_length The length of the axis lines
      * @return a list of graphic components representing the figure to draw
      */
     std::vector<GraphicComponent*> makeAxis(GLfloat axis_length);
 
     /**
      * A utility method used to draw the 4 corners of the paper
+     * @param length The length of the corner lines
+     * @param r The red component of the final colour for the corner lines
+     * @param g The green component of the final colour for the corner lines
+     * @param b The blue component of the final colour for the corner lines
+     * @param a The alpha component of the final colour for the corner lines
      * @return a list of graphic components representing the figure to draw
      */
-    std::vector<GraphicComponent*> makeCorners(GLfloat axis_length, GLfloat r, GLfloat g, GLfloat b, GLfloat a = 1.0f);
+    std::vector<GraphicComponent*> makeCorners(GLfloat length, GLfloat r, GLfloat g, GLfloat b, GLfloat a = 1.0f);
 
     /**
      * A utility method used to draw text
-     * @return a graphic component with the text
+     * @param r The red component of the final colour for the corner lines
+     * @param g The green component of the final colour for the corner lines
+     * @param b The blue component of the final colour for the corner lines
+     * @param a The alpha component of the final colour for the corner lines
+     * @return a list of graphic components for each line of text
      */
     std::vector<GraphicComponent*> makeText(std::wstring strtext, GLfloat r, GLfloat g, GLfloat b, GLfloat a = 1.0f);
 
+    /**
+     * A utility method used to draw some factures
+     * @return a list of graphic components with the factures to draw
+     */
+    std::vector<GraphicComponent*> makeFactures();
+
+    /**
+     * Add a new graphic component to this context
+     * @param name The name of the new graphic component
+     * @param gc The graphic component to add
+     */
+    void addGraphicComponent(const std::string& name, GraphicComponent* gc);
+
+    /**
+     * Retrieves a specified graphic component
+     * @return the specified graphic component
+     */
+    GraphicComponent* getGraphicComponent(const std::string& name);
+
+    /**
+     * Removes a specified graphic component
+     * @param name the specified graphic component to remove
+     */
+    void removeGraphicComponent(const std::string& name);
+
+    /**
+     * Sets the state of the GLContext
+     * @param state The new state
+     */
+    void setState(State state);
+
   private:
-    std::vector<GraphicComponent*> _gcList; ///< The list of graphic components to be updated
-    std::map<std::string, GraphicComponent*> _gcMap; ///< A map of the created graphic components
+    State _state;
+    GraphicComponentMap _graphicComponents; ///< A map of the created graphic components
     cv::Mat* _frame; ///< The current frame of the camera used on video streaming
     glm::mat4 _projectionMatrix; ///< The projection matrix used to update the graphic components transformations
   };

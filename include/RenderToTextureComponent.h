@@ -40,14 +40,14 @@ namespace argosClient {
      */
     void addGraphicComponent(GraphicComponent* graphicComponent);
 
+  private:
     /**
-     * Draws this graphic component
+     * The specific logic used to draw this graphic component
      * @see renderToTexture()
      * @see drawTexture()
      */
-    void render() override;
+    void specificRender() override;
 
-  private:
     /**
      * Sets up the shader for this graphic component
      */

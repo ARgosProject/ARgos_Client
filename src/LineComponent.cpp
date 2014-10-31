@@ -43,9 +43,7 @@ namespace argosClient {
     _mvpHandler = glGetUniformLocation(id, "u_mvp");
   }
 
-  void LineComponent::render() {
-    if(!_show) return;
-
+  void LineComponent::specificRender() {
     _shader.useProgram();
 
     glVertexAttribPointer(_colorHandler, 3, GL_FLOAT, GL_FALSE, 0, _vertexData);

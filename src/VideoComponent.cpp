@@ -118,9 +118,7 @@ namespace argosClient {
     _samplerHandler = glGetUniformLocation(id, "s_texture");
   }
 
-  void VideoComponent::render() {
-    if(!_show) return;
-
+  void VideoComponent::specificRender() {
     _shader.useProgram();
 
     if(_loop) {

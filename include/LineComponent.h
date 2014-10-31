@@ -26,12 +26,12 @@ namespace argosClient {
      */
     ~LineComponent();
 
-    /**
-     * Draws this graphic component
-     */
-    void render() override;
-
   private:
+    /**
+     * The specific logic used to draw this graphic component
+     */
+    void specificRender() override;
+
     /**
      * Sets up the shader for this graphic component
      */

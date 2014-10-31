@@ -51,9 +51,7 @@ namespace argosClient {
     _mvpHandler = glGetUniformLocation(id, "u_mvp");
   }
 
-  void CircleComponent::render() {
-    if(!_show) return;
-
+  void CircleComponent::specificRender() {
     _shader.useProgram();
 
     glVertexAttribPointer(_vertexHandler, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), _vertexData);

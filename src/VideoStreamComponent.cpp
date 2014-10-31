@@ -161,9 +161,7 @@ namespace argosClient {
     _samplerHandler = glGetUniformLocation(id, "s_texture");
   }
 
-  void VideoStreamComponent::render() {
-    if(!_show) return;
-
+  void VideoStreamComponent::specificRender() {
     _end = std::chrono::high_resolution_clock::now();
     if(std::chrono::duration_cast<std::chrono::seconds>(_end - _begin).count() > 1) {
       _ready = false;
