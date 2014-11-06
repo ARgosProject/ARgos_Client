@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <GLES2/gl2.h>
+#include <glm/glm.hpp>
 
 #include "GraphicComponent.h"
 #include "GfxProgram.h"
@@ -81,6 +82,7 @@ namespace argosClient {
     GLfloat _texHeight; ///< The texture height
     uint32_t _screenWidth; ///< The screen width
     uint32_t _screenHeight; ///< The screen height
+    glm::mat4 _projection; ///< The projection matrix for this FBO
   };
 
 }

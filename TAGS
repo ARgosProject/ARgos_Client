@@ -1,0 +1,1467 @@
+
+libs/ilclient/ilclient.h,2538
+#define _IL_CLIENT_H44,2148
+typedef struct _ILCLIENT_T ILCLIENT_T;59,2574
+typedef struct _ILEVENT_T ILEVENT_T;67,2861
+typedef struct _COMPONENT_T COMPONENT_T;85,3670
+typedef void (*ILCLIENT_CALLBACK_T)ILCLIENT_CALLBACK_T101,4146
+typedef void (*ILCLIENT_BUFFER_CALLBACK_T)ILCLIENT_BUFFER_CALLBACK_T115,4606
+typedef void *(*ILCLIENT_MALLOC_T)ILCLIENT_MALLOC_T134,5269
+typedef void (*ILCLIENT_FREE_T)ILCLIENT_FREE_T152,5917
+   ILCLIENT_EMPTY_BUFFER_DONE 160,6198
+   ILCLIENT_EMPTY_BUFFER_DONE  = 0x1,x1160,6198
+   ILCLIENT_FILL_BUFFER_DONE 164,6382
+   ILCLIENT_FILL_BUFFER_DONE   = 0x2,x2164,6382
+   ILCLIENT_PORT_DISABLED 168,6567
+   ILCLIENT_PORT_DISABLED      = 0x4,x4168,6567
+   ILCLIENT_PORT_ENABLED 172,6764
+   ILCLIENT_PORT_ENABLED       = 0x8,x8172,6764
+   ILCLIENT_STATE_CHANGED 176,6961
+   ILCLIENT_STATE_CHANGED      = 0x10,x10176,6961
+   ILCLIENT_BUFFER_FLAG_EOS 180,7168
+   ILCLIENT_BUFFER_FLAG_EOS    = 0x20,x20180,7168
+   ILCLIENT_PARAMETER_CHANGED 183,7298
+   ILCLIENT_PARAMETER_CHANGED  = 0x40,x40183,7298
+   ILCLIENT_EVENT_ERROR 187,7488
+   ILCLIENT_EVENT_ERROR        = 0x80,x80187,7488
+   ILCLIENT_PORT_FLUSH 190,7621
+   ILCLIENT_PORT_FLUSH         = 0x100,x100190,7621
+   ILCLIENT_MARKED_BUFFER 194,7816
+   ILCLIENT_MARKED_BUFFER      = 0x200,x200194,7816
+   ILCLIENT_BUFFER_MARK 197,7958
+   ILCLIENT_BUFFER_MARK        = 0x400,x400197,7958
+   ILCLIENT_CONFIG_CHANGED 201,8150
+   ILCLIENT_CONFIG_CHANGED     = 0x800 x800201,8150
+} ILEVENT_MASK_T;203,8278
+   ILCLIENT_FLAGS_NONE 211,8473
+   ILCLIENT_FLAGS_NONE            = 0x0,x0211,8473
+   ILCLIENT_ENABLE_INPUT_BUFFERS 214,8593
+   ILCLIENT_ENABLE_INPUT_BUFFERS  = 0x1,x1214,8593
+   ILCLIENT_ENABLE_OUTPUT_BUFFERS 221,8994
+   ILCLIENT_ENABLE_OUTPUT_BUFFERS = 0x2,x2221,8994
+   ILCLIENT_DISABLE_ALL_PORTS 228,9396
+   ILCLIENT_DISABLE_ALL_PORTS     = 0x4,x4228,9396
+   ILCLIENT_HOST_COMPONENT 231,9531
+   ILCLIENT_HOST_COMPONENT        = 0x8,x8231,9531
+   ILCLIENT_OUTPUT_ZERO_BUFFERS 238,9951
+   ILCLIENT_OUTPUT_ZERO_BUFFERS   = 0x10 x10238,9951
+} ILCLIENT_CREATE_FLAGS_T;241,10178
+   COMPONENT_T *source;source253,10623
+   int source_port;254,10677
+   COMPONENT_T *sink;sink255,10756
+   int sink_port;256,10808
+} TUNNEL_T;257,10884
+#define set_tunnel(264,11073
+#define ILC_GET_HANDLE(274,11621
+#define ilclient_ticks_from_s64(962,41747
+#define ilclient_ticks_to_s64(970,42019
+static inline OMX_TICKS ilclient_ticks_from_s64(980,42311
+static inline int64_t ilclient_ticks_to_s64(993,42698
+
+libs/ilclient/ilcore.c,671
+static int coreInit 50,1912
+static int nActiveHandles 51,1937
+static ILCS_SERVICE_T *ilcs_service ilcs_service52,1968
+static VCOS_MUTEX_T lock;53,2012
+static VCOS_ONCE_T once 54,2038
+static void initOnce(57,2135
+OMX_ERRORTYPE OMX_APIENTRY OMX_Init(65,2300
+OMX_ERRORTYPE OMX_APIENTRY OMX_Deinit(105,3146
+OMX_ERRORTYPE OMX_APIENTRY OMX_ComponentNameEnum(128,3579
+OMX_ERRORTYPE OMX_APIENTRY OMX_GetHandle(141,3925
+OMX_ERRORTYPE OMX_APIENTRY OMX_FreeHandle(208,5826
+OMX_ERRORTYPE OMX_APIENTRY OMX_SetupTunnel(236,6454
+OMX_ERRORTYPE OMX_GetComponentsOfRole 271,7585
+OMX_ERRORTYPE OMX_GetRolesOfComponent 283,7842
+OMX_ERRORTYPE OMX_GetDebugInformation 295,8098
+
+libs/ilclient/ilclient.c,4212
+#define VCOS_LOG_CATEGORY 57,2412
+#define ILCLIENT_THREAD_DEFAULT_STACK_SIZE 60,2507
+static VCOS_LOG_CAT_T ilclient_log_category;63,2568
+struct _ILEVENT_T 69,2821
+   OMX_EVENTTYPE eEvent;70,2841
+   OMX_U32 nData1;71,2866
+   OMX_U32 nData2;72,2885
+   OMX_PTR pEventData;73,2904
+   struct _ILEVENT_T *next;next74,2927
+#define NUM_EVENTS 77,2959
+struct _ILCLIENT_T 78,2982
+   ILEVENT_T *event_list;event_list79,3003
+   VCOS_SEMAPHORE_T event_sema;80,3029
+   ILEVENT_T event_rep[event_rep81,3061
+   ILCLIENT_CALLBACK_T port_settings_callback;83,3098
+   void *port_settings_callback_data;port_settings_callback_data84,3145
+   ILCLIENT_CALLBACK_T eos_callback;85,3183
+   void *eos_callback_data;eos_callback_data86,3220
+   ILCLIENT_CALLBACK_T error_callback;87,3248
+   void *error_callback_data;error_callback_data88,3287
+   ILCLIENT_BUFFER_CALLBACK_T fill_buffer_done_callback;89,3317
+   void *fill_buffer_done_callback_data;fill_buffer_done_callback_data90,3374
+   ILCLIENT_BUFFER_CALLBACK_T empty_buffer_done_callback;91,3415
+   void *empty_buffer_done_callback_data;empty_buffer_done_callback_data92,3473
+   ILCLIENT_CALLBACK_T configchanged_callback;93,3515
+   void *configchanged_callback_data;configchanged_callback_data94,3562
+struct _COMPONENT_T 97,3604
+   OMX_HANDLETYPE comp;98,3626
+   ILCLIENT_CREATE_FLAGS_T flags;99,3650
+   VCOS_SEMAPHORE_T sema;100,3684
+   VCOS_EVENT_FLAGS_T event;101,3710
+   struct _COMPONENT_T *related;related102,3739
+   OMX_BUFFERHEADERTYPE *out_list;out_list103,3772
+   OMX_BUFFERHEADERTYPE *in_list;in_list104,3807
+   char name[name105,3841
+   char bufname[bufname106,3859
+   unsigned int error_mask;107,3880
+   unsigned int private;108,3908
+   ILEVENT_T *list;list109,3933
+   ILCLIENT_T *client;client110,3953
+#define random_wait(113,3980
+static char *states[states114,4002
+   ILCLIENT_ERROR_UNPOPULATED 117,4118
+   ILCLIENT_ERROR_UNPOPULATED  = 0x1,x1117,4118
+   ILCLIENT_ERROR_SAMESTATE 118,4156
+   ILCLIENT_ERROR_SAMESTATE    = 0x2,x2118,4156
+   ILCLIENT_ERROR_BADPARAMETER 119,4194
+   ILCLIENT_ERROR_BADPARAMETER = 0x4x4119,4194
+} ILERROR_MASK_T;120,4231
+ILCLIENT_T *ilclient_init(ilclient_init158,5827
+void ilclient_destroy(193,6709
+void ilclient_set_port_settings_callback(209,7226
+void ilclient_set_eos_callback(224,7758
+void ilclient_set_error_callback(239,8257
+void ilclient_set_fill_buffer_done_callback(253,8696
+void ilclient_set_empty_buffer_done_callback(267,9177
+void ilclient_set_configchanged_callback(281,9658
+int ilclient_create_component(295,10140
+#define COMP_PREFIX 309,10520
+int ilclient_remove_event(406,14312
+void ilclient_state_transition(460,16098
+void ilclient_teardown_tunnels(515,17753
+void ilclient_disable_tunnel(540,18465
+int ilclient_enable_tunnel(573,19635
+void ilclient_flush_tunnels(649,22715
+void ilclient_return_events(682,23907
+void ilclient_cleanup_components(703,24542
+int ilclient_change_component_state(743,25544
+void ilclient_disable_port(764,26263
+void ilclient_enable_port(780,26809
+int ilclient_enable_port_buffers(798,27415
+void ilclient_disable_port_buffers(894,30571
+int ilclient_setup_tunnel(1013,34878
+int ilclient_wait_for_event(1111,38442
+int ilclient_wait_for_command_complete_dual(1179,40845
+int ilclient_wait_for_command_complete(1269,43482
+OMX_BUFFERHEADERTYPE *ilclient_get_output_buffer(ilclient_get_output_buffer1283,44062
+OMX_BUFFERHEADERTYPE *ilclient_get_input_buffer(ilclient_get_input_buffer1325,45263
+void ilclient_debug_output(1367,46333
+static void ilclient_lock_events(1387,46882
+static void ilclient_unlock_events(1399,47206
+static OMX_ERRORTYPE ilclient_event_handler(1412,47561
+static OMX_ERRORTYPE ilclient_empty_buffer_done(1653,57324
+static OMX_ERRORTYPE ilclient_empty_buffer_done_error(1693,58560
+static OMX_ERRORTYPE ilclient_fill_buffer_done(1709,59030
+static OMX_ERRORTYPE ilclient_fill_buffer_done_error(1749,60273
+OMX_HANDLETYPE ilclient_get_handle(1759,60487
+   OMX_PORTDOMAINTYPE dom;1767,60607
+   int param;1768,60634
+} port_types[port_types1769,60648
+int ilclient_get_port_index(1776,60883
+int ilclient_suggest_bufsize(1817,62136
+unsigned int ilclient_stack_size(1832,62596
+
+libs/freetypeGlesRpi/texture-atlas.h,268
+#define __TEXTURE_ATLAS_H__45,2471
+    vector_t * nodes;101,3846
+    size_t width;106,3942
+    size_t height;111,4034
+    size_t depth;116,4125
+    size_t used;121,4195
+    unsigned int id;126,4267
+    unsigned char * data;131,4328
+} texture_atlas_t;133,4357
+
+libs/freetypeGlesRpi/texture-font.h,1085
+#define __TEXTURE_FONT_H__35,2001
+    wchar_t charcode;78,2747
+    float kerning;83,2840
+} kerning_t;85,2862
+    wchar_t charcode;131,4906
+    unsigned int id;136,4991
+    size_t width;141,5066
+    size_t height;146,5139
+    int offset_x;151,5237
+    int offset_y;159,5481
+    float advance_x;166,5716
+    float advance_y;173,5950
+    float s0;178,6059
+    float t0;183,6162
+    float s1;188,6268
+    float t1;193,6375
+    vector_t * kerning;198,6468
+    int outline_type;203,6583
+    float outline_thickness;208,6658
+} texture_glyph_t;210,6690
+    vector_t * glyphs;222,6841
+    texture_atlas_t * atlas;227,6931
+    char * filename;232,7007
+    float size;237,7067
+    int hinting;242,7160
+    int outline_type;247,7262
+    float outline_thickness;252,7331
+    int filtering;257,7425
+    unsigned char lcd_weights[lcd_weights262,7492
+    float height;271,7934
+    float linegap;278,8159
+    float ascender;288,8644
+    float descender;299,9193
+    float underline_position;305,9379
+    float underline_thickness;311,9528
+} texture_font_t;313,9562
+
+libs/freetypeGlesRpi/vec234.h,1953
+#define __VEC234_H__35,1961
+	int data[data54,2450
+        int x;56,2512
+        int y;57,2567
+        int z;58,2622
+        int w;59,2677
+        int x_;62,2749
+        int y_;63,2804
+        int width;64,2859
+        int height;65,2914
+        int r;68,2986
+        int g;69,3041
+        int b;70,3096
+        int a;71,3151
+        int red;74,3223
+        int green;75,3278
+        int blue;76,3333
+        int alpha;77,3388
+        int vstart;80,3460
+        int vcount;81,3515
+        int istart;82,3570
+        int icount;83,3625
+} ivec4;85,3687
+	int data[data99,3976
+        int x;101,4038
+        int y;102,4093
+        int z;103,4148
+        int r;106,4220
+        int g;107,4275
+        int b;108,4330
+        int red;111,4402
+        int green;112,4457
+        int blue;113,4512
+} ivec3;115,4574
+	int data[data128,4804
+        int x;130,4866
+        int y;131,4921
+        int s;134,4993
+        int t;135,5048
+        int start;138,5120
+        int end;139,5175
+} ivec2;141,5237
+	float data[data155,5613
+        float x;157,5676
+        float y;158,5732
+        float z;159,5788
+        float w;160,5844
+        float x_;163,5917
+        float y_;164,5973
+        float width;165,6029
+        float height;166,6085
+        float r;169,6158
+        float g;170,6214
+        float b;171,6270
+        float a;172,6326
+        float red;175,6399
+        float green;176,6455
+        float blue;177,6511
+        float alpha;178,6567
+} vec4;180,6630
+	float data[data193,6916
+        float x;195,6978
+        float y;196,7033
+        float z;197,7088
+        float r;200,7160
+        float g;201,7215
+        float b;202,7270
+        float red;205,7342
+        float green;206,7397
+        float blue;207,7452
+} vec3;209,7514
+	float data[data221,7716
+        float x;223,7777
+        float y;224,7831
+        float s;227,7902
+        float t;228,7956
+} vec2;230,8017
+
+libs/freetypeGlesRpi/vector.h,163
+#define __VECTOR_H__35,1961
+     void * items;82,2930
+     size_t capacity;85,3027
+     size_t size;88,3079
+     size_t item_size;91,3144
+} vector_t;92,3167
+
+include/GraphicComponent.h,1314
+#define GRAPHICCOMPONENT_H2,27
+  class GraphicComponent 18,382
+    GraphicComponent(23,477
+    virtual ~GraphicComponent(28,556
+    virtual void loadGLProgram(35,785
+    virtual void setColor(44,1093
+    virtual void rotate(51,1345
+    virtual void scale(57,1536
+    virtual void translate(63,1715
+    virtual void setRotation(70,1937
+    virtual void setScale(76,2122
+    virtual void setPosition(82,2293
+    virtual void setModelViewMatrix(88,2481
+    virtual void setProjectionMatrix(94,2676
+    virtual void show(100,2867
+    virtual void noUpdate(106,3037
+    virtual void render(111,3139
+    glm::mat4 _model;GraphicComponent::_model126,3418
+    glm::mat4 _modelViewMatrix;GraphicComponent::_modelViewMatrix127,3518
+    glm::mat4 _projectionMatrix;GraphicComponent::_projectionMatrix128,3577
+    GfxProgram _shader;GraphicComponent::_shader129,3637
+    GLint _vertexHandler;GraphicComponent::_vertexHandler130,3711
+    GLint _texHandler;GraphicComponent::_texHandler131,3776
+    GLint _samplerHandler;GraphicComponent::_samplerHandler132,3839
+    GLint _colorHandler;GraphicComponent::_colorHandler133,3906
+    GLint _mvpHandler;GraphicComponent::_mvpHandler134,3970
+    bool _show;GraphicComponent::_show135,4054
+    bool _noUpdate;GraphicComponent::_noUpdate136,4114
+
+include/RectangleComponent.h,155
+#define RECTANGLE_H2,20
+  class RectangleComponent 15,213
+    RectangleComponent(22,442
+    ~RectangleComponent(27,544
+    void specificRender(33,661
+
+include/EGLWindow.h,141
+#define EGLWINDOW_H2,20
+  class EGLWindow 16,270
+    EGLWindow(23,461
+    virtual ~EGLWindow(28,566
+    virtual void swapBuffers(39,828
+
+include/TextComponent.h,387
+#define TEXT_H2,15
+  class TextComponent 18,291
+    TextComponent(26,513
+    ~TextComponent(31,619
+    void translate(37,769
+    vector_t* _vector;TextComponent::_vector78,2051
+    texture_font_t* _font;TextComponent::_font79,2100
+    texture_atlas_t* _atlas;TextComponent::_atlas80,2149
+    vec2 _pen;TextComponent::_pen81,2207
+    vec2 _orig;TextComponent::_orig82,2268
+
+include/RenderToTextureComponent.h,923
+#define TEXTURERENDER_H2,24
+  class RenderToTextureComponent 16,275
+    RenderToTextureComponent(23,524
+    ~RenderToTextureComponent(28,640
+    GraphicComponent* getGraphicComponent(35,885
+    void addGraphicComponent(41,1085
+    void specificRender(49,1297
+    GLushort* _indices;RenderToTextureComponent::_indices75,1905
+    GLfloat* _vertexData;RenderToTextureComponent::_vertexData76,1986
+    GLuint _framebufferObject;RenderToTextureComponent::_framebufferObject77,2062
+    GLuint _depthRenderbuffer;RenderToTextureComponent::_depthRenderbuffer78,2125
+    GLuint _texture;RenderToTextureComponent::_texture79,2189
+    GLfloat _texWidth;RenderToTextureComponent::_texWidth80,2237
+    GLfloat _texHeight;RenderToTextureComponent::_texHeight81,2283
+    uint32_t _screenWidth;RenderToTextureComponent::_screenWidth82,2331
+    uint32_t _screenHeight;RenderToTextureComponent::_screenHeight83,2380
+
+include/ImageComponent.h,270
+#define IMAGE_H2,16
+  class ImageComponent 17,306
+    ImageComponent(24,533
+    ImageComponent(33,853
+    ~ImageComponent(38,977
+    void loadImageFromFile(44,1108
+    void loadImageFromMat(50,1289
+    void deleteTexture(55,1401
+    void specificRender(61,1517
+
+include/CircleComponent.h,152
+#define CIRCLECOMPONENT_H2,26
+  class CircleComponent 15,239
+    CircleComponent(21,412
+    ~CircleComponent(26,493
+    void specificRender(32,607
+
+include/GLContext.h,632
+#define MAINGLWINDOW_H2,23
+  class GLContext 21,417
+    typedef std::map<std::string,GLContext::std::string23,546
+    typedef std::map<std::string, GraphicComponent*> GraphicComponentMap;GLContext::GraphicComponentMap23,546
+    enum State GLContext::State26,631
+      INTRODUCTION,GLContext::State::INTRODUCTION27,648
+      FETCH_PAPERSGLContext::State::FETCH_PAPERS28,668
+    State _state;GLContext::_state162,5032
+    GraphicComponentMap _graphicComponents;GLContext::_graphicComponents163,5050
+    cv::Mat* _frame;GLContext::_frame164,5139
+    glm::mat4 _projectionMatrix;GLContext::_projectionMatrix165,5221
+
+include/TaskDelegation.h,1597
+#define TASKDELEGATION_H2,25
+using boost::asio::ip::tcp;7,108
+namespace argosClient 9,137
+  struct paper_t argosClient::paper_t15,262
+    int id;argosClient::paper_t::id16,281
+    float modelview_matrix[argosClient::paper_t::modelview_matrix17,311
+  class TaskDelegation argosClient::TaskDelegation25,568
+    enum Type argosClient::TaskDelegation::Type31,700
+      SKIP argosClient::TaskDelegation::Type::SKIP32,716
+      VECTOR_I argosClient::TaskDelegation::Type::VECTOR_I34,743
+      MATRIX_16F argosClient::TaskDelegation::Type::MATRIX_16F35,769
+      CV_MAT argosClient::TaskDelegation::Type::CV_MAT36,795
+      VIDEO_STREAM argosClient::TaskDelegation::Type::VIDEO_STREAM37,821
+      PAPER argosClient::TaskDelegation::Type::PAPER38,847
+    struct StreamType argosClient::TaskDelegation::StreamType52,1236
+      Type type;argosClient::TaskDelegation::StreamType::type53,1260
+      int size;argosClient::TaskDelegation::StreamType::size54,1316
+      std::vector<unsigned char> data;argosClient::TaskDelegation::StreamType::data55,1367
+    boost::asio::io_service _ioService;argosClient::TaskDelegation::_ioService163,4380
+    tcp::socket* _tcpSocket;argosClient::TaskDelegation::_tcpSocket164,4480
+    tcp::resolver* _tcpResolver;argosClient::TaskDelegation::_tcpResolver165,4559
+    std::vector<unsigned char> _buff;argosClient::TaskDelegation::_buff166,4635
+    std::string _ip;argosClient::TaskDelegation::_ip167,4724
+    std::string _port;argosClient::TaskDelegation::_port168,4783
+    int _error;argosClient::TaskDelegation::_error169,4846
+
+include/VideoComponent.h,352
+#define VIDEO_H2,16
+  class VideoComponent 18,287
+    VideoComponent(25,514
+    VideoComponent(34,833
+    ~VideoComponent(39,956
+    void setLoop(45,1150
+    void loadVideoFromFile(51,1285
+    void specificRender(57,1432
+    void* _eglImage;VideoComponent::_eglImage73,2050
+    VideoThread* _videoThread;VideoComponent::_videoThread74,2116
+
+include/LineComponent.h,135
+#define LINE_H2,15
+  class LineComponent 15,214
+    LineComponent(22,421
+    ~LineComponent(27,528
+    void specificRender(33,640
+
+include/GfxProgram.h,156
+#define GFXPROGRAM_H2,21
+  class GfxProgram 15,216
+    GfxProgram(20,302
+    ~GfxProgram(25,372
+    GLuint loadShaders(33,594
+    GLuint getId(39,768
+
+include/VideoStreamComponent.h,1084
+#define VIDEO_H2,16
+using boost::asio::ip::udp;16,248
+namespace argosClient 18,277
+  class VideoStreamComponent argosClient::VideoStreamComponent25,499
+    GLushort* _indices;argosClient::VideoStreamComponent::_indices79,2032
+    GLfloat* _vertexData;argosClient::VideoStreamComponent::_vertexData80,2113
+    GLfloat _width;argosClient::VideoStreamComponent::_width81,2189
+    GLfloat _height;argosClient::VideoStreamComponent::_height82,2250
+    GLuint _textureId;argosClient::VideoStreamComponent::_textureId83,2313
+    bool _ready;argosClient::VideoStreamComponent::_ready85,2389
+    bool _receive;argosClient::VideoStreamComponent::_receive86,2461
+    cv::Mat _receivedFrame;argosClient::VideoStreamComponent::_receivedFrame87,2539
+    std::thread* _videoThread;argosClient::VideoStreamComponent::_videoThread88,2591
+    std::chrono::time_point<std::chrono::high_resolution_clock> _begin;argosClient::VideoStreamComponent::_begin95,2900
+    std::chrono::time_point<std::chrono::high_resolution_clock> _end;argosClient::VideoStreamComponent::_end96,2972
+
+include/GfxShader.h,191
+#define GFXSHADER_H2,20
+  class GfxShader 14,205
+    GfxShader(19,282
+    ~GfxShader(24,343
+    bool loadVertexShader(31,535
+    bool loadFragmentShader(38,767
+    GLuint getId(44,902
+
+include/Singleton.h,185
+#define SINGLETON_H2,20
+  class Singleton 11,189
+    static T& getInstance(17,355
+    static T* getInstancePtr(26,596
+    static void destroy(34,757
+    static T* instance;39,847
+
+include/AudioManager.h,265
+#define AUDIOMANAGER_H2,23
+namespace argosClient 10,122
+  class AudioManager argosClient::AudioManager12,147
+    std::map<argosClient::AudioManager::std::map30,556
+    std::map<std::string, Mix_Chunk*> _soundsMap;argosClient::AudioManager::_soundsMap30,556
+
+include/VideoThread.h,855
+#define VIDEOTHREAD_H2,22
+  class VideoThread 16,250
+    struct VideoProperties 21,326
+      bool setted;22,355
+      int width;23,421
+      int height;24,466
+      int fps;25,513
+    VideoThread(33,720
+    ~VideoThread(38,816
+    void start(44,910
+    bool isRunning(50,1064
+    static void* _eglImage;VideoThread::_eglImage95,2014
+    static OMX_BUFFERHEADERTYPE* _eglBuffer;VideoThread::_eglBuffer96,2088
+    static COMPONENT_T* _eglRender;VideoThread::_eglRender97,2153
+    VideoProperties _vp;VideoThread::_vp99,2210
+    bool _running;VideoThread::_running101,2262
+    boost::thread _thread;VideoThread::_thread102,2348
+    bool _condition;VideoThread::_condition108,2536
+    boost::condition_variable _condition_changed;VideoThread::_condition_changed109,2557
+    boost::mutex _stopMutex;VideoThread::_stopMutex110,2607
+
+include/Log.h,917
+#define LOG_H2,14
+  class Log 14,236
+    enum Colour 21,402
+      FG_DEFAULT 22,420
+      FG_BLACK 23,452
+      FG_RED 24,484
+      FG_GREEN 25,516
+      FG_YELLOW 26,548
+      FG_BLUE 27,580
+      FG_MAGENTA 28,612
+      FG_CYAN 29,644
+      FG_LIGHT_GRAY 30,676
+      FG_DARK_GRAY 31,708
+      FG_LIGHT_RED 32,740
+      FG_LIGHT_GREEN 33,772
+      FG_LIGHT_YELLOW 34,804
+      FG_LIGHT_BLUE 35,836
+      FG_LIGHT_MAGENTA 36,868
+      FG_LIGHT_CYAN 37,900
+      FG_WHITE 38,932
+      BG_DEFAULT 40,965
+      BG_RED 41,997
+      BG_GREEN 42,1029
+      BG_BLUE 43,1061
+    static void plain(51,1226
+    static void info(57,1365
+    static void error(63,1503
+    static void success(69,1645
+    static void video(75,1788
+    template<typename T> static void vector(81,1924
+    template<typename T> static void matrix(87,2109
+    static bool coloured_output;Log::coloured_output103,2559
+
+include/EGLconfig.h,320
+#define EGLCONFIG_H2,20
+  class EGLconfig 13,183
+    EGLconfig(18,279
+    ~EGLconfig(23,340
+    void setAttribute(30,529
+    void setRGBA(39,773
+    void setDepth(45,920
+    void setSurface(51,1093
+    void chooseConfig(58,1316
+    EGLConfig getConfig(64,1440
+    EGLConfig _config;EGLconfig::_config73,1626
+
+libs/freetypeGlesRpi/vector.cpp,533
+vector_new(43,2123
+vector_delete(65,2661
+vector_get(77,2857
+vector_front(91,3159
+vector_back(102,3376
+vector_contains(113,3594
+vector_empty(133,4005
+vector_size(143,4184
+vector_reserve(153,4355
+vector_capacity(168,4681
+vector_shrink(178,4860
+vector_clear(192,5163
+vector_set(202,5326
+vector_insert(217,5688
+vector_erase_range(241,6335
+vector_erase(259,6872
+vector_push_back(271,7131
+vector_pop_back(280,7338
+vector_resize(291,7528
+vector_push_back_data(310,7872
+vector_insert_data(330,8392
+vector_sort(355,9148
+
+libs/freetypeGlesRpi/texture-font.cpp,507
+#undef __FTERRORS_H__47,2200
+#define FT_ERRORDEF(48,2222
+#define FT_ERROR_START_LIST 49,2264
+#define FT_ERROR_END_LIST 50,2298
+    int          code;::code52,2357
+    const char*  message;::message53,2380
+} FT_Errors[FT_Errors54,2406
+texture_glyph_new(128,4479
+texture_glyph_delete(157,5268
+texture_glyph_get_kerning(166,5479
+texture_font_generate_kerning(186,5967
+texture_font_new(235,7691
+texture_font_delete(309,10079
+texture_font_load_glyphs(333,10572
+texture_font_get_glyph(548,17585
+
+libs/freetypeGlesRpi/texture-atlas.cpp,246
+texture_atlas_new(45,2233
+texture_atlas_delete(86,3433
+texture_atlas_set_region(104,3795
+texture_atlas_fit(133,4736
+texture_atlas_merge(169,5527
+texture_atlas_get_region(192,6029
+texture_atlas_clear(279,8224
+texture_atlas_upload(296,8737
+
+include/glm/detail/dummy.cpp,1701
+#define GLM_FORCE_RADIANS32,1631
+#define GLM_MESSAGES33,1658
+struct material37,1724
+	glm::vec4 emission;material::emission39,1744
+	glm::vec4 ambient;material::ambient40,1773
+	glm::vec4 diffuse;material::diffuse41,1801
+	glm::vec4 specular;material::specular42,1829
+	float shininess;material::shininess43,1858
+struct light45,1889
+	glm::vec4 ambient;light::ambient47,1906
+	glm::vec4 diffuse;light::diffuse48,1935
+	glm::vec4 specular;light::specular49,1964
+	glm::vec4 position;light::position50,1994
+	glm::vec4 halfVector;light::halfVector51,2024
+	glm::vec3 spotDirection;light::spotDirection52,2063
+	float spotExponent;light::spotExponent53,2098
+	float spotCutoff;light::spotCutoff54,2128
+	float spotCosCutoff;light::spotCosCutoff56,2188
+	float constantAttenuation;light::constantAttenuation58,2262
+	float linearAttenuation;light::linearAttenuation59,2297
+	float quadraticAttenuation;light::quadraticAttenuation60,2330
+glm::vec3 computeNormal67,2483
+typedef unsigned int GLuint;77,2641
+#define GL_FALSE 78,2671
+void glUniformMatrix4fv(79,2691
+void func(87,3040
+std::size_t const VertexCount 103,3858
+std::size_t const PositionSizeF32 105,3918
+glm::vec2 const PositionDataF32[PositionDataF32106,3988
+std::size_t const PositionSizeF16 114,4176
+glm::uint const PositionDataF16[PositionDataF16115,4246
+std::size_t const PositionSizeI8 123,4570
+glm::i8vec2 const PositionDataI8[PositionDataI8124,4641
+std::size_t const PositionSizeI32 132,4825
+glm::i32vec2 const PositionDataI32[PositionDataI32133,4898
+struct intersection141,5053
+	glm::vec4 position;intersection::position143,5077
+	glm::vec3 normal;intersection::normal144,5099
+int main(187,6259
+
+include/glm/detail/glm.cpp,64
+namespace glm{glm33,1600
+namespace detailglm::detail34,1616
+
+src/LineComponent.cpp,362
+namespace argosClient 6,84
+  LineComponent::LineComponent(argosClient::LineComponent::LineComponent8,109
+  LineComponent::~LineComponent(argosClient::LineComponent::~LineComponent34,830
+  void LineComponent::setUpShader(argosClient::LineComponent::setUpShader39,922
+  void LineComponent::specificRender(argosClient::LineComponent::specificRender46,1109
+
+src/VideoComponent.cpp,641
+namespace argosClient 10,154
+  VideoComponent::VideoComponent(argosClient::VideoComponent::VideoComponent12,179
+  VideoComponent::VideoComponent(argosClient::VideoComponent::VideoComponent45,1307
+  VideoComponent::~VideoComponent(argosClient::VideoComponent::~VideoComponent50,1476
+  void VideoComponent::setLoop(argosClient::VideoComponent::setLoop66,1805
+  void VideoComponent::loadVideoFromFile(argosClient::VideoComponent::loadVideoFromFile70,1872
+  void VideoComponent::setUpShader(argosClient::VideoComponent::setUpShader112,3370
+  void VideoComponent::specificRender(argosClient::VideoComponent::specificRender121,3678
+
+src/CameraModel.cpp,1419
+Intrinsics::Intrinsics(7,67
+Intrinsics::Intrinsics(13,202
+Intrinsics::Intrinsics(20,530
+void Intrinsics::setup(30,901
+void Intrinsics::setup(37,1247
+void Intrinsics::setImageSize(44,1575
+cv::Mat Intrinsics::getCameraMatrix(48,1661
+cv::Size Intrinsics::getImageSize(52,1733
+cv::Size Intrinsics::getSensorSize(56,1800
+cv::Point2d Intrinsics::getFov(60,1869
+double Intrinsics::getFocalLength(64,1927
+double Intrinsics::getAspectRatio(68,1996
+cv::Point2d Intrinsics::getPrincipalPoint(72,2065
+void Intrinsics::resize(78,2209
+CameraModel::CameraModel(94,2810
+CameraModel::CameraModel(100,2964
+CameraModel::CameraModel(105,3156
+void CameraModel::setIntrinsics(119,3613
+const Intrinsics& CameraModel::getDistortedIntrinsics(125,3835
+const Intrinsics& CameraModel::getUndistortedIntrinsics(129,3932
+cv::Mat CameraModel::getDistCoeffs(133,4033
+void CameraModel::saveFile(138,4103
+void CameraModel::loadFile(156,4845
+cv::Point3f CameraModel::getCameraLocation(182,6057
+void CameraModel::glGetProjectionMatrix(201,6642
+void CameraModel::glGetProjectionMatrix2(229,7757
+float CameraModel::norm(272,8892
+float CameraModel::dot(281,9036
+void CameraModel::argConvGLcpara2(290,9216
+int CameraModel::arParamDecompMat(349,10640
+void CameraModel::OgreGetProjectionMatrix(419,12686
+void CameraModel::undistort(444,13522
+void CameraModel::undistort(449,13703
+void CameraModel::updateUndistortion(453,13869
+
+src/VideoStreamComponent.cpp,902
+using boost::asio::ip::udp;9,129
+namespace argosClient 11,158
+  VideoStreamComponent::VideoStreamComponent(argosClient::VideoStreamComponent::VideoStreamComponent13,183
+  VideoStreamComponent::~VideoStreamComponent(argosClient::VideoStreamComponent::~VideoStreamComponent46,1324
+  void VideoStreamComponent::startReceivingVideo(argosClient::VideoStreamComponent::startReceivingVideo53,1469
+  void VideoStreamComponent::receiveVideo(argosClient::VideoStreamComponent::receiveVideo58,1659
+  size_t VideoStreamComponent::sendVideo(argosClient::VideoStreamComponent::sendVideo99,2966
+  void VideoStreamComponent::makeVideoTexture(argosClient::VideoStreamComponent::makeVideoTexture133,4135
+  void VideoStreamComponent::setUpShader(argosClient::VideoStreamComponent::setUpShader155,4934
+  void VideoStreamComponent::specificRender(argosClient::VideoStreamComponent::specificRender164,5248
+
+src/GfxShader.cpp,397
+namespace argosClient 6,81
+  GfxShader::GfxShader(argosClient::GfxShader::GfxShader8,106
+  GfxShader::~GfxShader(argosClient::GfxShader::~GfxShader13,182
+  bool GfxShader::loadVertexShader(argosClient::GfxShader::loadVertexShader19,258
+  bool GfxShader::loadFragmentShader(argosClient::GfxShader::loadFragmentShader54,1121
+  GLuint GfxShader::getId(argosClient::GfxShader::getId89,1988
+
+src/EGLconfig.cpp,658
+namespace argosClient 8,101
+  EGLconfig::EGLconfig(argosClient::EGLconfig::EGLconfig10,126
+  EGLconfig::~EGLconfig(argosClient::EGLconfig::~EGLconfig19,393
+  void EGLconfig::setAttribute(argosClient::EGLconfig::setAttribute23,427
+  void EGLconfig::setRGBA(argosClient::EGLconfig::setRGBA28,577
+  void EGLconfig::setDepth(argosClient::EGLconfig::setDepth34,794
+  void EGLconfig::setSurface(argosClient::EGLconfig::setSurface38,875
+  void EGLconfig::chooseConfig(argosClient::EGLconfig::chooseConfig42,960
+  EGLConfig EGLconfig::getConfig(argosClient::EGLconfig::getConfig64,1652
+  void EGLconfig::print(argosClient::EGLconfig::print68,1720
+
+src/VideoThread.cpp,1149
+namespace argosClient 14,180
+  OMX_BUFFERHEADERTYPE* VideoThread::_eglBuffer argosClient::VideoThread::_eglBuffer16,205
+  COMPONENT_T* VideoThread::_eglRender argosClient::VideoThread::_eglRender17,261
+  void* VideoThread::_eglImage argosClient::VideoThread::_eglImage18,308
+  VideoThread::VideoThread(argosClient::VideoThread::VideoThread20,345
+  VideoThread::~VideoThread(argosClient::VideoThread::~VideoThread28,550
+  void VideoThread::start(argosClient::VideoThread::start32,588
+  bool VideoThread::isRunning(argosClient::VideoThread::isRunning36,685
+  void VideoThread::join(argosClient::VideoThread::join40,808
+  void VideoThread::interrupt(argosClient::VideoThread::interrupt44,862
+  void VideoThread::next(argosClient::VideoThread::next49,946
+  const VideoThread::VideoProperties& VideoThread::getVideoProperties(argosClient::VideoThread::getVideoProperties55,1080
+  void VideoThread::videoDecode1(argosClient::VideoThread::videoDecode159,1181
+  void VideoThread::videoDecode(argosClient::VideoThread::videoDecode331,11162
+  void VideoThread::myFillBufferDone(argosClient::VideoThread::myFillBufferDone572,19437
+
+src/old/opticalFlow.cpp,129
+#define _USE_MATH_DEFINES1,0
+OpticalFlow::OpticalFlow(11,191
+OpticalFlow::~OpticalFlow(38,791
+void OpticalFlow::track(40,822
+
+src/old/paperdetector.cpp,539
+PaperDetector::PaperDetector(15,249
+PaperDetector::~PaperDetector(24,432
+void PaperDetector::detect(32,608
+void PaperDetector::convexHullContours(121,4420
+void PaperDetector::findRectangles(147,5525
+void PaperDetector::thresHold(205,7822
+void PaperDetector::drawAllContours 234,8769
+void PaperDetector:: drawContour 244,9032
+void  PaperDetector:: drawApproxCurve 250,9231
+void PaperDetector::draw 262,9549
+void PaperDetector::setMinMaxSize(271,9997
+double PaperDetector::angle(279,10488
+int PaperDetector::perimeter(288,10782
+
+src/old/paper.cpp,512
+#define _USE_MATH_DEFINES1,0
+Paper::Paper(9,107
+Paper::Paper(18,315
+Paper::Paper(28,528
+Paper::Paper(39,742
+void Paper::glGetModelViewMatrix(50,1021
+void Paper::OgreGetPoseParameters(141,3561
+void Paper::draw(223,6289
+void Paper::calculateExtrinsics(247,7302
+void Paper::calculateProjectorExtrinsics(262,8002
+void Paper::calculateScreenExtrinsics(367,11768
+void Paper::rotateXAxis(448,14904
+cv::Point2f Paper::getCenter(470,15390
+float Paper::getArea(483,15620
+float Paper::getPerimeter(497,16001
+
+src/old/documentDetector.cpp,326
+DocumentDetector::DocumentDetector(14,270
+DocumentDetector::~DocumentDetector(47,1400
+void DocumentDetector::detect(55,1583
+bool DocumentDetector::createDetectorDescriptorMatcher(104,3266
+void DocumentDetector::readQueryFilenames(119,4016
+bool DocumentDetector::readImages(142,4623
+bool DocumentDetector::warp 175,5657
+
+src/old/drawCV.cpp,278
+void drawCV::draw3dAxis(9,65
+void drawCV::draw3dCube(45,1479
+void drawCV::draw3dPaper(94,3283
+void drawCV::cameraPaper(145,5303
+void drawCV::projectPaper(199,6999
+void drawCV::drawInvoice(254,8708
+void drawCV::drawContour(305,10434
+void drawCV::drawBoardMarks(311,10643
+
+src/GraphicComponent.cpp,1337
+namespace argosClient 9,139
+  GraphicComponent::GraphicComponent(argosClient::GraphicComponent::GraphicComponent11,164
+  GraphicComponent::~GraphicComponent(argosClient::GraphicComponent::~GraphicComponent18,449
+  void GraphicComponent::loadGLProgram(argosClient::GraphicComponent::loadGLProgram22,497
+  void GraphicComponent::setColor(argosClient::GraphicComponent::setColor27,691
+  void GraphicComponent::rotate(argosClient::GraphicComponent::rotate34,910
+  void GraphicComponent::scale(argosClient::GraphicComponent::scale38,1055
+  void GraphicComponent::translate(argosClient::GraphicComponent::translate42,1182
+  void GraphicComponent::setRotation(argosClient::GraphicComponent::setRotation46,1325
+  void GraphicComponent::setScale(argosClient::GraphicComponent::setScale50,1465
+  void GraphicComponent::setPosition(argosClient::GraphicComponent::setPosition54,1585
+  void GraphicComponent::setModelViewMatrix(argosClient::GraphicComponent::setModelViewMatrix58,1714
+  void GraphicComponent::setProjectionMatrix(argosClient::GraphicComponent::setProjectionMatrix63,1858
+  void GraphicComponent::show(argosClient::GraphicComponent::show67,1980
+  void GraphicComponent::noUpdate(argosClient::GraphicComponent::noUpdate71,2046
+  void GraphicComponent::render(argosClient::GraphicComponent::render75,2128
+
+src/TaskDelegation.cpp,1363
+namespace argosClient 8,124
+  TaskDelegation::TaskDelegation(argosClient::TaskDelegation::TaskDelegation10,149
+  TaskDelegation::~TaskDelegation(argosClient::TaskDelegation::~TaskDelegation15,327
+  int TaskDelegation::connect(argosClient::TaskDelegation::connect25,498
+  int TaskDelegation::reconnect(argosClient::TaskDelegation::reconnect42,1039
+  void TaskDelegation::run(argosClient::TaskDelegation::run58,1499
+  int TaskDelegation::send(argosClient::TaskDelegation::send70,1764
+  void TaskDelegation::addMatrix16f(argosClient::TaskDelegation::addMatrix16f91,2361
+  void TaskDelegation::addVectori(argosClient::TaskDelegation::addVectori108,2995
+  void TaskDelegation::addCvMat(argosClient::TaskDelegation::addCvMat125,3649
+  int TaskDelegation::error(argosClient::TaskDelegation::error146,4400
+  int TaskDelegation::readStreamTypeFromSocket(argosClient::TaskDelegation::readStreamTypeFromSocket150,4462
+  int TaskDelegation::receive(argosClient::TaskDelegation::receive173,5301
+  void TaskDelegation::processCvMat(argosClient::TaskDelegation::processCvMat200,5870
+  void TaskDelegation::processPaper(argosClient::TaskDelegation::processPaper205,6075
+  void TaskDelegation::processInt(argosClient::TaskDelegation::processInt219,6505
+  void TaskDelegation::processMatrix16f(argosClient::TaskDelegation::processMatrix16f223,6620
+
+src/GfxProgram.cpp,384
+namespace argosClient 4,44
+  GfxProgram::GfxProgram(argosClient::GfxProgram::GfxProgram6,69
+  GfxProgram::~GfxProgram(argosClient::GfxProgram::~GfxProgram11,179
+  GLuint GfxProgram::loadShaders(argosClient::GfxProgram::loadShaders18,295
+  GLuint GfxProgram::getId(argosClient::GfxProgram::getId37,921
+  void GfxProgram::useProgram(argosClient::GfxProgram::useProgram41,979
+
+src/Log.cpp,506
+namespace argosClient 5,36
+  bool Log::coloured_output argosClient::Log::coloured_output7,61
+  void Log::plain(argosClient::Log::plain9,99
+  void Log::info(argosClient::Log::info13,211
+  void Log::error(argosClient::Log::error22,527
+  void Log::success(argosClient::Log::success31,845
+  void Log::video(argosClient::Log::video40,1171
+  const std::string Log::currentDateTime(argosClient::Log::currentDateTime49,1492
+  void Log::setColouredOutput(argosClient::Log::setColouredOutput60,1711
+
+src/AudioManager.cpp,751
+namespace argosClient 6,92
+  AudioManager::AudioManager(argosClient::AudioManager::AudioManager8,117
+  AudioManager::~AudioManager(argosClient::AudioManager::~AudioManager25,543
+  void AudioManager::preload(argosClient::AudioManager::preload29,583
+  void AudioManager::play(argosClient::AudioManager::play38,870
+  void AudioManager::pause(argosClient::AudioManager::pause42,986
+  void AudioManager::resume(argosClient::AudioManager::resume46,1041
+  void AudioManager::stop(argosClient::AudioManager::stop50,1098
+  void AudioManager::volume(argosClient::AudioManager::volume54,1158
+  void AudioManager::volumeAll(argosClient::AudioManager::volumeAll58,1283
+  int AudioManager::isPlaying(argosClient::AudioManager::isPlaying62,1355
+
+src/CircleComponent.cpp,388
+namespace argosClient 6,86
+  CircleComponent::CircleComponent(argosClient::CircleComponent::CircleComponent8,111
+  CircleComponent::~CircleComponent(argosClient::CircleComponent::~CircleComponent40,1108
+  void CircleComponent::setUpShader(argosClient::CircleComponent::setUpShader45,1204
+  void CircleComponent::specificRender(argosClient::CircleComponent::specificRender54,1510
+
+src/RenderToTextureComponent.cpp,1100
+namespace argosClient 13,209
+  RenderToTextureComponent::RenderToTextureComponent(argosClient::RenderToTextureComponent::RenderToTextureComponent15,234
+  RenderToTextureComponent::~RenderToTextureComponent(argosClient::RenderToTextureComponent::~RenderToTextureComponent53,1820
+  int RenderToTextureComponent::genFrameBufferObject(argosClient::RenderToTextureComponent::genFrameBufferObject62,2072
+  void RenderToTextureComponent::renderToTexture(argosClient::RenderToTextureComponent::renderToTexture110,4436
+  void RenderToTextureComponent::drawTexture(argosClient::RenderToTextureComponent::drawTexture128,5039
+  void RenderToTextureComponent::setUpShader(argosClient::RenderToTextureComponent::setUpShader151,5867
+  GraphicComponent* RenderToTextureComponent::getGraphicComponent(argosClient::RenderToTextureComponent::getGraphicComponent160,6185
+  void RenderToTextureComponent::addGraphicComponent(argosClient::RenderToTextureComponent::addGraphicComponent164,6307
+  void RenderToTextureComponent::specificRender(argosClient::RenderToTextureComponent::specificRender168,6455
+
+src/RectangleComponent.cpp,423
+namespace argosClient 6,89
+  RectangleComponent::RectangleComponent(argosClient::RectangleComponent::RectangleComponent8,114
+  RectangleComponent::~RectangleComponent(argosClient::RectangleComponent::~RectangleComponent36,977
+  void RectangleComponent::setUpShader(argosClient::RectangleComponent::setUpShader41,1079
+  void RectangleComponent::specificRender(argosClient::RectangleComponent::specificRender48,1271
+
+src/main.cpp,164
+#define SCREEN_W 41,709
+#define SCREEN_H 42,730
+#define SCREEN_W_CAMERA 43,751
+#define SCREEN_H_CAMERA 44,779
+int main(52,1015
+void makeIntroduction(142,3861
+
+src/CameraProjectorSystem.cpp,303
+CameraProjectorSystem::CameraProjectorSystem(3,38
+void CameraProjectorSystem::load(10,202
+void CameraProjectorSystem::saveExtrinsics(16,417
+void CameraProjectorSystem::loadExtrinsics(22,635
+bool CameraProjectorSystem::isValid(28,842
+vector<cv::Point2f> CameraProjectorSystem::getProjected(32,1048
+
+src/GLContext.cpp,1703
+namespace argosClient 22,486
+  GLContext::GLContext(argosClient::GLContext::GLContext24,511
+  GLContext::~GLContext(argosClient::GLContext::~GLContext29,664
+  void GLContext::start(argosClient::GLContext::start35,768
+  std::vector<GraphicComponent*> GLContext::makeAxis(argosClient::GLContext::makeAxis113,3733
+  std::vector<GraphicComponent*> GLContext::makeCorners(argosClient::GLContext::makeCorners133,4395
+  std::vector<GraphicComponent*> GLContext::makeFactures(argosClient::GLContext::makeFactures180,6182
+  std::vector<GraphicComponent*> GLContext::makeText(argosClient::GLContext::makeText203,6896
+  GraphicComponent* GLContext::makeFacture(argosClient::GLContext::makeFacture237,8463
+  void GLContext::fetchPaperId(argosClient::GLContext::fetchPaperId254,9072
+  bool GLContext::update(argosClient::GLContext::update321,11099
+  void GLContext::addGraphicComponent(argosClient::GLContext::addGraphicComponent342,11586
+  GraphicComponent* GLContext::getGraphicComponent(argosClient::GLContext::getGraphicComponent346,11713
+  void GLContext::removeGraphicComponent(argosClient::GLContext::removeGraphicComponent350,11833
+  void GLContext::setState(argosClient::GLContext::setState356,12008
+  void GLContext::render(argosClient::GLContext::render360,12075
+  void GLContext::setFrame(argosClient::GLContext::setFrame379,12561
+  cv::Mat& GLContext::getFrame(argosClient::GLContext::getFrame383,12646
+  void GLContext::setProjectionMatrix(argosClient::GLContext::setProjectionMatrix387,12706
+  const glm::mat4& GLContext::getProjectionMatrix(argosClient::GLContext::getProjectionMatrix391,12821
+  void GLContext::setFps(argosClient::GLContext::setFps395,12916
+
+src/ImageComponent.cpp,750
+namespace argosClient 10,130
+  ImageComponent::ImageComponent(argosClient::ImageComponent::ImageComponent12,155
+  ImageComponent::ImageComponent(argosClient::ImageComponent::ImageComponent44,1212
+  ImageComponent::~ImageComponent(argosClient::ImageComponent::~ImageComponent49,1383
+  void ImageComponent::loadImageFromFile(argosClient::ImageComponent::loadImageFromFile55,1498
+  void ImageComponent::loadImageFromMat(argosClient::ImageComponent::loadImageFromMat103,3031
+  void ImageComponent::setUpShader(argosClient::ImageComponent::setUpShader133,4073
+  void ImageComponent::specificRender(argosClient::ImageComponent::specificRender142,4381
+  void ImageComponent::deleteTexture(argosClient::ImageComponent::deleteTexture161,5084
+
+src/TextComponent.cpp,670
+namespace argosClient 10,161
+  TextComponent::TextComponent(argosClient::TextComponent::TextComponent12,186
+  TextComponent::~TextComponent(argosClient::TextComponent::~TextComponent29,636
+  void TextComponent::setUpShader(argosClient::TextComponent::setUpShader45,904
+  void TextComponent::translate(argosClient::TextComponent::translate57,1302
+  void TextComponent::setFont(argosClient::TextComponent::setFont66,1538
+  void TextComponent::setText(argosClient::TextComponent::setText74,1918
+  void TextComponent::addText(argosClient::TextComponent::addText86,2200
+  void TextComponent::specificRender(argosClient::TextComponent::specificRender144,3707
+
+src/EGLWindow.cpp,1015
+namespace argosClient 12,187
+  EGLWindow::EGLWindow(argosClient::EGLWindow::EGLWindow14,212
+  EGLWindow::~EGLWindow(argosClient::EGLWindow::~EGLWindow36,716
+  void EGLWindow::makeSurface(argosClient::EGLWindow::makeSurface41,805
+  void EGLWindow::setScreen(argosClient::EGLWindow::setScreen45,884
+  void EGLWindow::makeSurface(argosClient::EGLWindow::makeSurface50,1018
+  void EGLWindow::destroySurface(argosClient::EGLWindow::destroySurface133,3622
+  void EGLWindow::swapBuffers(argosClient::EGLWindow::swapBuffers144,3967
+  void EGLWindow::resizeScreen(argosClient::EGLWindow::resizeScreen148,4052
+  uint32_t EGLWindow::getWidth(argosClient::EGLWindow::getWidth153,4165
+  uint32_t EGLWindow::getHeight(argosClient::EGLWindow::getHeight157,4230
+  void EGLWindow::setUpscale(argosClient::EGLWindow::setUpscale161,4297
+  EGLDisplay& EGLWindow::getEGLDisplay(argosClient::EGLWindow::getEGLDisplay165,4359
+  EGLContext& EGLWindow::getEGLContext(argosClient::EGLWindow::getEGLContext169,4428
+
+libs/ilclient/ilclient.h,2538
+#define _IL_CLIENT_H44,2148
+typedef struct _ILCLIENT_T ILCLIENT_T;59,2574
+typedef struct _ILEVENT_T ILEVENT_T;67,2861
+typedef struct _COMPONENT_T COMPONENT_T;85,3670
+typedef void (*ILCLIENT_CALLBACK_T)ILCLIENT_CALLBACK_T101,4146
+typedef void (*ILCLIENT_BUFFER_CALLBACK_T)ILCLIENT_BUFFER_CALLBACK_T115,4606
+typedef void *(*ILCLIENT_MALLOC_T)ILCLIENT_MALLOC_T134,5269
+typedef void (*ILCLIENT_FREE_T)ILCLIENT_FREE_T152,5917
+   ILCLIENT_EMPTY_BUFFER_DONE 160,6198
+   ILCLIENT_EMPTY_BUFFER_DONE  = 0x1,x1160,6198
+   ILCLIENT_FILL_BUFFER_DONE 164,6382
+   ILCLIENT_FILL_BUFFER_DONE   = 0x2,x2164,6382
+   ILCLIENT_PORT_DISABLED 168,6567
+   ILCLIENT_PORT_DISABLED      = 0x4,x4168,6567
+   ILCLIENT_PORT_ENABLED 172,6764
+   ILCLIENT_PORT_ENABLED       = 0x8,x8172,6764
+   ILCLIENT_STATE_CHANGED 176,6961
+   ILCLIENT_STATE_CHANGED      = 0x10,x10176,6961
+   ILCLIENT_BUFFER_FLAG_EOS 180,7168
+   ILCLIENT_BUFFER_FLAG_EOS    = 0x20,x20180,7168
+   ILCLIENT_PARAMETER_CHANGED 183,7298
+   ILCLIENT_PARAMETER_CHANGED  = 0x40,x40183,7298
+   ILCLIENT_EVENT_ERROR 187,7488
+   ILCLIENT_EVENT_ERROR        = 0x80,x80187,7488
+   ILCLIENT_PORT_FLUSH 190,7621
+   ILCLIENT_PORT_FLUSH         = 0x100,x100190,7621
+   ILCLIENT_MARKED_BUFFER 194,7816
+   ILCLIENT_MARKED_BUFFER      = 0x200,x200194,7816
+   ILCLIENT_BUFFER_MARK 197,7958
+   ILCLIENT_BUFFER_MARK        = 0x400,x400197,7958
+   ILCLIENT_CONFIG_CHANGED 201,8150
+   ILCLIENT_CONFIG_CHANGED     = 0x800 x800201,8150
+} ILEVENT_MASK_T;203,8278
+   ILCLIENT_FLAGS_NONE 211,8473
+   ILCLIENT_FLAGS_NONE            = 0x0,x0211,8473
+   ILCLIENT_ENABLE_INPUT_BUFFERS 214,8593
+   ILCLIENT_ENABLE_INPUT_BUFFERS  = 0x1,x1214,8593
+   ILCLIENT_ENABLE_OUTPUT_BUFFERS 221,8994
+   ILCLIENT_ENABLE_OUTPUT_BUFFERS = 0x2,x2221,8994
+   ILCLIENT_DISABLE_ALL_PORTS 228,9396
+   ILCLIENT_DISABLE_ALL_PORTS     = 0x4,x4228,9396
+   ILCLIENT_HOST_COMPONENT 231,9531
+   ILCLIENT_HOST_COMPONENT        = 0x8,x8231,9531
+   ILCLIENT_OUTPUT_ZERO_BUFFERS 238,9951
+   ILCLIENT_OUTPUT_ZERO_BUFFERS   = 0x10 x10238,9951
+} ILCLIENT_CREATE_FLAGS_T;241,10178
+   COMPONENT_T *source;source253,10623
+   int source_port;254,10677
+   COMPONENT_T *sink;sink255,10756
+   int sink_port;256,10808
+} TUNNEL_T;257,10884
+#define set_tunnel(264,11073
+#define ILC_GET_HANDLE(274,11621
+#define ilclient_ticks_from_s64(962,41747
+#define ilclient_ticks_to_s64(970,42019
+static inline OMX_TICKS ilclient_ticks_from_s64(980,42311
+static inline int64_t ilclient_ticks_to_s64(993,42698
+
+libs/freetypeGlesRpi/texture-atlas.h,268
+#define __TEXTURE_ATLAS_H__45,2471
+    vector_t * nodes;101,3846
+    size_t width;106,3942
+    size_t height;111,4034
+    size_t depth;116,4125
+    size_t used;121,4195
+    unsigned int id;126,4267
+    unsigned char * data;131,4328
+} texture_atlas_t;133,4357
+
+libs/freetypeGlesRpi/texture-font.h,1085
+#define __TEXTURE_FONT_H__35,2001
+    wchar_t charcode;78,2747
+    float kerning;83,2840
+} kerning_t;85,2862
+    wchar_t charcode;131,4906
+    unsigned int id;136,4991
+    size_t width;141,5066
+    size_t height;146,5139
+    int offset_x;151,5237
+    int offset_y;159,5481
+    float advance_x;166,5716
+    float advance_y;173,5950
+    float s0;178,6059
+    float t0;183,6162
+    float s1;188,6268
+    float t1;193,6375
+    vector_t * kerning;198,6468
+    int outline_type;203,6583
+    float outline_thickness;208,6658
+} texture_glyph_t;210,6690
+    vector_t * glyphs;222,6841
+    texture_atlas_t * atlas;227,6931
+    char * filename;232,7007
+    float size;237,7067
+    int hinting;242,7160
+    int outline_type;247,7262
+    float outline_thickness;252,7331
+    int filtering;257,7425
+    unsigned char lcd_weights[lcd_weights262,7492
+    float height;271,7934
+    float linegap;278,8159
+    float ascender;288,8644
+    float descender;299,9193
+    float underline_position;305,9379
+    float underline_thickness;311,9528
+} texture_font_t;313,9562
+
+libs/freetypeGlesRpi/vec234.h,1953
+#define __VEC234_H__35,1961
+	int data[data54,2450
+        int x;56,2512
+        int y;57,2567
+        int z;58,2622
+        int w;59,2677
+        int x_;62,2749
+        int y_;63,2804
+        int width;64,2859
+        int height;65,2914
+        int r;68,2986
+        int g;69,3041
+        int b;70,3096
+        int a;71,3151
+        int red;74,3223
+        int green;75,3278
+        int blue;76,3333
+        int alpha;77,3388
+        int vstart;80,3460
+        int vcount;81,3515
+        int istart;82,3570
+        int icount;83,3625
+} ivec4;85,3687
+	int data[data99,3976
+        int x;101,4038
+        int y;102,4093
+        int z;103,4148
+        int r;106,4220
+        int g;107,4275
+        int b;108,4330
+        int red;111,4402
+        int green;112,4457
+        int blue;113,4512
+} ivec3;115,4574
+	int data[data128,4804
+        int x;130,4866
+        int y;131,4921
+        int s;134,4993
+        int t;135,5048
+        int start;138,5120
+        int end;139,5175
+} ivec2;141,5237
+	float data[data155,5613
+        float x;157,5676
+        float y;158,5732
+        float z;159,5788
+        float w;160,5844
+        float x_;163,5917
+        float y_;164,5973
+        float width;165,6029
+        float height;166,6085
+        float r;169,6158
+        float g;170,6214
+        float b;171,6270
+        float a;172,6326
+        float red;175,6399
+        float green;176,6455
+        float blue;177,6511
+        float alpha;178,6567
+} vec4;180,6630
+	float data[data193,6916
+        float x;195,6978
+        float y;196,7033
+        float z;197,7088
+        float r;200,7160
+        float g;201,7215
+        float b;202,7270
+        float red;205,7342
+        float green;206,7397
+        float blue;207,7452
+} vec3;209,7514
+	float data[data221,7716
+        float x;223,7777
+        float y;224,7831
+        float s;227,7902
+        float t;228,7956
+} vec2;230,8017
+
+libs/freetypeGlesRpi/vector.h,163
+#define __VECTOR_H__35,1961
+     void * items;82,2930
+     size_t capacity;85,3027
+     size_t size;88,3079
+     size_t item_size;91,3144
+} vector_t;92,3167
+
+include/GraphicComponent.h,1314
+#define GRAPHICCOMPONENT_H2,27
+  class GraphicComponent 18,382
+    GraphicComponent(23,477
+    virtual ~GraphicComponent(28,556
+    virtual void loadGLProgram(35,785
+    virtual void setColor(44,1093
+    virtual void rotate(51,1345
+    virtual void scale(57,1536
+    virtual void translate(63,1715
+    virtual void setRotation(70,1937
+    virtual void setScale(76,2122
+    virtual void setPosition(82,2293
+    virtual void setModelViewMatrix(88,2481
+    virtual void setProjectionMatrix(94,2676
+    virtual void show(100,2867
+    virtual void noUpdate(106,3037
+    virtual void render(111,3139
+    glm::mat4 _model;GraphicComponent::_model126,3418
+    glm::mat4 _modelViewMatrix;GraphicComponent::_modelViewMatrix127,3518
+    glm::mat4 _projectionMatrix;GraphicComponent::_projectionMatrix128,3577
+    GfxProgram _shader;GraphicComponent::_shader129,3637
+    GLint _vertexHandler;GraphicComponent::_vertexHandler130,3711
+    GLint _texHandler;GraphicComponent::_texHandler131,3776
+    GLint _samplerHandler;GraphicComponent::_samplerHandler132,3839
+    GLint _colorHandler;GraphicComponent::_colorHandler133,3906
+    GLint _mvpHandler;GraphicComponent::_mvpHandler134,3970
+    bool _show;GraphicComponent::_show135,4054
+    bool _noUpdate;GraphicComponent::_noUpdate136,4114
+
+include/RectangleComponent.h,155
+#define RECTANGLE_H2,20
+  class RectangleComponent 15,213
+    RectangleComponent(22,442
+    ~RectangleComponent(27,544
+    void specificRender(33,661
+
+include/EGLWindow.h,141
+#define EGLWINDOW_H2,20
+  class EGLWindow 16,270
+    EGLWindow(23,461
+    virtual ~EGLWindow(28,566
+    virtual void swapBuffers(39,828
+
+include/TextComponent.h,387
+#define TEXT_H2,15
+  class TextComponent 18,291
+    TextComponent(26,513
+    ~TextComponent(31,619
+    void translate(37,769
+    vector_t* _vector;TextComponent::_vector78,2051
+    texture_font_t* _font;TextComponent::_font79,2100
+    texture_atlas_t* _atlas;TextComponent::_atlas80,2149
+    vec2 _pen;TextComponent::_pen81,2207
+    vec2 _orig;TextComponent::_orig82,2268
+
+include/RenderToTextureComponent.h,923
+#define TEXTURERENDER_H2,24
+  class RenderToTextureComponent 16,275
+    RenderToTextureComponent(23,524
+    ~RenderToTextureComponent(28,640
+    GraphicComponent* getGraphicComponent(35,885
+    void addGraphicComponent(41,1085
+    void specificRender(49,1297
+    GLushort* _indices;RenderToTextureComponent::_indices75,1905
+    GLfloat* _vertexData;RenderToTextureComponent::_vertexData76,1986
+    GLuint _framebufferObject;RenderToTextureComponent::_framebufferObject77,2062
+    GLuint _depthRenderbuffer;RenderToTextureComponent::_depthRenderbuffer78,2125
+    GLuint _texture;RenderToTextureComponent::_texture79,2189
+    GLfloat _texWidth;RenderToTextureComponent::_texWidth80,2237
+    GLfloat _texHeight;RenderToTextureComponent::_texHeight81,2283
+    uint32_t _screenWidth;RenderToTextureComponent::_screenWidth82,2331
+    uint32_t _screenHeight;RenderToTextureComponent::_screenHeight83,2380
+
+include/ImageComponent.h,270
+#define IMAGE_H2,16
+  class ImageComponent 17,306
+    ImageComponent(24,533
+    ImageComponent(33,853
+    ~ImageComponent(38,977
+    void loadImageFromFile(44,1108
+    void loadImageFromMat(50,1289
+    void deleteTexture(55,1401
+    void specificRender(61,1517
+
+include/CircleComponent.h,152
+#define CIRCLECOMPONENT_H2,26
+  class CircleComponent 15,239
+    CircleComponent(21,412
+    ~CircleComponent(26,493
+    void specificRender(32,607
+
+include/GLContext.h,632
+#define MAINGLWINDOW_H2,23
+  class GLContext 21,417
+    typedef std::map<std::string,GLContext::std::string23,546
+    typedef std::map<std::string, GraphicComponent*> GraphicComponentMap;GLContext::GraphicComponentMap23,546
+    enum State GLContext::State26,631
+      INTRODUCTION,GLContext::State::INTRODUCTION27,648
+      FETCH_PAPERSGLContext::State::FETCH_PAPERS28,668
+    State _state;GLContext::_state162,5032
+    GraphicComponentMap _graphicComponents;GLContext::_graphicComponents163,5050
+    cv::Mat* _frame;GLContext::_frame164,5139
+    glm::mat4 _projectionMatrix;GLContext::_projectionMatrix165,5221
+
+include/TaskDelegation.h,1597
+#define TASKDELEGATION_H2,25
+using boost::asio::ip::tcp;7,108
+namespace argosClient 9,137
+  struct paper_t argosClient::paper_t15,262
+    int id;argosClient::paper_t::id16,281
+    float modelview_matrix[argosClient::paper_t::modelview_matrix17,311
+  class TaskDelegation argosClient::TaskDelegation25,568
+    enum Type argosClient::TaskDelegation::Type31,700
+      SKIP argosClient::TaskDelegation::Type::SKIP32,716
+      VECTOR_I argosClient::TaskDelegation::Type::VECTOR_I34,743
+      MATRIX_16F argosClient::TaskDelegation::Type::MATRIX_16F35,769
+      CV_MAT argosClient::TaskDelegation::Type::CV_MAT36,795
+      VIDEO_STREAM argosClient::TaskDelegation::Type::VIDEO_STREAM37,821
+      PAPER argosClient::TaskDelegation::Type::PAPER38,847
+    struct StreamType argosClient::TaskDelegation::StreamType52,1236
+      Type type;argosClient::TaskDelegation::StreamType::type53,1260
+      int size;argosClient::TaskDelegation::StreamType::size54,1316
+      std::vector<unsigned char> data;argosClient::TaskDelegation::StreamType::data55,1367
+    boost::asio::io_service _ioService;argosClient::TaskDelegation::_ioService163,4380
+    tcp::socket* _tcpSocket;argosClient::TaskDelegation::_tcpSocket164,4480
+    tcp::resolver* _tcpResolver;argosClient::TaskDelegation::_tcpResolver165,4559
+    std::vector<unsigned char> _buff;argosClient::TaskDelegation::_buff166,4635
+    std::string _ip;argosClient::TaskDelegation::_ip167,4724
+    std::string _port;argosClient::TaskDelegation::_port168,4783
+    int _error;argosClient::TaskDelegation::_error169,4846
+
+include/VideoComponent.h,352
+#define VIDEO_H2,16
+  class VideoComponent 18,287
+    VideoComponent(25,514
+    VideoComponent(34,833
+    ~VideoComponent(39,956
+    void setLoop(45,1150
+    void loadVideoFromFile(51,1285
+    void specificRender(57,1432
+    void* _eglImage;VideoComponent::_eglImage73,2050
+    VideoThread* _videoThread;VideoComponent::_videoThread74,2116
+
+include/LineComponent.h,135
+#define LINE_H2,15
+  class LineComponent 15,214
+    LineComponent(22,421
+    ~LineComponent(27,528
+    void specificRender(33,640
+
+include/GfxProgram.h,156
+#define GFXPROGRAM_H2,21
+  class GfxProgram 15,216
+    GfxProgram(20,302
+    ~GfxProgram(25,372
+    GLuint loadShaders(33,594
+    GLuint getId(39,768
+
+include/VideoStreamComponent.h,1084
+#define VIDEO_H2,16
+using boost::asio::ip::udp;16,248
+namespace argosClient 18,277
+  class VideoStreamComponent argosClient::VideoStreamComponent25,499
+    GLushort* _indices;argosClient::VideoStreamComponent::_indices79,2032
+    GLfloat* _vertexData;argosClient::VideoStreamComponent::_vertexData80,2113
+    GLfloat _width;argosClient::VideoStreamComponent::_width81,2189
+    GLfloat _height;argosClient::VideoStreamComponent::_height82,2250
+    GLuint _textureId;argosClient::VideoStreamComponent::_textureId83,2313
+    bool _ready;argosClient::VideoStreamComponent::_ready85,2389
+    bool _receive;argosClient::VideoStreamComponent::_receive86,2461
+    cv::Mat _receivedFrame;argosClient::VideoStreamComponent::_receivedFrame87,2539
+    std::thread* _videoThread;argosClient::VideoStreamComponent::_videoThread88,2591
+    std::chrono::time_point<std::chrono::high_resolution_clock> _begin;argosClient::VideoStreamComponent::_begin95,2900
+    std::chrono::time_point<std::chrono::high_resolution_clock> _end;argosClient::VideoStreamComponent::_end96,2972
+
+include/GfxShader.h,191
+#define GFXSHADER_H2,20
+  class GfxShader 14,205
+    GfxShader(19,282
+    ~GfxShader(24,343
+    bool loadVertexShader(31,535
+    bool loadFragmentShader(38,767
+    GLuint getId(44,902
+
+include/Singleton.h,185
+#define SINGLETON_H2,20
+  class Singleton 11,189
+    static T& getInstance(17,355
+    static T* getInstancePtr(26,596
+    static void destroy(34,757
+    static T* instance;39,847
+
+include/AudioManager.h,265
+#define AUDIOMANAGER_H2,23
+namespace argosClient 10,122
+  class AudioManager argosClient::AudioManager12,147
+    std::map<argosClient::AudioManager::std::map30,556
+    std::map<std::string, Mix_Chunk*> _soundsMap;argosClient::AudioManager::_soundsMap30,556
+
+include/VideoThread.h,855
+#define VIDEOTHREAD_H2,22
+  class VideoThread 16,250
+    struct VideoProperties 21,326
+      bool setted;22,355
+      int width;23,421
+      int height;24,466
+      int fps;25,513
+    VideoThread(33,720
+    ~VideoThread(38,816
+    void start(44,910
+    bool isRunning(50,1064
+    static void* _eglImage;VideoThread::_eglImage95,2014
+    static OMX_BUFFERHEADERTYPE* _eglBuffer;VideoThread::_eglBuffer96,2088
+    static COMPONENT_T* _eglRender;VideoThread::_eglRender97,2153
+    VideoProperties _vp;VideoThread::_vp99,2210
+    bool _running;VideoThread::_running101,2262
+    boost::thread _thread;VideoThread::_thread102,2348
+    bool _condition;VideoThread::_condition108,2536
+    boost::condition_variable _condition_changed;VideoThread::_condition_changed109,2557
+    boost::mutex _stopMutex;VideoThread::_stopMutex110,2607
+
+include/Log.h,917
+#define LOG_H2,14
+  class Log 14,236
+    enum Colour 21,402
+      FG_DEFAULT 22,420
+      FG_BLACK 23,452
+      FG_RED 24,484
+      FG_GREEN 25,516
+      FG_YELLOW 26,548
+      FG_BLUE 27,580
+      FG_MAGENTA 28,612
+      FG_CYAN 29,644
+      FG_LIGHT_GRAY 30,676
+      FG_DARK_GRAY 31,708
+      FG_LIGHT_RED 32,740
+      FG_LIGHT_GREEN 33,772
+      FG_LIGHT_YELLOW 34,804
+      FG_LIGHT_BLUE 35,836
+      FG_LIGHT_MAGENTA 36,868
+      FG_LIGHT_CYAN 37,900
+      FG_WHITE 38,932
+      BG_DEFAULT 40,965
+      BG_RED 41,997
+      BG_GREEN 42,1029
+      BG_BLUE 43,1061
+    static void plain(51,1226
+    static void info(57,1365
+    static void error(63,1503
+    static void success(69,1645
+    static void video(75,1788
+    template<typename T> static void vector(81,1924
+    template<typename T> static void matrix(87,2109
+    static bool coloured_output;Log::coloured_output103,2559
+
+include/EGLconfig.h,320
+#define EGLCONFIG_H2,20
+  class EGLconfig 13,183
+    EGLconfig(18,279
+    ~EGLconfig(23,340
+    void setAttribute(30,529
+    void setRGBA(39,773
+    void setDepth(45,920
+    void setSurface(51,1093
+    void chooseConfig(58,1316
+    EGLConfig getConfig(64,1440
+    EGLConfig _config;EGLconfig::_config73,1626

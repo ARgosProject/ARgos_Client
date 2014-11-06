@@ -5,27 +5,20 @@
 
 namespace argosClient {
 
-  LineComponent::LineComponent(glm::vec3 const & src, glm::vec3 const & dst)
-    : _indices(NULL), _vertexData(NULL) {
+  LineComponent::LineComponent(glm::vec3 const & src, glm::vec3 const & dst) {
     /**
      *    0
      *    |
      *    |
      *    1
      */
-    GLushort indices[] = { 0, 1 };
-    GLfloat vertexData[] = {
-      src.x, src.y, src.z,  // Position 0
-      dst.x, dst.y, dst.z,  // Position 1
-    };
 
-    // Copy aux arrays to the class' members
-    size_t length = 2*sizeof(GLushort);
-    _indices = new GLushort[length];
-    memcpy(_indices, indices, length);
-    length = 6*sizeof(GLfloat);
-    _vertexData = new GLfloat[length];
-    memcpy(_vertexData, vertexData, length);
+    _indices = new GLushort[2] { 0, 1 };
+    _vertexData = new GLfloat[6] {
+    // X      Y      Z
+       src.x, src.y, src.z,
+       dst.x, dst.y, dst.z,
+    };
 
     // Set the shader
     this->loadGLProgram("shaders/rectangle.glvs", "shaders/rectangle.glfs");

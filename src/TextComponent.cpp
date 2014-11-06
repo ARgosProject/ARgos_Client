@@ -87,6 +87,12 @@ namespace argosClient {
     const wchar_t* text = strtext.c_str();
 
     for(size_t i = 0; i < wcslen(text); i++) {
+      if(text[i] == '\n') {
+        _pen.x = _orig.x;
+        _pen.y -= _font->height;
+        continue;
+      }
+
       texture_glyph_t* glyph = texture_font_get_glyph(_font, text[i]);
 
       if(glyph != NULL) {
@@ -153,10 +159,12 @@ namespace argosClient {
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glDisable(GL_CULL_FACE);
+    //glDisable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
 
     glDrawArrays(GL_TRIANGLES, 0, _vector->size/9);
 
+    glCullFace(GL_BACK);
     glDisable(GL_BLEND);
   }
 

@@ -41,7 +41,7 @@ namespace argosClient {
     AudioManager::getInstance().preload("Ayuda:Videoconferencia", "media/ayudaVideoConferencia.wav");
 
     // Background
-    ImageComponent* bg1 = new ImageComponent("background.jpg", 1.0, 1.0);
+    ImageComponent* bg1 = new ImageComponent("media/background.jpg", 1.0, 1.0);
     bg1->noUpdate(true);
     _graphicComponents["Background1"] = bg1;
 
@@ -51,7 +51,7 @@ namespace argosClient {
     //_gc.push_back(im);
 
     // Video stream background
-    ImageComponent* bg2 = new ImageComponent("videoconference.jpg", width, height);
+    ImageComponent* bg2 = new ImageComponent("media/videoconference.jpg", width, height);
     bg2->setProjectionMatrix(_projectionMatrix);
     bg2->show(false);
     _graphicComponents["Background2"] = bg2;
@@ -82,8 +82,31 @@ namespace argosClient {
     // -96.4 59.7
     std::vector<GraphicComponent*> factures = makeFactures();
     _graphicComponents["Active"] = factures[0];
-    _graphicComponents["Sinovo"] = factures[1];
+    //_graphicComponents["Sinovo"] = factures[1];
     _graphicComponents["Neobiz"] = factures[2];
+
+    /*
+      TextComponent* text = new TextComponent("media/ProximaNova-Bold.ttf", 128);
+      text->setProjectionMatrix(_projectionMatrix);
+      float scaleFactor = 0.008f;
+      text->setScale(glm::vec3(-scaleFactor, scaleFactor, scaleFactor));
+      text->setText(L"Hola\nMundo!");
+      _graphicComponents["Test"] = text;
+    */
+
+    GraphicComponent* factureSinovo =
+      makeFacture(glm::vec2(469.0f, 760.0f),
+                  glm::vec4(0.086f, 0.474f, 0.69, 1.0f),
+                  L"SINOVO",
+                  {
+                    std::make_pair(L"Comprobar\nel descuento\naplicado",
+                                   glm::vec3(100.0f, 50.0f, 0.0f)),
+                    std::make_pair(L"Con este proveedor\ntenemos un descuento a\naplicar del 3% sobre el\nprecio final de la factura",
+                                   glm::vec3(200.0f, 50.0f, 0.0f)),
+                    std::make_pair(L"AYUDA POR\nVIDEO CONFERENCIA",
+                                   glm::vec3(300.0f, 50.0f, 0.0f))
+                  });
+    _graphicComponents["Sinovo"] = factureSinovo;
 
     _state = State::FETCH_PAPERS;
 
@@ -163,9 +186,9 @@ namespace argosClient {
     float height = 6.43f;//9.85f;
 
     std::vector<GraphicComponent*> factures = {
-      new ImageComponent("active.jpg", width / 1.41, height / 1.41),
-      new ImageComponent("sinovo.jpg", width / 1.41, height / 1.41),
-      new ImageComponent("neobiz.jpg", width / 1.41, height / 1.41)
+      new ImageComponent("media/active.jpg", width / 1.41, height / 1.41),
+      new ImageComponent("media/sinovo.jpg", width / 1.41, height / 1.41),
+      new ImageComponent("media/neobiz.jpg", width / 1.41, height / 1.41)
     };
 
     float x = 5.64f;
@@ -215,6 +238,37 @@ namespace argosClient {
     return textLines;
   }
 
+  GraphicComponent* GLContext::makeFacture(const glm::vec2& size,
+                                           const glm::vec4& colour,
+                                           const std::wstring& title,
+                                           const std::vector<std::pair<std::wstring, glm::vec3>>& textBlocks
+                                           ) {
+    float scaleFactor = 0.008f;
+    RenderToTextureComponent* rtt = new RenderToTextureComponent(size.x, size.y);
+    rtt->setScale(glm::vec3(-scaleFactor, scaleFactor, scaleFactor));
+    rtt->setProjectionMatrix(_projectionMatrix);
+
+    RectangleComponent* bg = new RectangleComponent(size.x, size.y);
+    bg->setColor(colour.r, colour.g, colour.b, colour.a);
+    rtt->addGraphicComponent(bg);
+
+    TextComponent* tcTitle = new TextComponent("media/ProximaNova-Bold.ttf", 72);
+    tcTitle->setScale(glm::vec3(1.0f, -1.0f, 1.0f));
+    tcTitle->setPosition(glm::vec3(50.0f, 50.0f, 0.0f));
+    tcTitle->setText(title);
+    rtt->addGraphicComponent(tcTitle);
+
+    for(auto& block : textBlocks) {
+      TextComponent* textComponent = new TextComponent("media/ProximaNova-Bold.ttf", 54);
+      textComponent->setScale(glm::vec3(1.0f, -1.0f, 1.0f));
+      textComponent->setPosition(block.second);
+      textComponent->setText(block.first);
+      rtt->addGraphicComponent(textComponent);
+    }
+
+    return rtt;
+  }
+
   void GLContext::fetchPaperId(int id) {
     static bool runOnce[4] = {false, false, false, false};
 
@@ -247,7 +301,7 @@ namespace argosClient {
 
       if(!runOnce[1]) {
         runOnce[1] = true;
-        AudioManager::getInstance().play("Ayuda:Videoconferencia");
+        //AudioManager::getInstance().play("Ayuda:Videoconferencia");
       }
       break;
     case 3:
@@ -293,7 +347,6 @@ namespace argosClient {
 
     switch(_state) {
     case State::INTRODUCTION:
-      std::cout << "------------------> " << paper.id << std::endl;
       next = paper.id != 0;
       break;
     case State::FETCH_PAPERS:

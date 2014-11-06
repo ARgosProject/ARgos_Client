@@ -129,6 +129,14 @@ namespace argosClient {
     std::vector<GraphicComponent*> makeFactures();
 
     /**
+     * A utility method used to build a facture widget
+     */
+    GraphicComponent* makeFacture(const glm::vec2& size,
+                                  const glm::vec4& colour,
+                                  const std::wstring& title,
+                                  const std::vector<std::pair<std::wstring, glm::vec3>>& textBlocks);
+
+    /**
      * Add a new graphic component to this context
      * @param name The name of the new graphic component
      * @param gc The graphic component to add

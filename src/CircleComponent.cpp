@@ -6,32 +6,22 @@
 namespace argosClient {
 
   CircleComponent::CircleComponent(GLfloat radius)
-    : _indices(NULL), _vertexData(NULL), _radius(radius) {
+    : _radius(radius) {
     /**
-     *    0__3
-     *    |\ |
-     *    | \|
-     *    1__2
+     *    0__1
+     *    | /|
+     *    |/ |
+     *    3__2
      */
-    GLushort indices[] = { 0, 1, 2, 0, 2, 3 };
-    GLfloat vertexData[] = {
-      -radius,  radius, 0.0f, // Position 0
-      0.0f,  0.0f,            // TexCoord 0
-      -radius, -radius, 0.0f, // Position 1
-      0.0f,  1.0f,            // TexCoord 1
-      radius, -radius, 0.0f, // Position 2
-      1.0f,  1.0f,            // TexCoord 2
-      radius,  radius, 0.0f, // Position 3
-      1.0f,  0.0f             // TexCoord 3
-    };
 
-    // Copy aux arrays to the class' members
-    size_t length = 6*sizeof(GLushort);
-    _indices = new GLushort[length];
-    memcpy(_indices, indices, length);
-    length = 20*sizeof(GLfloat);
-    _vertexData = new GLfloat[length];
-    memcpy(_vertexData, vertexData, length);
+    _indices = new GLushort[6] { 0, 1, 2, 0, 2, 3 };
+    _vertexData = new GLfloat[20] {
+    // X         Y       Z     U     V
+      -_radius,  radius, 0.0f, 0.0f, 0.0f, // Top-left
+       _radius,  radius, 0.0f, 1.0f, 0.0f, // Top-right
+       _radius, -radius, 0.0f, 1.0f, 1.0f, // Bottom-right
+      -_radius, -radius, 0.0f, 0.0f, 1.0f  // Bottom-left
+    };
 
     // Set the shader
     this->loadGLProgram("shaders/circle.glvs", "shaders/circle.glfs");

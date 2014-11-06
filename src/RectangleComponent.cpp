@@ -6,28 +6,22 @@
 namespace argosClient {
 
   RectangleComponent::RectangleComponent(GLfloat width, GLfloat height)
-    : _indices(NULL), _vertexData(NULL), _width(width), _height(height) {
+    : _width(width), _height(height) {
     /**
-     *    0__3
-     *    |\ |
-     *    | \|
-     *    1__2
+     *    0__1
+     *    | /|
+     *    |/ |
+     *    3__2
      */
-    GLushort indices[] = { 0, 1, 2, 0, 2, 3 };
-    GLfloat vertexData[] = {
-      -width,  height, 0.0f,  // Position 0
-      -width, -height, 0.0f,  // Position 1
-      width, -height, 0.0f,  // Position 2
-      width,  height, 0.0f,  // Position 3
-    };
 
-    // Copy aux arrays to the class' members
-    size_t length = 6*sizeof(GLushort);
-    _indices = new GLushort[length];
-    memcpy(_indices, indices, length);
-    length = 12*sizeof(GLfloat);
-    _vertexData = new GLfloat[length];
-    memcpy(_vertexData, vertexData, length);
+    _indices = new GLushort[6] { 0, 1, 2, 0, 2, 3 };
+    _vertexData = new GLfloat[20] {
+    // X        Y        Z
+      -_width,  _height, 0.0f, // Top-left
+       _width,  _height, 0.0f, // Top-right
+       _width, -_height, 0.0f, // Bottom-right
+      -_width, -_height, 0.0f, // Bottom-left
+    };
 
     // Set the shader
     this->loadGLProgram("shaders/rectangle.glvs", "shaders/rectangle.glfs");

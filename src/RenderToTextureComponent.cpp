@@ -4,7 +4,7 @@
 #include <EGL/egl.h>
 #include <EGL/eglplatform.h>
 
-#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 #include "RenderToTextureComponent.h"
@@ -13,36 +13,26 @@
 namespace argosClient {
 
   RenderToTextureComponent::RenderToTextureComponent(GLfloat width, GLfloat height)
-    : _indices(NULL), _framebufferObject(-1), _depthRenderbuffer(-1), _texture(-1),
+    : _framebufferObject(-1), _depthRenderbuffer(-1), _texture(-1),
       _texWidth(width), _texHeight(height) {
     /**
-     *    1__2
+     *    0__1
      *    | /|
      *    |/ |
-     *    0__3
+     *    3__2
      */
     // Screen resolution
     _screenWidth = GLContext::getInstance().getWidth();
     _screenHeight = GLContext::getInstance().getHeight();
 
-    GLushort indices[] = { 0, 1, 2, 0, 2, 3 };
-    GLfloat vertexData[] = { -_texWidth/(GLfloat)_screenWidth,-_texHeight/(GLfloat)_screenHeight, 0.0f, // Position 0
-                             0.0f,  0.0f, // TexCoord 0
-                             -_texWidth/(GLfloat)_screenWidth, _texHeight/(GLfloat)_screenHeight, 0.0f, // Position 1
-                             0.0f,  1.0f, // TexCoord 1
-                             _texWidth/(GLfloat)_screenWidth, _texHeight/(GLfloat)_screenHeight, 0.0f,  // Position 2
-                             1.0f,  1.0f, // TexCoord 2
-                             _texWidth/(GLfloat)_screenWidth,-_texHeight/(GLfloat)_screenHeight, 0.0f,  // Position 3
-                             1.0f,  0.0f  // TexCoord 3
+    _indices = new GLushort[6] { 0, 1, 2, 0, 2, 3 };
+    _vertexData = new GLfloat[20] {
+    // X           Y           Z     U     V
+      -_texWidth,  _texHeight, 0.0f, 0.0f, 0.0f, // Top-left
+       _texWidth,  _texHeight, 0.0f, 1.0f, 0.0f, // Top-right
+       _texWidth, -_texHeight, 0.0f, 1.0f, 1.0f, // Bottom-right
+      -_texWidth, -_texHeight, 0.0f, 0.0f, 1.0f  // Bottom-left
     };
-
-    // Copy aux arrays to the class' members
-    size_t length = 6*sizeof(GLushort);
-    _indices = new GLushort[length];
-    memcpy(_indices, indices, length);
-    length = 20*sizeof(GLfloat);
-    _vertexData = new GLfloat[length];
-    memcpy(_vertexData, vertexData, length);
 
     // Set the shader
     this->loadGLProgram("shaders/fbo.glvs", "shaders/fbo.glfs");
@@ -57,6 +47,11 @@ namespace argosClient {
 
     delete [] _indices;
     delete [] _vertexData;
+
+    for(auto& gc : _graphicComponents) {
+      delete gc;
+    }
+    _graphicComponents.clear();
   }
 
   int RenderToTextureComponent::genFrameBufferObject() {
@@ -82,8 +77,8 @@ namespace argosClient {
     glBindTexture(GL_TEXTURE_2D, _texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _texWidth, _texHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
     // Bind the framebuffer object and specify texture as color attachment
@@ -99,10 +94,13 @@ namespace argosClient {
     // All went ok?
     assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
 
-    // Reinitialize
+    // Unbind
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // Sets FBO projection matrix, so 1 unit = 1 pixel
+    _projection = glm::ortho(0.0f, _texWidth, 0.0f, _texHeight, 0.0f, 1.0f);
 
     return 0;
   }
@@ -162,6 +160,7 @@ namespace argosClient {
   }
 
   void RenderToTextureComponent::addGraphicComponent(GraphicComponent* graphicComponent) {
+    graphicComponent->setProjectionMatrix(_projection);
     _graphicComponents.push_back(graphicComponent);
   }
 
