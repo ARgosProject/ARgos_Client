@@ -26,11 +26,12 @@ extern "C"
 #include <raspicam/raspicam_cv.h>
 #include <CameraProjectorSystem.hpp>
 
-// Task delegation and OpenGL Stuff
+// Task delegation, OpenGL Stuff and script engine
 #include "TaskDelegation.h"
 #include "GLContext.h"
 #include "GraphicComponent.h"
 #include "ImageComponent.h"
+#include "ScriptManager.h"
 
 // RaspberryPi stuff
 #include "bcm_host.h"
@@ -118,12 +119,18 @@ int main(int argc, char **argv) {
   glContext.setScreen(0, 0, SCREEN_W, SCREEN_H);
   glContext.setProjectionMatrix(glm::make_mat4(projection_matrix));
 
+  // Script engine
+  ScriptManager& scriptManager = ScriptManager::getInstance();
+  scriptManager.loadScripts("data/scripts_list.xml");
+
   //makeIntroduction(glContext, Camera, td, 10, projection_matrix);
 
   glContext.start();
   while(1) {
     Camera.grab();
     Camera.retrieve(currentFrame);
+
+    scriptManager.update();
 
     paper_t paper;
     td->run(currentFrame, paper);

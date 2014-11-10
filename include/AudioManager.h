@@ -28,7 +28,6 @@ namespace argosClient {
 
   private:
     std::map<std::string, Mix_Chunk*> _soundsMap;
-
   };
 
 }
