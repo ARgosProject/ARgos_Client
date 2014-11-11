@@ -3,7 +3,7 @@
 
 #include <string>
 #include <thread>
-#include <chrono>
+#include <condition_variable>
 #include <boost/asio.hpp>
 
 #include <GLES2/gl2.h>
@@ -12,6 +12,7 @@
 #include "GraphicComponent.h"
 #include "VideoThread.h"
 #include "GfxProgram.h"
+#include "Timer.h"
 
 using boost::asio::ip::udp;
 
@@ -86,14 +87,15 @@ namespace argosClient {
     bool _receive; ///< Whether the component has received a new frame or not
     cv::Mat _receivedFrame; ///< The received frame
     std::thread* _videoThread; ///< A thread object used to receive video concurrently
+    std::condition_variable _conditionVariable;
+    std::mutex _mutex;
 
     /** @name Timeouts
      *  Timers used to simulate timeouts when no video is received for 1 second
      *  This way we can stop rendering the video stream component if no new video frame is received
      */
     ///@{
-    std::chrono::time_point<std::chrono::high_resolution_clock> _begin;
-    std::chrono::time_point<std::chrono::high_resolution_clock> _end;
+    Timer _timer;
     ///@}
   };
 

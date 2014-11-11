@@ -84,11 +84,11 @@ int main(int argc, char **argv) {
   //-- Open VideoCapture -----
   raspicam::RaspiCam_Cv Camera; // Internal camera
   /*cv::VideoCapture Camera(0);*/ // USB camera
-  Camera.set(CV_CAP_PROP_FORMAT, CV_8UC1);
+  Camera.set(CV_CAP_PROP_FORMAT, CV_8UC3);
   Camera.set(CV_CAP_PROP_FRAME_WIDTH, SCREEN_W_CAMERA);
   Camera.set(CV_CAP_PROP_FRAME_HEIGHT, SCREEN_H_CAMERA);
-  Camera.set(CV_CAP_PROP_CONTRAST, 55);
-  Camera.set(CV_CAP_PROP_SATURATION, 55);
+  //Camera.set(CV_CAP_PROP_CONTRAST, 55);
+  //Camera.set(CV_CAP_PROP_SATURATION, 55);
   //Camera.set(CV_CAP_PROP_GAIN, 55);
 
   Log::info("Abriendo cámara...");

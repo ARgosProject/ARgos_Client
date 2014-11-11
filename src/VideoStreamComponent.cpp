@@ -61,7 +61,7 @@ namespace argosClient {
 
       Log::video("Esperando nuevo fotograma de vídeo.");
 
-      _begin = std::chrono::high_resolution_clock::now();
+      _timer.start();
 
       // Type.
       udpSocket.receive_from(boost::asio::buffer(&type_buf, sizeof(int)), udpSenderEndpoint);
@@ -77,7 +77,10 @@ namespace argosClient {
       std::vector<unsigned char> transformed(&data_buf[0], &data_buf[size]);
       delete [] data_buf;
 
+      std::unique_lock<std::mutex> lock(_mutex);
+      _conditionVariable.wait(lock);
       _receivedFrame = cv::imdecode(transformed, CV_LOAD_IMAGE_UNCHANGED);
+      _conditionVariable.notify_all();
 
       Log::video(std::to_string(bytes) + " bytes de video recibidos.");
 
@@ -152,8 +155,7 @@ namespace argosClient {
   }
 
   void VideoStreamComponent::specificRender() {
-    _end = std::chrono::high_resolution_clock::now();
-    if(std::chrono::duration_cast<std::chrono::seconds>(_end - _begin).count() > 1) {
+    if(_timer.getSeconds() > 1) {
       _ready = false;
     }
 
@@ -168,7 +170,10 @@ namespace argosClient {
       glUniformMatrix4fv(_mvpHandler, 1, GL_FALSE, glm::value_ptr(_projectionMatrix * _modelViewMatrix * _model));
 
       if(_receive) {
+        std::unique_lock<std::mutex> lock(_mutex);
+        _conditionVariable.wait(lock);
         makeVideoTexture(_receivedFrame);
+        _conditionVariable.notify_all();
       }
 
       glActiveTexture(GL_TEXTURE0);
