@@ -5,38 +5,42 @@
 
 using namespace std::chrono;
 
-class Timer {
-public:
-  void start() {
-    epoch = high_resolution_clock::now();
-  }
+namespace argosClient {
 
-  high_resolution_clock::duration elapsed() const {
-    return high_resolution_clock::now() - epoch;
-  }
+  class Timer {
+  public:
+    void start() {
+      epoch = high_resolution_clock::now();
+    }
 
-  hours::rep getHours() const {
-    return duration_cast<hours>(elapsed()).count();
-  }
+    high_resolution_clock::duration elapsed() const {
+      return high_resolution_clock::now() - epoch;
+    }
 
-  minutes::rep getMinutes() const {
-    return duration_cast<minutes>(elapsed()).count();
-  }
+    hours::rep getHours() const {
+      return duration_cast<hours>(elapsed()).count();
+    }
 
-  seconds::rep getSeconds() const {
-    return duration_cast<seconds>(elapsed()).count();
-  }
+    minutes::rep getMinutes() const {
+      return duration_cast<minutes>(elapsed()).count();
+    }
 
-  milliseconds::rep getMilliseconds() const {
-    return duration_cast<milliseconds>(elapsed()).count();
-  }
+    seconds::rep getSeconds() const {
+      return duration_cast<seconds>(elapsed()).count();
+    }
 
-  microseconds::rep getMicroseconds() const {
-    return duration_cast<microseconds>(elapsed()).count();
-  }
+    milliseconds::rep getMilliseconds() const {
+      return duration_cast<milliseconds>(elapsed()).count();
+    }
 
-private:
-  high_resolution_clock::time_point epoch;
-};
+    microseconds::rep getMicroseconds() const {
+      return duration_cast<microseconds>(elapsed()).count();
+    }
+
+  private:
+    high_resolution_clock::time_point epoch;
+  };
+
+}
 
 #endif

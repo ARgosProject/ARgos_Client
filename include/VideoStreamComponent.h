@@ -87,7 +87,6 @@ namespace argosClient {
     bool _receive; ///< Whether the component has received a new frame or not
     cv::Mat _receivedFrame; ///< The received frame
     std::thread* _videoThread; ///< A thread object used to receive video concurrently
-    std::condition_variable _conditionVariable;
     std::mutex _mutex;
 
     /** @name Timeouts

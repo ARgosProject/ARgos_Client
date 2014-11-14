@@ -77,10 +77,9 @@ namespace argosClient {
       std::vector<unsigned char> transformed(&data_buf[0], &data_buf[size]);
       delete [] data_buf;
 
-      std::unique_lock<std::mutex> lock(_mutex);
-      _conditionVariable.wait(lock);
+      _mutex.lock();
       _receivedFrame = cv::imdecode(transformed, CV_LOAD_IMAGE_UNCHANGED);
-      _conditionVariable.notify_all();
+      _mutex.unlock();
 
       Log::video(std::to_string(bytes) + " bytes de video recibidos.");
 
@@ -170,10 +169,7 @@ namespace argosClient {
       glUniformMatrix4fv(_mvpHandler, 1, GL_FALSE, glm::value_ptr(_projectionMatrix * _modelViewMatrix * _model));
 
       if(_receive) {
-        std::unique_lock<std::mutex> lock(_mutex);
-        _conditionVariable.wait(lock);
         makeVideoTexture(_receivedFrame);
-        _conditionVariable.notify_all();
       }
 
       glActiveTexture(GL_TEXTURE0);
