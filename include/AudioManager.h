@@ -14,20 +14,23 @@ namespace argosClient {
     AudioManager();
     ~AudioManager();
 
-    void preload(const std::string& sound_name, const std::string& file_name);
+    void setSoundsPath(const std::string& path);
+    void preload(const std::string& file_name);
+    void preloadAll();
 
-    void play(const std::string& sound_name);
+    void play(const std::string& file_name);
     void pause();
     void resume();
     void stop();
 
-    void volume(const std::string& sound_name, int val);
+    void volume(const std::string& file_name, int val);
     void volumeAll(int val);
 
     int isPlaying();
 
   private:
     std::map<std::string, Mix_Chunk*> _soundsMap;
+    std::string _soundsPath;
   };
 
 }

@@ -38,7 +38,8 @@ namespace argosClient {
     float height = 29.7f / 2.0f;
 
     // Audio preloading
-    AudioManager::getInstance().preload("Ayuda:Videoconferencia", "media/ayudaVideoConferencia.wav");
+    AudioManager::getInstance().setSoundsPath("media/sounds/");
+    AudioManager::getInstance().preloadAll();
 
     // Background
     ImageComponent* bg1 = new ImageComponent("media/background.jpg", 1.0, 1.0);
@@ -301,7 +302,7 @@ namespace argosClient {
 
       if(!runOnce[1]) {
         runOnce[1] = true;
-        //AudioManager::getInstance().play("Ayuda:Videoconferencia");
+        AudioManager::getInstance().play("ayudaVideoConferencia.wav");
       }
       break;
     case 3:

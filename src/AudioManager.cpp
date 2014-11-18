@@ -2,6 +2,7 @@
 #include "Log.h"
 #include <SDL/SDL.h>
 #include <SDL/SDL_mixer.h>
+#include <dirent.h>
 
 namespace argosClient {
 
@@ -26,17 +27,46 @@ namespace argosClient {
 
   }
 
-  void AudioManager::preload(const std::string& sound_name, const std::string& file_name) {
-    _soundsMap[sound_name] = Mix_LoadWAV(file_name.c_str());
+  void AudioManager::setSoundsPath(const std::string& path) {
+    _soundsPath = path;
+  }
 
-    if(_soundsMap[sound_name] == NULL) {
-      Log::error("No se pudo cargar el sonido: " + file_name);
+  void AudioManager::preload(const std::string& file_name) {
+    _soundsMap[file_name] = Mix_LoadWAV((_soundsPath + file_name).c_str());
+
+    if(_soundsMap[file_name] == NULL) {
+      Log::error("Error loading the sound: '" + _soundsPath + file_name + "'");
+      SDL_Quit();
+    }
+
+    Log::success("Sound '" + _soundsPath + file_name + "' successfully loaded");
+  }
+
+  void AudioManager::preloadAll() {
+    DIR *dir;
+    dirent *ent;
+
+    if((dir = opendir(_soundsPath.c_str())) != NULL) {
+      while((ent = readdir(dir)) != NULL) {
+        if((strcmp(ent->d_name, ".") != 0) && (strcmp(ent->d_name, "..") != 0))
+          preload(ent->d_name);
+      }
+      closedir(dir);
+    }
+    else {
+      Log::error("There was an error loading the sounds from '" + _soundsPath + "'. Aborting");
       SDL_Quit();
     }
   }
 
-  void AudioManager::play(const std::string& sound_name) {
-    Mix_PlayChannel(-1, _soundsMap[sound_name], 0);
+  void AudioManager::play(const std::string& file_name) {
+    if(_soundsMap.find(file_name) != _soundsMap.end()) {
+      Mix_PlayChannel(-1, _soundsMap[file_name], 0);
+    }
+    else {
+      preload(file_name);
+      play(file_name);
+    }
   }
 
   void AudioManager::pause() {
@@ -51,8 +81,8 @@ namespace argosClient {
     Mix_HaltChannel(-1);
   }
 
-  void AudioManager::volume(const std::string& sound_name, int val) {
-    Mix_VolumeChunk(_soundsMap[sound_name], val);
+  void AudioManager::volume(const std::string& file_name, int val) {
+    Mix_VolumeChunk(_soundsMap[file_name], val);
   }
 
   void AudioManager::volumeAll(int val) {

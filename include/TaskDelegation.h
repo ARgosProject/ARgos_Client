@@ -72,7 +72,7 @@ namespace argosClient {
      * @param port The port of the server application
      * @return 0 if no errors. Otherwise < 0
      */
-    int connect(const std::string& ip, const std::string& port);
+    int connect(const std::string& socketStr);
 
     /**
      * Tries to reconnect to the server if communication has been lost

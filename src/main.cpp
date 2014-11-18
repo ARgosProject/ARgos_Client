@@ -50,18 +50,21 @@ using namespace argosClient;
 void makeIntroduction(GLContext& glContext, raspicam::RaspiCam_Cv& cam, TaskDelegation* td, float duration, float* projection_matrix);
 
 int main(int argc, char **argv) {
+  if(argc < 2) {
+    std::cout << "Usage: " + std::string(argv[0]) + " <ip:port>" << std::endl;
+    return 0;
+  }
+
   atexit(bcm_host_deinit);
   bcm_host_init();
+
   Log::setColouredOutput(isatty(fileno(stdout)));
-  Log::info("Inicializando ARgos...");
+  Log::info("Launching ARgos Client...");
 
   // Task delegation stuff (client)
-  TaskDelegation* td = NULL;
-  if(argc > 2) {
-    td = new TaskDelegation();
-    while(td->connect(argv[1], argv[2]) < 0) {
-      usleep(1 * 1000 * 1000); // Wait 1 second before trying to reconnect
-    }
+  TaskDelegation* td = new TaskDelegation();
+  while(td->connect(argv[1]) < 0) {
+    usleep(1 * 1000 * 1000); // Wait 1 second before trying to reconnect
   }
 
   // Images

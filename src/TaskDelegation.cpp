@@ -7,7 +7,7 @@
 
 namespace argosClient {
 
-  TaskDelegation::TaskDelegation() : _ip("-1"), _port("-1"), _error(false) {
+  TaskDelegation::TaskDelegation() : _ip("-1"), _port("-1"), _error(0) {
     _tcpSocket = new tcp::socket(_ioService);
     _tcpResolver = new tcp::resolver(_ioService);
   }
@@ -22,14 +22,18 @@ namespace argosClient {
     }
   }
 
-  int TaskDelegation::connect(const std::string& ip, const std::string& port) {
+  int TaskDelegation::connect(const std::string& socketStr) {
     try {
       _error = 0;
 
-      Log::info("Intentando conectar al servidor " + ip + ":" + port + "...");
-      boost::asio::connect(*_tcpSocket, _tcpResolver->resolve({ip, port}));
+      std::stringstream ss(socketStr);
+      std::getline(ss, _ip, ':');
+      std::getline(ss, _port, ':');
+
+      Log::info("Intentando conectar al servidor " + _ip + ":" + _port + "...");
+      boost::asio::connect(*_tcpSocket, _tcpResolver->resolve({_ip, _port}));
       Log::success("Conectado satisfactoriamente.");
-      _ip = ip; _port = port;
+
     }
     catch(boost::system::system_error const& e) {
       Log::error("No se pudo conectar al servidor de ARgos. " + std::string(e.what()));
