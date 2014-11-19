@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
   cout << "Loading camera & projector parameters... " << endl;
   //- Camera Parameters ----
   CameraProjectorSystem cameraProjector;
-  cameraProjector.load("calibrationCamera.yml", "calibrationProjector.yml", "CameraProjectorExtrinsics.yml");
+  cameraProjector.load("calibrationCamera.xml", "calibrationProjector.xml", "CameraProjectorExtrinsics.xml");
   if(!cameraProjector.isValid()){
     cout << "! Camera or projector parameters is not set, need to run the calibrator tool" << endl;
     exit(1);

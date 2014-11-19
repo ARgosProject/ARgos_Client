@@ -74,10 +74,9 @@ namespace argosClient {
 
     // Corners
     std::vector<GraphicComponent*> corners = makeCorners(1.0f, 1.0f, 1.0f, 1.0f);
-    std::for_each(_graphicComponents.begin(), _graphicComponents.end(),
-                  [&corners](const std::map<std::string, GraphicComponent*>::value_type& p) {
-                    corners.push_back(p.second);
-                  });
+    for(int i = 0; i < corners.size(); ++i) {
+      _graphicComponents["corner_" + std::to_string(i)] = corners[i];
+    }
 
     // Facturas
     // -96.4 59.7
