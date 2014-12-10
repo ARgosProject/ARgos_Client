@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <chrono>
+#include <csignal>
 
 // ffmpeg
 #ifdef __cplusplus
@@ -47,7 +48,10 @@ using namespace std;
 using namespace cv;
 using namespace argosClient;
 
+sig_atomic_t g_loop = true;
+
 void makeIntroduction(GLContext& glContext, raspicam::RaspiCam_Cv& cam, TaskDelegation* td, float duration, float* projection_matrix);
+void signals_function_handler(int signum);
 
 int main(int argc, char **argv) {
   if(argc < 2) {
@@ -57,6 +61,13 @@ int main(int argc, char **argv) {
 
   atexit(bcm_host_deinit);
   bcm_host_init();
+
+  // SIGINT registration
+  struct sigaction sigIntHandler;
+  sigIntHandler.sa_handler = signals_function_handler;
+  sigemptyset(&sigIntHandler.sa_mask);
+  sigIntHandler.sa_flags = 0;
+  sigaction(SIGINT, &sigIntHandler, NULL);
 
   Log::setColouredOutput(isatty(fileno(stdout)));
   Log::info("Launching ARgos Client...");
@@ -79,7 +90,7 @@ int main(int argc, char **argv) {
   CameraProjectorSystem cameraProjector;
   cameraProjector.load("calibrationCamera.xml", "calibrationProjector.xml", "CameraProjectorExtrinsics.xml");
   if(!cameraProjector.isValid()){
-    cout << "! Camera or projector parameters is not set, need to run the calibrator tool" << endl;
+    Log::error("Camera or projector parameters is not set, need to run the calibrator tool.");
     exit(1);
   }
 
@@ -96,11 +107,11 @@ int main(int argc, char **argv) {
   Log::info("Abriendo cámara...");
   Camera.open();
   if(!Camera.isOpened()) {
-    Log::error("Ocurrió un error al abrir el dispositivo.");
+    Log::error("Failed opening the camera.");
     return -1;
   }
-  Log::info("Cámara abierta correctamente.");
-  Log::info("ARgos en ejecución.");
+  Log::info("Camera open correctly.");
+  Log::info("ARgos executing.");
 
   //Set the appropriate projection matrix so that rendering is done in a enrvironment like the real camera (without distorsion)
   cv::Size imgSize(SCREEN_W_CAMERA, SCREEN_H_CAMERA);
@@ -124,7 +135,7 @@ int main(int argc, char **argv) {
   //makeIntroduction(glContext, Camera, td, 10, projection_matrix);
 
   glContext.start();
-  while(1) {
+  while(g_loop) {
     Camera.grab();
     Camera.retrieve(currentFrame);
 
@@ -135,9 +146,9 @@ int main(int argc, char **argv) {
     glContext.render();
   }
 
-  Log::info("Deteniendo la cámara...");
+  Log::info("Stopping the camera...");
   Camera.release();
-  Log::info("Todo apagado correctamente.");
+  Log::info("Shutdown successed.");
 
   return 0;
 }
@@ -176,4 +187,15 @@ void makeIntroduction(GLContext& glContext, raspicam::RaspiCam_Cv& cam, TaskDele
   }
 
   glContext.removeGraphicComponent("Cover");
+}
+
+void signals_function_handler(int signum) {
+  switch(signum) {
+  case SIGINT:
+    Log::info("Signal " + std::to_string(signum) + " (SIGINT) caught.");
+    g_loop = false;
+    break;
+  default:
+    break;
+  }
 }
