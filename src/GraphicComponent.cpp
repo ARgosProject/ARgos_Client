@@ -54,12 +54,12 @@ namespace argosClient {
     _model *= glm::translate(glm::mat4(1.0f), position);
   }
 
-  void GraphicComponent::setModelViewMatrix(glm::mat4 modelViewMatrix) {
+  void GraphicComponent::setModelViewMatrix(const glm::mat4& modelViewMatrix) {
     if(_noUpdate) return;
     _modelViewMatrix = modelViewMatrix;
   }
 
-  void GraphicComponent::setProjectionMatrix(glm::mat4 projectionMatrix) {
+  void GraphicComponent::setProjectionMatrix(const glm::mat4& projectionMatrix) {
     _projectionMatrix = projectionMatrix;
   }
 

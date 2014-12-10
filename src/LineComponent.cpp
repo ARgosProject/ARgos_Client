@@ -5,7 +5,8 @@
 
 namespace argosClient {
 
-  LineComponent::LineComponent(glm::vec3 const & src, glm::vec3 const & dst) {
+  LineComponent::LineComponent(glm::vec3 const & src, glm::vec3 const & dst, GLfloat width)
+    : _width(width) {
     /**
      *    0
      *    |
@@ -44,7 +45,7 @@ namespace argosClient {
 
     glUniformMatrix4fv(_mvpHandler, 1, GL_FALSE, glm::value_ptr(_projectionMatrix * _modelViewMatrix * _model));
 
-    glLineWidth(3.0f);
+    glLineWidth(_width);
     glDrawElements(GL_LINES, 2, GL_UNSIGNED_SHORT, _indices);
   }
 

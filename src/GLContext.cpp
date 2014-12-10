@@ -18,6 +18,7 @@
 #include "VideoStreamComponent.h"
 #include "AudioManager.h"
 #include "Log.h"
+#include "GraphicComponentsManager.h"
 
 namespace argosClient {
 
@@ -27,6 +28,7 @@ namespace argosClient {
   }
 
   GLContext::~GLContext() {
+    GraphicComponentsManager::getInstance().destroy();
     for(auto& gc : _graphicComponents) {
       delete gc.second;
     }
@@ -41,9 +43,11 @@ namespace argosClient {
     AudioManager::getInstance().setSoundsPath("media/sounds/");
     AudioManager::getInstance().preloadAll();
 
+    GraphicComponentsManager::getInstance().setProjectionMatrix(_projectionMatrix);
+
     // Background
     ImageComponent* bg1 = new ImageComponent("media/background.jpg", 1.0, 1.0);
-    bg1->noUpdate(true);
+    bg1->noUpdate();
     _graphicComponents["Background1"] = bg1;
 
     // Camera frame
@@ -52,7 +56,7 @@ namespace argosClient {
     //_gc.push_back(im);
 
     // Video stream background
-    ImageComponent* bg2 = new ImageComponent("media/videoconference.jpg", width, height);
+    /*ImageComponent* bg2 = new ImageComponent("media/videoconference.jpg", width, height);
     bg2->setProjectionMatrix(_projectionMatrix);
     bg2->show(false);
     _graphicComponents["Background2"] = bg2;
@@ -63,7 +67,7 @@ namespace argosClient {
     videoStream->setProjectionMatrix(_projectionMatrix);
     videoStream->setPosition(glm::vec3(0.0f, 5.6f, 0.0f));
     videoStream->setScale(glm::vec3(1.055f, 0.85f, 1.0f));
-    _graphicComponents["Videostream"] = videoStream;
+    _graphicComponents["Videostream"] = videoStream;*/
 
     // Sample text
     //std::vector<GraphicComponent*> textLines = makeText(L"", 1.0f, 1.0f, 1.0f);
@@ -71,6 +75,8 @@ namespace argosClient {
     //_gcMap["Line2"] = textLines[1];
     //_gcMap["Line3"] = textLines[2];
     //_gcList.insert(_gcList.end(), textLines.begin(), textLines.end());
+
+    GraphicComponentsManager::getInstance().createVideoStream("Videostream", "media/videoconference.jpg", width, height, 9999)->show(true);
 
     // Corners
     std::vector<GraphicComponent*> corners = makeCorners(1.0f, 1.0f, 1.0f, 1.0f);
@@ -94,7 +100,7 @@ namespace argosClient {
       _graphicComponents["Test"] = text;
     */
 
-    GraphicComponent* factureSinovo =
+    /*GraphicComponent* factureSinovo =
       makeFacture(glm::vec2(469.0f, 760.0f),
                   glm::vec4(0.086f, 0.474f, 0.69, 1.0f),
                   L"SINOVO",
@@ -106,12 +112,22 @@ namespace argosClient {
                     std::make_pair(L"AYUDA POR\nVIDEO CONFERENCIA",
                                    glm::vec3(300.0f, 50.0f, 0.0f))
                   });
-    _graphicComponents["Sinovo"] = factureSinovo;
+                  _graphicComponents["Sinovo"] = factureSinovo;*/
+
+    GraphicComponentsManager::getInstance().createFactureHint("FactureSinovo",
+                                                              glm::vec2(469.0f, 760.0f),
+                                                              glm::vec4(0.086f, 0.474f, 0.69, 1.0f),
+                                                              L"SINOVO",
+                                                              {
+                                                                std::make_pair(L"Comprobar\nel descuento\naplicado", glm::vec3(100.0f, 50.0f, 0.0f)),
+                                                                std::make_pair(L"Con este proveedor\ntenemos un descuento a\naplicar del 3% sobre el\nprecio final de la factura", glm::vec3(200.0f, 50.0f, 0.0f)),
+                                                                std::make_pair(L"AYUDA POR\nVIDEO CONFERENCIA", glm::vec3(300.0f, 50.0f, 0.0f))
+                                                              })->show(true);
 
     _state = State::FETCH_PAPERS;
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    Log::success("Contexto OpenGL ES 2.0 inicializado");
+    Log::success("OpenGL 2.0 context initialized.");
   }
 
   std::vector<GraphicComponent*> GLContext::makeAxis(GLfloat axis_length) {
@@ -285,7 +301,7 @@ namespace argosClient {
       runOnce[1] = false; runOnce[2] = false; runOnce[3] = false;
 
       _graphicComponents["Neobiz"]->show(true);
-      _graphicComponents["Sinovo"]->show(false);
+      //_graphicComponents["Sinovo"]->show(false);
       _graphicComponents["Active"]->show(false);
 
       if(!runOnce[0]) {
@@ -296,7 +312,7 @@ namespace argosClient {
       runOnce[0] = false; runOnce[2] = false; runOnce[3] = false;
 
       _graphicComponents["Neobiz"]->show(false);
-      _graphicComponents["Sinovo"]->show(true);
+      //_graphicComponents["Sinovo"]->show(true);
       _graphicComponents["Active"]->show(false);
 
       if(!runOnce[1]) {
@@ -308,7 +324,7 @@ namespace argosClient {
       runOnce[0] = false; runOnce[1] = false; runOnce[3] = false;
 
       _graphicComponents["Neobiz"]->show(false);
-      _graphicComponents["Sinovo"]->show(false);
+      //_graphicComponents["Sinovo"]->show(false);
       _graphicComponents["Active"]->show(true);
 
       if(!runOnce[2]) {
@@ -320,7 +336,7 @@ namespace argosClient {
 
       _graphicComponents["Background2"]->show(true);
       _graphicComponents["Neobiz"]->show(false);
-      _graphicComponents["Sinovo"]->show(false);
+      //_graphicComponents["Sinovo"]->show(false);
       _graphicComponents["Active"]->show(false);
 
       if(!runOnce[3]) {
@@ -330,7 +346,7 @@ namespace argosClient {
     default:
       runOnce[0] = false; runOnce[1] = false; runOnce[2] = false; runOnce[3] = false;
       _graphicComponents["Neobiz"]->show(false);
-      _graphicComponents["Sinovo"]->show(false);
+      //_graphicComponents["Sinovo"]->show(false);
       _graphicComponents["Active"]->show(false);
       break;
     }
@@ -340,6 +356,7 @@ namespace argosClient {
     bool next = true;
 
     glm::mat4 modelview_matrix = glm::make_mat4(paper.modelview_matrix);
+    GraphicComponentsManager::getInstance().update(modelview_matrix);
     for(auto& gc : _graphicComponents) {
       gc.second->setModelViewMatrix(modelview_matrix);
     }

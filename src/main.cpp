@@ -148,6 +148,10 @@ int main(int argc, char **argv) {
 
   Log::info("Stopping the camera...");
   Camera.release();
+
+  Log::info("Releasing the OpenGL 2.0 context...");
+  glContext.destroy();
+
   Log::info("Shutdown successed.");
 
   return 0;

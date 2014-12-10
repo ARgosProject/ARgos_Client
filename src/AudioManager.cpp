@@ -35,7 +35,7 @@ namespace argosClient {
     _soundsMap[file_name] = Mix_LoadWAV((_soundsPath + file_name).c_str());
 
     if(_soundsMap[file_name] == NULL) {
-      Log::error("Error loading the sound: '" + _soundsPath + file_name + "'");
+      Log::error("Loading the sound: '" + _soundsPath + file_name + "'");
       SDL_Quit();
     }
 

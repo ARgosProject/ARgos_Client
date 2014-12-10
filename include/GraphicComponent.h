@@ -85,13 +85,13 @@ namespace argosClient {
      * Sets the model view matrix for this graphic component
      * @param modelViewMatrix The model view matrix
      */
-    virtual void setModelViewMatrix(glm::mat4 modelViewMatrix);
+    virtual void setModelViewMatrix(const glm::mat4& modelViewMatrix);
 
     /**
      * Sets the projection matrix for this graphic component
      * @param projectionMatrix The projection matrix
      */
-    virtual void setProjectionMatrix(glm::mat4 projectionMatrix);
+    virtual void setProjectionMatrix(const glm::mat4& projectionMatrix);
 
     /**
      * States if this GC should be drawed or not

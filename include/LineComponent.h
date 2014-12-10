@@ -18,8 +18,9 @@ namespace argosClient {
      * Constructs a new straight line
      * @param src The starting point of the line
      * @param dst The end point of the line
+     * @param width The line width
      */
-    LineComponent(glm::vec3 const & src, glm::vec3 const & dst);
+    LineComponent(glm::vec3 const & src, glm::vec3 const & dst, GLfloat width = 3.0f);
 
     /**
      * Destroys the line
@@ -40,6 +41,7 @@ namespace argosClient {
   private:
     GLushort* _indices; ///< Indices defining the shared vertex of the triangles
     GLfloat* _vertexData; ///< Positions of the vertex and their uv mapping
+    GLfloat _width; ///< The line width
   };
 
 }
