@@ -24,7 +24,7 @@ namespace argosClient {
   }
 
   GCCollection::~GCCollection() {
-    Log::info("Releasing all graphic componens from collection '" + _name + "'...");
+    Log::info("Releasing all graphic components from collection '" + _name + "'...");
     _graphicComponents.clear();
   }
 
@@ -52,6 +52,21 @@ namespace argosClient {
     for(auto& gc : _graphicComponents) {
       gc->setModelViewMatrix(modelViewMatrix);
     }
+  }
+
+  GCCollection::GCCollection(const GCCollection& other)
+    : _name(other._name), _graphicComponents(other._graphicComponents), _isShowing(other._isShowing) {
+
+  }
+
+  GCCollection& GCCollection::operator=(const GCCollection& other) {
+    if(this != &other) {
+      _name = other._name;
+      _graphicComponents = other._graphicComponents;
+      _isShowing = other._isShowing;
+    }
+
+    return *this;
   }
 
 }

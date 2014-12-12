@@ -77,9 +77,9 @@ namespace argosClient {
     //_gcMap["Line3"] = textLines[2];
     //_gcList.insert(_gcList.end(), textLines.begin(), textLines.end());
 
-    GraphicComponentsManager::getInstance().createVideoStream("Videostream", "media/images/videoconference.jpg", width, height, 9999).show(true);
-    GraphicComponentsManager::getInstance().createVideoFromFile("Video", "media/videos/Test.avi", width, height).show(true);
-    GraphicComponentsManager::getInstance().createCorners("Corners", 1.0f, 3.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)).show(true);
+    GraphicComponentsManager::getInstance().createVideoStream("Videostream", "media/images/videoconference.jpg", width, height, 9999)->show(false);
+    GraphicComponentsManager::getInstance().createVideoFromFile("Video", "media/videos/Megamind.avi", width / 2.0f, height / 2.0f)->show(true);
+    GraphicComponentsManager::getInstance().createCorners("Corners", 1.0f, 3.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f))->show(true);
 
     // Corners
     /*std::vector<GraphicComponent*> corners = makeCorners(1.0f, 1.0f, 1.0f, 1.0f);
@@ -125,7 +125,7 @@ namespace argosClient {
                                                                 std::make_pair(L"Comprobar\nel descuento\naplicado", glm::vec3(100.0f, 50.0f, 0.0f)),
                                                                 std::make_pair(L"Con este proveedor\ntenemos un descuento a\naplicar del 3% sobre el\nprecio final de la factura", glm::vec3(200.0f, 50.0f, 0.0f)),
                                                                 std::make_pair(L"AYUDA POR\nVIDEO CONFERENCIA", glm::vec3(300.0f, 50.0f, 0.0f))
-                                                              }).show(true);
+                                                              })->show(false);
 
     _state = State::FETCH_PAPERS;
 

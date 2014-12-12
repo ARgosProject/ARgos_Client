@@ -13,13 +13,14 @@
 namespace argosClient {
 
   class GraphicComponentsManager : public Singleton<GraphicComponentsManager> {
-    using GCCollectionMap = std::map<std::string, GCCollection>;
+    using GCCollectionPtr = std::shared_ptr<GCCollection>;
+    using GCCollectionMap = std::map<std::string, GCCollectionPtr>;
 
   public:
     GraphicComponentsManager();
     ~GraphicComponentsManager();
 
-    const GCCollection& getGCCollections(const std::string& name);
+    GCCollectionPtr getGCCollection(const std::string& name);
     void removeGCCollection(const std::string& name);
 
     void showGCCollection(const std::string& name, bool show = true);
@@ -29,15 +30,15 @@ namespace argosClient {
 
     // Builders
     void setProjectionMatrix(const glm::mat4& projectionMatrix);
-    GCCollection& createVideoFromFile(const std::string& name, const std::string& file_name, float width, float height);
-    GCCollection& createCorners(const std::string& name, float length, float wide, const glm::vec4& colour);
-    GCCollection& createAxis(const std::string& name, float axis_length, const glm::vec3& pos);
-    GCCollection& createVideoStream(const std::string& name, const std::string& bg_file, float width, float height, int port);
-    GCCollection& createTextPanel(const std::string& name, const glm::vec4& colour, const std::string& text);
-    GCCollection& createHighlight(const std::string& name, const glm::vec4& colour, const glm::vec3& pos, const glm::vec3& scale);
-    GCCollection& createButton(const std::string& name, const glm::vec4& colour, const std::string& text);
-    GCCollection& createFactureHint(const std::string& name, const glm::vec2& size, const glm::vec4& colour, const std::wstring& title,
-                                    const std::vector<std::pair<std::wstring, glm::vec3>>& textBlocks);
+    GCCollectionPtr createVideoFromFile(const std::string& name, const std::string& file_name, float width, float height);
+    GCCollectionPtr createCorners(const std::string& name, float length, float wide, const glm::vec4& colour);
+    GCCollectionPtr createAxis(const std::string& name, float axis_length, const glm::vec3& pos);
+    GCCollectionPtr createVideoStream(const std::string& name, const std::string& bg_file, float width, float height, int port);
+    GCCollectionPtr createTextPanel(const std::string& name, const glm::vec4& colour, const std::string& text);
+    GCCollectionPtr createHighlight(const std::string& name, const glm::vec4& colour, const glm::vec3& pos, const glm::vec3& scale);
+    GCCollectionPtr createButton(const std::string& name, const glm::vec4& colour, const std::string& text);
+    GCCollectionPtr createFactureHint(const std::string& name, const glm::vec2& size, const glm::vec4& colour, const std::wstring& title,
+                                      const std::vector<std::pair<std::wstring, glm::vec3>>& textBlocks);
 
   private:
     GCCollectionMap _gcCollections;

@@ -24,7 +24,7 @@ namespace argosClient {
     _gcCollections.clear();
   }
 
-  const GCCollection& GraphicComponentsManager::getGCCollections(const std::string& name) {
+  GraphicComponentsManager::GCCollectionPtr GraphicComponentsManager::getGCCollection(const std::string& name) {
     if(_gcCollections.find(name) == _gcCollections.end()) {
       Log::error("Could not get the GCCollection named '" + name + "'");
       exit(1);
@@ -43,22 +43,22 @@ namespace argosClient {
       Log::error("Could not show the GCCollection named '" + name + "'");
     }
 
-    _gcCollections[name].show(show);
+    _gcCollections[name]->show(show);
   }
 
   void GraphicComponentsManager::render(const std::string& name) {
-    _gcCollections[name].render();
+    _gcCollections[name]->render();
   }
 
   void GraphicComponentsManager::renderAll() {
     for(auto& gcc : _gcCollections) {
-      gcc.second.render();
+      gcc.second->render();
     }
   }
 
   void GraphicComponentsManager::update(const glm::mat4& modelViewMatrix) {
     for(auto& gcc : _gcCollections) {
-      gcc.second.update(modelViewMatrix);
+      gcc.second->update(modelViewMatrix);
     }
   }
 
@@ -66,22 +66,22 @@ namespace argosClient {
     _projectionMatrix = projectionMatrix;
   }
 
-  GCCollection& GraphicComponentsManager::createVideoFromFile(const std::string& name, const std::string& file_name,
-                                                                    float width, float height) {
+  GraphicComponentsManager::GCCollectionPtr GraphicComponentsManager::createVideoFromFile(const std::string& name, const std::string& file_name,
+                                                                                          float width, float height) {
     std::shared_ptr<VideoComponent> videoComponent = std::make_shared<VideoComponent>(file_name, width, height);
     videoComponent->setScale(glm::vec3(1.0f, 1.0f, 1.0f));
     videoComponent->setProjectionMatrix(_projectionMatrix);
 
-    GCCollection gcc(name + "_Collection");
-    gcc.add(videoComponent);
-    gcc.show(false);
+    GCCollectionPtr gcc = std::make_shared<GCCollection>(name + "_Collection");
+    gcc->add(videoComponent);
+    gcc->show(false);
     _gcCollections[name] = gcc;
 
-    return _gcCollections[name];
+    return gcc;
   }
 
-  GCCollection& GraphicComponentsManager::createCorners(const std::string& name, GLfloat length, GLfloat wide,
-                                                              const glm::vec4& colour) {
+  GraphicComponentsManager::GCCollectionPtr GraphicComponentsManager::createCorners(const std::string& name, GLfloat length, GLfloat wide,
+                                                                                    const glm::vec4& colour) {
     // Positions
     float width = 21.0f;
     float height = 29.7f;
@@ -119,27 +119,27 @@ namespace argosClient {
     corners[6]->setPosition(botRightCorner);
     corners[7]->setPosition(botRightCorner);
 
-    GCCollection gcc(name + "_Collection");
+    GCCollectionPtr gcc = std::make_shared<GCCollection>(name + "_Collection");
 
     for(int i = 0; i < 8; ++i) {
       corners[i]->setColor(colour.r, colour.g, colour.b, colour.a);
       corners[i]->setProjectionMatrix(_projectionMatrix);
-      gcc.add(corners[i]);
+      gcc->add(corners[i]);
     }
 
-    gcc.show(false);
+    gcc->show(false);
     _gcCollections[name] = gcc;
 
-    return _gcCollections[name];
+    return gcc;
   }
 
-  GCCollection& GraphicComponentsManager::createAxis(const std::string& name, GLfloat axis_length,
-                                                     const glm::vec3& pos) {
+  GraphicComponentsManager::GCCollectionPtr GraphicComponentsManager::createAxis(const std::string& name, GLfloat axis_length,
+                                                                                 const glm::vec3& pos) {
     // TODO
   }
 
-  GCCollection& GraphicComponentsManager::createVideoStream(const std::string& name, const std::string& bg_file,
-                                                            GLfloat width, GLfloat height, int port) {
+  GraphicComponentsManager::GCCollectionPtr GraphicComponentsManager::createVideoStream(const std::string& name, const std::string& bg_file,
+                                                                                        GLfloat width, GLfloat height, int port) {
     std::shared_ptr<ImageComponent> bg = std::make_shared<ImageComponent>("media/images/videoconference.jpg", width, height);
     bg->setProjectionMatrix(_projectionMatrix);
 
@@ -148,33 +148,33 @@ namespace argosClient {
     videoStream->setPosition(glm::vec3(0.0f, 5.6f, 0.0f));
     videoStream->setScale(glm::vec3(1.055f, 0.85f, 1.0f));
 
-    GCCollection gcc(name + "_Collection");
-    gcc.add(bg);
-    gcc.add(videoStream);
-    gcc.show(false);
+    GCCollectionPtr gcc = std::make_shared<GCCollection>(name + "_Collection");
+    gcc->add(bg);
+    gcc->add(videoStream);
+    gcc->show(false);
     _gcCollections[name] = gcc;
 
-    return _gcCollections[name];
+    return gcc;
   }
 
-  GCCollection& GraphicComponentsManager::createTextPanel(const std::string& name, const glm::vec4& colour,
-                                                                const std::string& text) {
+  GraphicComponentsManager::GCCollectionPtr GraphicComponentsManager::createTextPanel(const std::string& name, const glm::vec4& colour,
+                                                                                      const std::string& text) {
     // TODO
   }
 
-  GCCollection& GraphicComponentsManager::createHighlight(const std::string& name, const glm::vec4& colour,
-                                                                const glm::vec3& pos, const glm::vec3& scale) {
+  GraphicComponentsManager::GCCollectionPtr GraphicComponentsManager::createHighlight(const std::string& name, const glm::vec4& colour,
+                                                                                      const glm::vec3& pos, const glm::vec3& scale) {
     // TODO
   }
 
-  GCCollection& GraphicComponentsManager::createButton(const std::string& name, const glm::vec4& colour,
-                                                             const std::string& text) {
+  GraphicComponentsManager::GCCollectionPtr GraphicComponentsManager::createButton(const std::string& name, const glm::vec4& colour,
+                                                                                   const std::string& text) {
     // TODO
   }
 
-  GCCollection& GraphicComponentsManager::createFactureHint(const std::string& name, const glm::vec2& size,
-                                                                  const glm::vec4& colour, const std::wstring& title,
-                                                                  const std::vector<std::pair<std::wstring, glm::vec3>>& textBlocks) {
+  GraphicComponentsManager::GCCollectionPtr GraphicComponentsManager::createFactureHint(const std::string& name, const glm::vec2& size,
+                                                                                        const glm::vec4& colour, const std::wstring& title,
+                                                                                        const std::vector<std::pair<std::wstring, glm::vec3>>& textBlocks) {
     float scaleFactor = 0.008f;
     std::shared_ptr<RenderToTextureComponent> rtt = std::make_shared<RenderToTextureComponent>(size.x, size.y);
     rtt->setScale(glm::vec3(-scaleFactor, scaleFactor, scaleFactor));
@@ -198,12 +198,12 @@ namespace argosClient {
       rtt->addGraphicComponent(textComponent);
     }
 
-    GCCollection gcc(name + "_Collection");
-    gcc.add(rtt);
-    gcc.show(false);
+    GCCollectionPtr gcc = std::make_shared<GCCollection>(name + "_Collection");
+    gcc->add(rtt);
+    gcc->show(false);
     _gcCollections[name] = gcc;
 
-    return _gcCollections[name];
+    return gcc;
   }
 
 }

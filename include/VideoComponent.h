@@ -50,6 +50,12 @@ namespace argosClient {
     void loadVideoFromFile(const std::string& fileName);
 
     /**
+     * Retrieve a new frame from the video file
+     * @param videoFrame The new cv::Mat to save the read frame
+     */
+    void readVideoFrame(cv::Mat& videoFrame);
+
+    /**
      * Makes an OpenGL texture with the received frame
      * @param mat The OpenCV::Mat used as video frame
      */

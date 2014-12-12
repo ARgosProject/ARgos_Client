@@ -66,6 +66,13 @@ namespace argosClient {
     Log::success("Video file '" + _fileName + "' loaded.");
     Log::success("Video information: " + std::to_string(info.width) + "x" + std::to_string(info.height) + ". " +
                  std::to_string(_videoReader.get(CV_CAP_PROP_FRAME_COUNT)) + " frames.");
+
+    readVideoFrame(_videoFrame);
+  }
+
+  void VideoComponent::readVideoFrame(cv::Mat& videoFrame) {
+    _videoReader >> videoFrame;
+    cvtColor(videoFrame, videoFrame, CV_BGR2RGB);
   }
 
   void VideoComponent::makeVideoTexture(const cv::Mat& mat) {
@@ -118,15 +125,14 @@ namespace argosClient {
 
     glUniformMatrix4fv(_mvpHandler, 1, GL_FALSE, glm::value_ptr(_projectionMatrix * _modelViewMatrix * _model));
 
-    // Read next video frame
-    _videoReader >> _videoFrame;
-    makeVideoTexture(_videoFrame);
-
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, _textureId);
     glUniform1i(_samplerHandler, 0);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, _indices);
+
+    readVideoFrame(_videoFrame);
+    makeVideoTexture(_videoFrame);
   }
 
 }

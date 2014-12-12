@@ -61,11 +61,9 @@ namespace argosClient {
     switch(channels) {
     case 3:
       format = GL_RGB;
-      Log::info("Format: GL_RGB");
       break;
     case 4:
       format = GL_RGBA;
-      Log::info("Format: GL_RGBA");
       break;
     }
 
@@ -116,7 +114,7 @@ namespace argosClient {
     }
 
     // Create the texture
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, mat.cols, mat.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, mat.data);
+    glTexImage2D(GL_TEXTURE_2D, 0, inputColourFormat, mat.cols, mat.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, mat.data);
 
     assert(glGetError() == 0);
   }

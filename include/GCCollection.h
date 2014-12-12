@@ -14,7 +14,6 @@ namespace argosClient {
     using GraphicComponentPtr = std::shared_ptr<GraphicComponent>;
 
   public:
-    GCCollection();
     GCCollection(const std::string& name);
     GCCollection(const std::vector<GraphicComponentPtr>& graphicComponents);
     GCCollection(const std::string& name, const std::vector<GraphicComponentPtr>& graphicComponents);
@@ -26,6 +25,11 @@ namespace argosClient {
     void show(bool show);
     void render();
     void update(const glm::mat4& modelViewMatrix);
+
+    // STL
+    GCCollection();
+    GCCollection(const GCCollection& other);
+    GCCollection& operator=(const GCCollection& other);
 
   private:
     std::string _name;
