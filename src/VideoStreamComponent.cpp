@@ -59,7 +59,7 @@ namespace argosClient {
       unsigned char* data_buf;
       int size, type;
 
-      Log::video("Esperando nuevo fotograma de vídeo.");
+      Log::video("Waiting for new video frames.");
 
       _timer.start();
 
@@ -81,7 +81,7 @@ namespace argosClient {
       _receivedFrame = cv::imdecode(transformed, CV_LOAD_IMAGE_UNCHANGED);
       _mutex.unlock();
 
-      Log::video(std::to_string(bytes) + " bytes de video recibidos.");
+      Log::video(std::to_string(bytes) + " bytes of video received.");
 
       _ready = true;
       _receive = true;

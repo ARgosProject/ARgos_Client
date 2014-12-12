@@ -1,5 +1,5 @@
-#ifndef VIDEO_H
-#define VIDEO_H
+#ifndef VIDEOSTREAM_H
+#define VIDEOSTREAM_H
 
 #include <string>
 #include <thread>
@@ -10,7 +10,6 @@
 #include <opencv2/opencv.hpp>
 
 #include "GraphicComponent.h"
-#include "VideoThread.h"
 #include "GfxProgram.h"
 #include "Timer.h"
 
@@ -89,7 +88,7 @@ namespace argosClient {
     std::thread* _videoThread; ///< A thread object used to receive video concurrently
     std::mutex _mutex;
 
-    /** @name Timeouts
+    /** @name Timeout
      *  Timers used to simulate timeouts when no video is received for 1 second
      *  This way we can stop rendering the video stream component if no new video frame is received
      */

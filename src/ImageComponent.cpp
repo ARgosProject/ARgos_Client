@@ -7,6 +7,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Log.h"
+
 namespace argosClient {
 
   ImageComponent::ImageComponent(GLfloat width, GLfloat height)
@@ -47,24 +49,23 @@ namespace argosClient {
 
     unsigned char* buffer = SOIL_load_image(file_name.c_str(), &width, &height, &channels, SOIL_LOAD_AUTO);
     if(buffer == NULL) {
-      std::cerr << "Image '" << file_name << "' loaded incorrectly\n";
-      std::cerr << SOIL_last_result() << std::endl;
+      Log::error("Image '" + file_name + "' loaded incorrectly");
+      Log::error(std::string(SOIL_last_result()));
       exit(1);
     }
     else {
-      std::cout << "Image '" << file_name << "' successfully loaded\n";
-      std::cout << "Image width: " << width << ", height: " << height << std::endl;
+      Log::success("Image '" + file_name + "' (" + std::to_string(width) + "x" + std::to_string(height) + ") successfully loaded");
     }
 
     GLenum format;
     switch(channels) {
     case 3:
       format = GL_RGB;
-      std::cout << "Format: GL_RGB" << std::endl;
+      Log::info("Format: GL_RGB");
       break;
     case 4:
       format = GL_RGBA;
-      std::cout << "Format: GL_RGBA" << std::endl;
+      Log::info("Format: GL_RGBA");
       break;
     }
 

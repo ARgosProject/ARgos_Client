@@ -9,8 +9,8 @@
 #ifdef __cplusplus
 extern "C"
 {
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
+  //#include <libavcodec/avcodec.h>
+  //#include <libavformat/avformat.h>
 }
 #endif
 
@@ -135,6 +135,7 @@ int main(int argc, char **argv) {
   //makeIntroduction(glContext, Camera, td, 10, projection_matrix);
 
   glContext.start();
+
   while(g_loop) {
     Camera.grab();
     Camera.retrieve(currentFrame);

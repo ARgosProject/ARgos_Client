@@ -16,6 +16,7 @@
 #include "ImageComponent.h"
 #include "RenderToTextureComponent.h"
 #include "VideoStreamComponent.h"
+#include "VideoComponent.h"
 #include "AudioManager.h"
 #include "Log.h"
 #include "GraphicComponentsManager.h"
@@ -46,7 +47,7 @@ namespace argosClient {
     GraphicComponentsManager::getInstance().setProjectionMatrix(_projectionMatrix);
 
     // Background
-    ImageComponent* bg1 = new ImageComponent("media/background.jpg", 1.0, 1.0);
+    ImageComponent* bg1 = new ImageComponent("media/images/background.jpg", 1.0, 1.0);
     bg1->noUpdate();
     _graphicComponents["Background1"] = bg1;
 
@@ -76,13 +77,15 @@ namespace argosClient {
     //_gcMap["Line3"] = textLines[2];
     //_gcList.insert(_gcList.end(), textLines.begin(), textLines.end());
 
-    GraphicComponentsManager::getInstance().createVideoStream("Videostream", "media/videoconference.jpg", width, height, 9999)->show(true);
+    GraphicComponentsManager::getInstance().createVideoStream("Videostream", "media/images/videoconference.jpg", width, height, 9999).show(true);
+    GraphicComponentsManager::getInstance().createVideoFromFile("Video", "media/videos/Test.avi", width, height).show(true);
+    GraphicComponentsManager::getInstance().createCorners("Corners", 1.0f, 3.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)).show(true);
 
     // Corners
-    std::vector<GraphicComponent*> corners = makeCorners(1.0f, 1.0f, 1.0f, 1.0f);
+    /*std::vector<GraphicComponent*> corners = makeCorners(1.0f, 1.0f, 1.0f, 1.0f);
     for(int i = 0; i < corners.size(); ++i) {
       _graphicComponents["corner_" + std::to_string(i)] = corners[i];
-    }
+      }*/
 
     // Facturas
     // -96.4 59.7
@@ -122,7 +125,7 @@ namespace argosClient {
                                                                 std::make_pair(L"Comprobar\nel descuento\naplicado", glm::vec3(100.0f, 50.0f, 0.0f)),
                                                                 std::make_pair(L"Con este proveedor\ntenemos un descuento a\naplicar del 3% sobre el\nprecio final de la factura", glm::vec3(200.0f, 50.0f, 0.0f)),
                                                                 std::make_pair(L"AYUDA POR\nVIDEO CONFERENCIA", glm::vec3(300.0f, 50.0f, 0.0f))
-                                                              })->show(true);
+                                                              }).show(true);
 
     _state = State::FETCH_PAPERS;
 
@@ -202,9 +205,9 @@ namespace argosClient {
     float height = 6.43f;//9.85f;
 
     std::vector<GraphicComponent*> factures = {
-      new ImageComponent("media/active.jpg", width / 1.41, height / 1.41),
-      new ImageComponent("media/sinovo.jpg", width / 1.41, height / 1.41),
-      new ImageComponent("media/neobiz.jpg", width / 1.41, height / 1.41)
+      new ImageComponent("media/images/active.jpg", width / 1.41, height / 1.41),
+      new ImageComponent("media/images/sinovo.jpg", width / 1.41, height / 1.41),
+      new ImageComponent("media/images/neobiz.jpg", width / 1.41, height / 1.41)
     };
 
     float x = 5.64f;
@@ -268,14 +271,14 @@ namespace argosClient {
     bg->setColor(colour.r, colour.g, colour.b, colour.a);
     rtt->addGraphicComponent(bg);
 
-    TextComponent* tcTitle = new TextComponent("media/ProximaNova-Bold.ttf", 72);
+    TextComponent* tcTitle = new TextComponent("media/fonts/ProximaNova-Bold.ttf", 72);
     tcTitle->setScale(glm::vec3(1.0f, -1.0f, 1.0f));
     tcTitle->setPosition(glm::vec3(50.0f, 50.0f, 0.0f));
     tcTitle->setText(title);
     rtt->addGraphicComponent(tcTitle);
 
     for(auto& block : textBlocks) {
-      TextComponent* textComponent = new TextComponent("media/ProximaNova-Bold.ttf", 54);
+      TextComponent* textComponent = new TextComponent("media/fonts/ProximaNova-Bold.ttf", 54);
       textComponent->setScale(glm::vec3(1.0f, -1.0f, 1.0f));
       textComponent->setPosition(block.second);
       textComponent->setText(block.first);
@@ -406,6 +409,7 @@ namespace argosClient {
     for(auto& gc : _graphicComponents) {
       gc.second->render();
     }
+    GraphicComponentsManager::getInstance().renderAll();
 
     // To update we need to swap the buffers
     swapBuffers();

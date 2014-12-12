@@ -1,17 +1,21 @@
 #include "VideoComponent.h"
 #include "GLContext.h"
-#include "VideoThread.h"
 
 #include <iostream>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <opencv2/opencv.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
+#include "Log.h"
+
 namespace argosClient {
 
   VideoComponent::VideoComponent(GLfloat width, GLfloat height)
-    : _width(width), _height(height),
-      _textureId(-1), _loop(false), _eglImage(NULL), _videoThread(NULL) {
+    : _width(width), _height(height), _textureId(-1), _loop(false) {
     /**
      *    0__1
      *    | /|
@@ -40,17 +44,7 @@ namespace argosClient {
   VideoComponent::~VideoComponent() {
     delete [] _indices;
     delete [] _vertexData;
-
-    if(_videoThread) {
-      _videoThread->join();
-      delete _videoThread;
-    }
-
     glDeleteTextures(1, &_textureId);
-
-    if(_eglImage != 0) {
-      eglDestroyImageKHR(GLContext::getInstance().getEGLDisplay(), _eglImage);
-    }
   }
 
   void VideoComponent::setLoop(bool loop) {
@@ -58,8 +52,30 @@ namespace argosClient {
   }
 
   void VideoComponent::loadVideoFromFile(const std::string& fileName) {
+    // Load the video file
+    _fileName = fileName;
+    _videoReader.open(_fileName);
+    if(!_videoReader.isOpened()) {
+      Log::error("Could not open video file '" + _fileName + "'.");
+      exit(1);
+    }
+
+    cv::Size info = cv::Size((int) _videoReader.get(CV_CAP_PROP_FRAME_WIDTH),
+                             (int) _videoReader.get(CV_CAP_PROP_FRAME_HEIGHT));
+
+    Log::success("Video file '" + _fileName + "' loaded.");
+    Log::success("Video information: " + std::to_string(info.width) + "x" + std::to_string(info.height) + ". " +
+                 std::to_string(_videoReader.get(CV_CAP_PROP_FRAME_COUNT)) + " frames.");
+  }
+
+  void VideoComponent::makeVideoTexture(const cv::Mat& mat) {
+    // Byte alignment
+    glPixelStorei(GL_UNPACK_ALIGNMENT, (mat.step & 3) ? 1 : 4);
+
     // Generate a texture object
-    glGenTextures(1, &_textureId);
+    if(!glIsTexture(_textureId)) {
+      glGenTextures(1, &_textureId);
+    }
 
     // Bind the texture object
     glBindTexture(GL_TEXTURE_2D, _textureId);
@@ -70,33 +86,8 @@ namespace argosClient {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    _fileName = fileName;
-
-    // Start the video decoding thread
-    _videoThread = new VideoThread(fileName);
-    _videoThread->start();
-
-    // Get video properties
-    VideoThread::VideoProperties vp = _videoThread->getVideoProperties();
-    while(!vp.setted) {
-      vp = _videoThread->getVideoProperties();
-    }
-
     // Create a gl texture
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, vp.width, vp.height, 0,
-                 GL_RGB, GL_UNSIGNED_BYTE, NULL);
-
-    // Create an EGL Image
-    _eglImage = eglCreateImageKHR(GLContext::getInstance().getEGLDisplay(),
-                                  GLContext::getInstance().getEGLContext(),
-                                  EGL_GL_TEXTURE_2D_KHR,
-                                  (EGLClientBuffer)_textureId,
-                                  0);
-
-    assert(_eglImage != EGL_NO_IMAGE_KHR);
-
-    // Texture is correctly created; thread can start decoding the video
-    _videoThread->next(_eglImage);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, mat.cols, mat.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, mat.data);
   }
 
   void VideoComponent::setUpShader() {
@@ -109,14 +100,16 @@ namespace argosClient {
   }
 
   void VideoComponent::specificRender() {
-    _shader.useProgram();
-
     if(_loop) {
-      if(_videoThread && !_videoThread->isRunning()) {
-        _videoThread->interrupt();
-        _videoThread->start();
-      }
+      if(_videoFrame.empty())
+        _videoReader.set(CV_CAP_PROP_POS_FRAMES, 0);
     }
+    else {
+      if(_videoFrame.empty())
+        return;
+    }
+
+    _shader.useProgram();
 
     glVertexAttribPointer(_vertexHandler, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), _vertexData);
     glEnableVertexAttribArray(_vertexHandler);
@@ -124,6 +117,10 @@ namespace argosClient {
     glEnableVertexAttribArray(_texHandler);
 
     glUniformMatrix4fv(_mvpHandler, 1, GL_FALSE, glm::value_ptr(_projectionMatrix * _modelViewMatrix * _model));
+
+    // Read next video frame
+    _videoReader >> _videoFrame;
+    makeVideoTexture(_videoFrame);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, _textureId);
