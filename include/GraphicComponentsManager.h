@@ -28,21 +28,30 @@ namespace argosClient {
     void renderAll();
     void update(const glm::mat4& modelViewMatrix);
 
-    // Builders
+    // Dependencies
     void setProjectionMatrix(const glm::mat4& projectionMatrix);
-    GCCollectionPtr createVideoFromFile(const std::string& name, const std::string& file_name, float width, float height);
-    GCCollectionPtr createCorners(const std::string& name, float length, float wide, const glm::vec4& colour);
-    GCCollectionPtr createAxis(const std::string& name, float axis_length, const glm::vec3& pos);
-    GCCollectionPtr createVideoStream(const std::string& name, const std::string& bg_file, float width, float height, int port);
-    GCCollectionPtr createTextPanel(const std::string& name, const glm::vec4& colour, const std::string& text);
+    void setImagesPath(const std::string& path);
+    void setVideosPath(const std::string& path);
+    void setFontsPath(const std::string& path);
+
+    // Builders
+    GCCollectionPtr createImageFromFile(const std::string& name, const std::string& file_name, const glm::vec3& pos, const glm::vec2& size);
+    GCCollectionPtr createVideoFromFile(const std::string& name, const std::string& file_name, const glm::vec3& pos, const glm::vec2& size);
+    GCCollectionPtr createCorners(const std::string& name, float length, float wide, const glm::vec4& colour, const glm::vec2& size);
+    GCCollectionPtr createAxis(const std::string& name, float length, float wide, const glm::vec3& pos);
+    GCCollectionPtr createVideoStream(const std::string& name, const std::string& bg_file, const glm::vec2& size, int port);
+    GCCollectionPtr createTextPanel(const std::string& name, const glm::vec4& colour, const std::string& text, const glm::vec3& pos);
     GCCollectionPtr createHighlight(const std::string& name, const glm::vec4& colour, const glm::vec3& pos, const glm::vec3& scale);
-    GCCollectionPtr createButton(const std::string& name, const glm::vec4& colour, const std::string& text);
-    GCCollectionPtr createFactureHint(const std::string& name, const glm::vec2& size, const glm::vec4& colour, const std::wstring& title,
-                                      const std::vector<std::pair<std::wstring, glm::vec3>>& textBlocks);
+    GCCollectionPtr createButton(const std::string& name, const glm::vec4& colour, const std::string& text, const glm::vec3& pos);
+    GCCollectionPtr createFactureHint(const std::string& name, const glm::vec3& pos, const glm::vec2& size, const glm::vec4& colour,
+                                      const std::wstring& title, const std::vector<std::pair<std::wstring, glm::vec3>>& textBlocks);
 
   private:
     GCCollectionMap _gcCollections;
     glm::mat4 _projectionMatrix; ///< The projection matrix used to update the graphic components transformations
+    std::string _imagesPath;
+    std::string _videosPath;
+    std::string _fontsPath;
   };
 
 }

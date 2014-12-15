@@ -36,20 +36,21 @@ namespace argosClient {
   }
 
   void GLContext::start() {
-    // Paper dimensions
-    float width = 21.0f / 2.0f;
-    float height = 29.7f / 2.0f;
-
-    // Audio preloading
+    // Audio dependencies
     AudioManager::getInstance().setSoundsPath("media/sounds/");
     AudioManager::getInstance().preloadAll();
 
-    GraphicComponentsManager::getInstance().setProjectionMatrix(_projectionMatrix);
+    // Graphic dependencies
+    GraphicComponentsManager& gcManager = GraphicComponentsManager::getInstance();
+    gcManager.setProjectionMatrix(_projectionMatrix);
+    gcManager.setImagesPath("media/images/");
+    gcManager.setVideosPath("media/videos/");
+    gcManager.setFontsPath("media/fonts/");
 
     // Background
-    ImageComponent* bg1 = new ImageComponent("media/images/background.jpg", 1.0, 1.0);
+    /*ImageComponent* bg1 = new ImageComponent("media/images/background.jpg", 1.0, 1.0);
     bg1->noUpdate();
-    _graphicComponents["Background1"] = bg1;
+    _graphicComponents["Background1"] = bg1;*/
 
     // Camera frame
     //ImageComponent* im = new ImageComponent(1.0, 1.0);
@@ -77,9 +78,15 @@ namespace argosClient {
     //_gcMap["Line3"] = textLines[2];
     //_gcList.insert(_gcList.end(), textLines.begin(), textLines.end());
 
-    GraphicComponentsManager::getInstance().createVideoStream("Videostream", "media/images/videoconference.jpg", width, height, 9999)->show(false);
-    GraphicComponentsManager::getInstance().createVideoFromFile("Video", "media/videos/Megamind.avi", width / 2.0f, height / 2.0f)->show(true);
-    GraphicComponentsManager::getInstance().createCorners("Corners", 1.0f, 3.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f))->show(true);
+    // Paper dimensions
+    float width = 21.0f;
+    float height = 29.7f;
+
+    gcManager.createImageFromFile("Background", "background.jpg", glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f))->noUpdate()->show(true);
+    gcManager.createVideoStream("Videostream", "videoconference.jpg", glm::vec2(width / 2.0f, height / 2.0f), 9999)->show(false);
+    //gcManager.createVideoFromFile("Video", "Megamind.avi", glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(width / 4.0f, height / 4.0f))->show(true);
+    gcManager.createCorners("Corners", 1.0f, 3.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), glm::vec2(width, height))->show(true);
+    gcManager.createAxis("Axis", 5, 3, glm::vec3(0.0f, 0.0f, 0.0f))->show(true);
 
     // Corners
     /*std::vector<GraphicComponent*> corners = makeCorners(1.0f, 1.0f, 1.0f, 1.0f);
@@ -117,15 +124,16 @@ namespace argosClient {
                   });
                   _graphicComponents["Sinovo"] = factureSinovo;*/
 
-    GraphicComponentsManager::getInstance().createFactureHint("FactureSinovo",
-                                                              glm::vec2(469.0f, 760.0f),
-                                                              glm::vec4(0.086f, 0.474f, 0.69, 1.0f),
-                                                              L"SINOVO",
-                                                              {
-                                                                std::make_pair(L"Comprobar\nel descuento\naplicado", glm::vec3(100.0f, 50.0f, 0.0f)),
-                                                                std::make_pair(L"Con este proveedor\ntenemos un descuento a\naplicar del 3% sobre el\nprecio final de la factura", glm::vec3(200.0f, 50.0f, 0.0f)),
-                                                                std::make_pair(L"AYUDA POR\nVIDEO CONFERENCIA", glm::vec3(300.0f, 50.0f, 0.0f))
-                                                              })->show(false);
+    gcManager.createFactureHint("FactureSinovo",
+                                glm::vec3(0.0f, 0.0f, 0.0f),
+                                glm::vec2(469.0f, 760.0f),
+                                glm::vec4(0.086f, 0.474f, 0.69, 1.0f),
+                                L"SINOVO",
+                                {
+                                  std::make_pair(L"Comprobar\nel descuento\naplicado", glm::vec3(100.0f, 50.0f, 0.0f)),
+                                  std::make_pair(L"Con este proveedor\ntenemos un descuento a\naplicar del 3% sobre el\nprecio final de la factura", glm::vec3(200.0f, 50.0f, 0.0f)),
+                                  std::make_pair(L"AYUDA POR\nVIDEO CONFERENCIA", glm::vec3(300.0f, 50.0f, 0.0f))
+                                })->show(false);
 
     _state = State::FETCH_PAPERS;
 

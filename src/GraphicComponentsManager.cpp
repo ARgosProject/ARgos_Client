@@ -15,7 +15,7 @@
 namespace argosClient {
 
   GraphicComponentsManager::GraphicComponentsManager()
-    : _projectionMatrix(glm::mat4(1.0f)) {
+    : _projectionMatrix(glm::mat4(1.0f)), _imagesPath(""), _videosPath(""), _fontsPath("") {
 
   }
 
@@ -66,10 +66,35 @@ namespace argosClient {
     _projectionMatrix = projectionMatrix;
   }
 
+  void GraphicComponentsManager::setImagesPath(const std::string& path) {
+    _imagesPath = path;
+  }
+
+  void GraphicComponentsManager::setVideosPath(const std::string& path) {
+    _videosPath = path;
+  }
+
+  void GraphicComponentsManager::setFontsPath(const std::string& path) {
+    _fontsPath = path;
+  }
+
+  GraphicComponentsManager::GCCollectionPtr GraphicComponentsManager::createImageFromFile(const std::string& name, const std::string& file_name,
+                                                                                          const glm::vec3& pos, const glm::vec2& size) {
+    std::shared_ptr<ImageComponent> imageComponent = std::make_shared<ImageComponent>(_imagesPath + file_name, size.x, size.y);
+    imageComponent->setPosition(pos);
+
+    GCCollectionPtr gcc = std::make_shared<GCCollection>(name + "_Collection");
+    gcc->add(imageComponent);
+    gcc->show(false);
+    _gcCollections[name] = gcc;
+
+    return gcc;
+  }
+
   GraphicComponentsManager::GCCollectionPtr GraphicComponentsManager::createVideoFromFile(const std::string& name, const std::string& file_name,
-                                                                                          float width, float height) {
-    std::shared_ptr<VideoComponent> videoComponent = std::make_shared<VideoComponent>(file_name, width, height);
-    videoComponent->setScale(glm::vec3(1.0f, 1.0f, 1.0f));
+                                                                                          const glm::vec3& pos, const glm::vec2& size) {
+    std::shared_ptr<VideoComponent> videoComponent = std::make_shared<VideoComponent>(_videosPath + file_name, size.x, size.y);
+    videoComponent->setPosition(pos);
     videoComponent->setProjectionMatrix(_projectionMatrix);
 
     GCCollectionPtr gcc = std::make_shared<GCCollection>(name + "_Collection");
@@ -80,11 +105,11 @@ namespace argosClient {
     return gcc;
   }
 
-  GraphicComponentsManager::GCCollectionPtr GraphicComponentsManager::createCorners(const std::string& name, GLfloat length, GLfloat wide,
-                                                                                    const glm::vec4& colour) {
+  GraphicComponentsManager::GCCollectionPtr GraphicComponentsManager::createCorners(const std::string& name, float length, float wide,
+                                                                                    const glm::vec4& colour, const glm::vec2& size) {
     // Positions
-    float width = 21.0f;
-    float height = 29.7f;
+    float width = size.x;
+    float height = size.y;
 
     // Corners
     std::vector<std::shared_ptr<GraphicComponent>> corners = {
@@ -133,17 +158,39 @@ namespace argosClient {
     return gcc;
   }
 
-  GraphicComponentsManager::GCCollectionPtr GraphicComponentsManager::createAxis(const std::string& name, GLfloat axis_length,
+  GraphicComponentsManager::GCCollectionPtr GraphicComponentsManager::createAxis(const std::string& name, float length, float wide,
                                                                                  const glm::vec3& pos) {
-    // TODO
+    // Lines
+    std::vector<std::shared_ptr<GraphicComponent>> lines = {
+      std::make_shared<LineComponent>(glm::vec3(0, 0, 0), glm::vec3(length, 0, 0), wide),
+      std::make_shared<LineComponent>(glm::vec3(0, 0, 0), glm::vec3(0, length, 0), wide),
+      std::make_shared<LineComponent>(glm::vec3(0, 0, 0), glm::vec3(0, 0, length), wide)
+    };
+
+    lines[0]->setColor(1, 0, 0, 1);
+    lines[1]->setColor(0, 1, 0, 1);
+    lines[2]->setColor(0, 0, 1, 1);
+
+    GCCollectionPtr gcc = std::make_shared<GCCollection>(name + "_Collection");
+
+    for(int i = 0; i < 3; ++i) {
+      lines[i]->setPosition(pos);
+      lines[i]->setProjectionMatrix(_projectionMatrix);
+      gcc->add(lines[i]);
+    }
+
+    gcc->show(false);
+    _gcCollections[name] = gcc;
+
+    return gcc;
   }
 
   GraphicComponentsManager::GCCollectionPtr GraphicComponentsManager::createVideoStream(const std::string& name, const std::string& bg_file,
-                                                                                        GLfloat width, GLfloat height, int port) {
-    std::shared_ptr<ImageComponent> bg = std::make_shared<ImageComponent>("media/images/videoconference.jpg", width, height);
+                                                                                        const glm::vec2& size, int port) {
+    std::shared_ptr<ImageComponent> bg = std::make_shared<ImageComponent>(_imagesPath + "videoconference.jpg", size.x, size.y);
     bg->setProjectionMatrix(_projectionMatrix);
 
-    std::shared_ptr<VideoStreamComponent> videoStream = std::make_shared<VideoStreamComponent>(height / 1.77, width / 1.77);
+    std::shared_ptr<VideoStreamComponent> videoStream = std::make_shared<VideoStreamComponent>(size.y / 1.77, size.x / 1.77);
     videoStream->startReceivingVideo(port);
     videoStream->setPosition(glm::vec3(0.0f, 5.6f, 0.0f));
     videoStream->setScale(glm::vec3(1.055f, 0.85f, 1.0f));
@@ -158,7 +205,7 @@ namespace argosClient {
   }
 
   GraphicComponentsManager::GCCollectionPtr GraphicComponentsManager::createTextPanel(const std::string& name, const glm::vec4& colour,
-                                                                                      const std::string& text) {
+                                                                                      const std::string& text, const glm::vec3& pos) {
     // TODO
   }
 
@@ -168,30 +215,31 @@ namespace argosClient {
   }
 
   GraphicComponentsManager::GCCollectionPtr GraphicComponentsManager::createButton(const std::string& name, const glm::vec4& colour,
-                                                                                   const std::string& text) {
+                                                                                   const std::string& text, const glm::vec3& pos) {
     // TODO
   }
 
-  GraphicComponentsManager::GCCollectionPtr GraphicComponentsManager::createFactureHint(const std::string& name, const glm::vec2& size,
+  GraphicComponentsManager::GCCollectionPtr GraphicComponentsManager::createFactureHint(const std::string& name, const glm::vec3& pos, const glm::vec2& size,
                                                                                         const glm::vec4& colour, const std::wstring& title,
                                                                                         const std::vector<std::pair<std::wstring, glm::vec3>>& textBlocks) {
     float scaleFactor = 0.008f;
     std::shared_ptr<RenderToTextureComponent> rtt = std::make_shared<RenderToTextureComponent>(size.x, size.y);
     rtt->setScale(glm::vec3(-scaleFactor, scaleFactor, scaleFactor));
+    rtt->setPosition(pos);
     rtt->setProjectionMatrix(_projectionMatrix);
 
     RectangleComponent* bg = new RectangleComponent(size.x, size.y);
     bg->setColor(colour.r, colour.g, colour.b, colour.a);
     rtt->addGraphicComponent(bg);
 
-    TextComponent* tcTitle = new TextComponent("media/fonts/ProximaNova-Bold.ttf", 72);
+    TextComponent* tcTitle = new TextComponent(_fontsPath + "ProximaNova-Bold.ttf", 72);
     tcTitle->setScale(glm::vec3(1.0f, -1.0f, 1.0f));
     tcTitle->setPosition(glm::vec3(50.0f, 50.0f, 0.0f));
     tcTitle->setText(title);
     rtt->addGraphicComponent(tcTitle);
 
     for(auto& block : textBlocks) {
-      TextComponent* textComponent = new TextComponent("media/fonts/ProximaNova-Bold.ttf", 54);
+      TextComponent* textComponent = new TextComponent(_fontsPath + "ProximaNova-Bold.ttf", 54);
       textComponent->setScale(glm::vec3(1.0f, -1.0f, 1.0f));
       textComponent->setPosition(block.second);
       textComponent->setText(block.first);
