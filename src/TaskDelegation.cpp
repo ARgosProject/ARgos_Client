@@ -47,12 +47,12 @@ namespace argosClient {
     try {
       _error = 0;
 
-      Log::info("Intentando reconectar al servidor de ARgos...");
+      Log::info("Trying to reconnect to the server.");
       boost::asio::connect(*_tcpSocket, _tcpResolver->resolve({_ip, _port}));
-      Log::success("Reconectado satisfactoriamente.");
+      Log::success("Reconnection succeeded.");
     }
     catch(boost::system::system_error const& e) {
-      Log::error("No se pudo reconectar al servidor de ARgos. " + std::string(e.what()));
+      Log::error("Could not reconnect to the server. " + std::string(e.what()));
       _error = -1;
     }
 
@@ -213,19 +213,60 @@ namespace argosClient {
         paper.modelview_matrix[i] = 0.0f;
     }
     else {
-      processInt(st, paper.id);
-      processMatrix16f(st, paper.modelview_matrix);
+      processInt(st, paper.id, 0);
+      processMatrix16f(st, paper.modelview_matrix, sizeof(int));
+      processInt(st, paper.num_calling_functions, sizeof(int)+(sizeof(float)*16));
+      processCallingFunctionData(st, paper.num_calling_functions, paper.cfds, sizeof(int)+(sizeof(float)*16)+sizeof(int));
       Log::success("Nuevo Paper recibido, id: " + std::to_string(paper.id));
       Log::matrix(paper.modelview_matrix);
     }
   }
 
-  void TaskDelegation::processInt(StreamType& st, int& value) {
-    memcpy(&value, &st.data[0], sizeof(int));
+  void TaskDelegation::processInt(StreamType& st, int& value, int offset) {
+    memcpy(&value, &st.data[offset], sizeof(int));
   }
 
-  void TaskDelegation::processMatrix16f(StreamType& st, float* matrix) {
-    memcpy(&matrix[0], &st.data[sizeof(int)], sizeof(float)*(16));
+  void TaskDelegation::processMatrix16f(StreamType& st, float* matrix, int offset) {
+    memcpy(&matrix[0], &st.data[offset], sizeof(float)*16);
+  }
+
+  void TaskDelegation::processCallingFunctionData(StreamType& st, int num, std::vector<CallingFunctionData>& cfds, int offset) {
+    for(int i = 0; i < num; ++i) {
+      CallingFunctionData cfd;
+      int id = static_cast<int>(cfd.id);
+      processInt(st, id, offset*(i+1));
+      cfd.id = static_cast<CallingFunctionType>(id);
+
+      switch(cfd.id) {
+      case NONE:
+        break;
+      case CREATE_IMAGE_FROM_FILE:
+        break;
+      case CREATE_VIDEO_FROM_FILE:
+        break;
+      case CREATE_CORNERS:
+        break;
+      case CREATE_AXIS:
+        break;
+      case CREATE_VIDEO_STREAM:
+        break;
+      case CREATE_TEXT_PANEL:
+        break;
+      case CREATE_HIGHLIGHT:
+        break;
+      case CREATE_BUTTON:
+        break;
+      case CREATE_FACTURE_HINT:
+        break;
+      case PLAY_SOUND:
+        // std::string (filename) from st.data
+        break;
+      case PLAY_SOUND_LOOP:
+        // std::string (filename) from st.data
+        // int (delay) from st.data
+        break;
+      }
+    }
   }
 
 }

@@ -9,12 +9,40 @@ using boost::asio::ip::tcp;
 namespace argosClient {
 
   /**
+   * An enum used to hold the function calls from the
+   * script engine
+   */
+  enum CallingFunctionType {
+    NONE                       = -1,
+
+    CREATE_IMAGE_FROM_FILE     =  0,
+    CREATE_VIDEO_FROM_FILE     =  1,
+    CREATE_CORNERS             =  2,
+    CREATE_AXIS                =  3,
+    CREATE_VIDEO_STREAM        =  4,
+    CREATE_TEXT_PANEL          =  5,
+    CREATE_HIGHLIGHT           =  6,
+    CREATE_BUTTON              =  7,
+    CREATE_FACTURE_HINT        =  8,
+
+    PLAY_SOUND                 =  9,
+    PLAY_SOUND_LOOP            = 10
+  };
+
+  struct CallingFunctionData {
+    CallingFunctionType id;
+    std::vector<void*> args;
+  };
+
+  /**
    * A symbolic paper struct used to hold
    * important data from the real paper class
    */
   struct paper_t {
     int id; ///< The Paper id
     float modelview_matrix[16]; ///< The model view matrix of the Paper
+    int num_calling_functions; ///< The number of calling functions for this Paper
+    std::vector<CallingFunctionData> cfds; ///< A list of calling function for this Paper
   };
 
   /**
@@ -34,8 +62,7 @@ namespace argosClient {
       VECTOR_I      =  0,
       MATRIX_16F    =  1,
       CV_MAT        =  2,
-      VIDEO_STREAM  =  3,
-      PAPER         =  4
+      PAPER         =  3
     };
 
   public:
@@ -120,14 +147,21 @@ namespace argosClient {
      * @param st The raw data structure
      * @param paper A reference to the integer variable we want to build against
      */
-    void processInt(StreamType& st, int& value);
+    void processInt(StreamType& st, int& value, int offset = 0);
 
     /**
      * Processes and build a 16 floats array (matrix) from raw data
      * @param st The raw data structure
      * @param paper A reference to the floats array we want to build against
      */
-    void processMatrix16f(StreamType& st, float* matrix);
+    void processMatrix16f(StreamType& st, float* matrix, int offset = 0);
+
+    /**
+     * Processes and build a CallingFunctionData structure
+     * @param st The raw data structure
+     * @param cfd A reference to the calling function data we want to build against
+     */
+    void processCallingFunctionData(StreamType& st, int num, std::vector<CallingFunctionData>& cfds, int offset = 0);
 
     /**
      * Sends the built _buff object to the server

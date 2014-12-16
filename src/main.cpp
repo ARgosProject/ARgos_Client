@@ -29,6 +29,7 @@ extern "C"
 
 // Task delegation, OpenGL Stuff and script engine
 #include "TaskDelegation.h"
+#include "AudioManager.h"
 #include "GLContext.h"
 #include "GraphicComponent.h"
 #include "ImageComponent.h"
@@ -135,6 +136,10 @@ int main(int argc, char **argv) {
   //makeIntroduction(glContext, Camera, td, 10, projection_matrix);
 
   glContext.start();
+
+  // Audio dependencies
+  AudioManager::getInstance().setSoundsPath("media/sounds/");
+  AudioManager::getInstance().preloadAll();
 
   while(g_loop) {
     Camera.grab();

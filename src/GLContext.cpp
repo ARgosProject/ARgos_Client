@@ -17,7 +17,6 @@
 #include "RenderToTextureComponent.h"
 #include "VideoStreamComponent.h"
 #include "VideoComponent.h"
-#include "AudioManager.h"
 #include "Log.h"
 #include "GraphicComponentsManager.h"
 
@@ -36,10 +35,6 @@ namespace argosClient {
   }
 
   void GLContext::start() {
-    // Audio dependencies
-    AudioManager::getInstance().setSoundsPath("media/sounds/");
-    AudioManager::getInstance().preloadAll();
-
     // Graphic dependencies
     GraphicComponentsManager& gcManager = GraphicComponentsManager::getInstance();
     gcManager.setProjectionMatrix(_projectionMatrix);
@@ -328,7 +323,7 @@ namespace argosClient {
 
       if(!runOnce[1]) {
         runOnce[1] = true;
-        AudioManager::getInstance().play("ayudaVideoConferencia.wav");
+        //AudioManager::getInstance().play("ayudaVideoConferencia.wav");
       }
       break;
     case 3:
