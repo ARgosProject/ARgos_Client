@@ -7,7 +7,7 @@
 
 namespace argosClient {
 
-  TaskDelegation::TaskDelegation() : _ip("-1"), _port("-1"), _error(0) {
+  TaskDelegation::TaskDelegation() : _ip("-1"), _port("-1"), _error(0), _offset(0) {
     _tcpSocket = new tcp::socket(_ioService);
     _tcpResolver = new tcp::resolver(_ioService);
   }
@@ -30,13 +30,13 @@ namespace argosClient {
       std::getline(ss, _ip, ':');
       std::getline(ss, _port, ':');
 
-      Log::info("Intentando conectar al servidor " + _ip + ":" + _port + "...");
+      Log::info("Trying to connect to the server at " + _ip + ":" + _port + "...");
       boost::asio::connect(*_tcpSocket, _tcpResolver->resolve({_ip, _port}));
-      Log::success("Conectado satisfactoriamente.");
+      Log::success("Connection succeeded.");
 
     }
     catch(boost::system::system_error const& e) {
-      Log::error("No se pudo conectar al servidor de ARgos. " + std::string(e.what()));
+      Log::error("Could not connect to the server. " + std::string(e.what()));
       _error = -1;
     }
 
@@ -76,15 +76,15 @@ namespace argosClient {
       _error = 0;
 
       int buff_size = _buff.size();
-      Log::info("Intentando enviar " + std::to_string(buff_size) + " bytes...");
+      Log::info("Sending " + std::to_string(buff_size) + " bytes...");
       int bytes = boost::asio::write(*_tcpSocket, boost::asio::buffer(_buff, buff_size));
-      Log::success(std::to_string(bytes) + " bytes enviados.");
+      Log::success(std::to_string(bytes) + " bytes sent.");
       _buff.clear();
 
       return bytes;
     }
     catch(boost::system::system_error const& e) {
-      Log::error("Se perdió la conexión al servidor de ARgos al enviar. " + std::string(e.what()));
+      Log::error("Conection lost with the server when sending. " + std::string(e.what()));
       _buff.clear();
       _error = -1;
     }
@@ -158,7 +158,7 @@ namespace argosClient {
     unsigned char size_buf[sizeof(int)];
     unsigned char* data_buf;
 
-    Log::info("Esperando nuevo paper...");
+    Log::info("Waiting for paper...");
     bytes += boost::asio::read(socket, boost::asio::buffer(&type_buf, sizeof(int)));  // Type
     memcpy(&st.type, &type_buf, sizeof(int));
 
@@ -169,6 +169,11 @@ namespace argosClient {
       bytes += boost::asio::read(socket, boost::asio::buffer(data_buf, st.size)); // Data
       st.data.insert(st.data.end(), &data_buf[0], &data_buf[st.size]);
       delete [] data_buf;
+
+      Log::info("PAPER received.");
+    }
+    else {
+      Log::info("SKIP received.");
     }
 
     return bytes;
@@ -193,7 +198,7 @@ namespace argosClient {
       }
     }
     catch(boost::system::system_error const& e) {
-      Log::error("Se perdió la conexión al servidor de ARgos al recibir. " + std::string(e.what()));
+      Log::error("Conection lost with the server when receiving. " + std::string(e.what()));
       _tcpSocket->close();
       _error = -1;
     }
@@ -202,7 +207,7 @@ namespace argosClient {
   }
 
   void TaskDelegation::processCvMat(StreamType& st, cv::Mat& mat) {
-    Log::success("Nueva cv::Mat recibida. Size: " + std::to_string(st.size));
+    Log::success("New cv::Mat received. Size: " + std::to_string(st.size));
     mat = cv::imdecode(st.data, CV_LOAD_IMAGE_COLOR);
   }
 
@@ -213,29 +218,42 @@ namespace argosClient {
         paper.modelview_matrix[i] = 0.0f;
     }
     else {
-      processInt(st, paper.id, 0);
-      processMatrix16f(st, paper.modelview_matrix, sizeof(int));
-      processInt(st, paper.num_calling_functions, sizeof(int)+(sizeof(float)*16));
-      processCallingFunctionData(st, paper.num_calling_functions, paper.cfds, sizeof(int)+(sizeof(float)*16)+sizeof(int));
-      Log::success("Nuevo Paper recibido, id: " + std::to_string(paper.id));
+      _offset = 0;
+      nextInt(st, paper.id);
+      nextMatrix16f(st, paper.modelview_matrix);
+      //nextInt(st, paper.num_calling_functions);
+      //nextCallingFunctionData(st, paper.num_calling_functions, paper.cfds);
+
+      //Log::success("Id: " + std::to_string(paper.id) + ". Num. functions: " + std::to_string(paper.cfds.size()));
       Log::matrix(paper.modelview_matrix);
     }
   }
 
-  void TaskDelegation::processInt(StreamType& st, int& value, int offset) {
-    memcpy(&value, &st.data[offset], sizeof(int));
+  void TaskDelegation::nextInt(StreamType& st, int& value) {
+    memcpy(&value, &st.data[_offset], sizeof(int));
+    _offset += sizeof(int);
   }
 
-  void TaskDelegation::processMatrix16f(StreamType& st, float* matrix, int offset) {
-    memcpy(&matrix[0], &st.data[offset], sizeof(float)*16);
+  void TaskDelegation::nextChars(StreamType& st, char* chars, int num_chars) {
+    memcpy(&chars, &st.data[_offset], sizeof(char) * num_chars);
+    _offset += sizeof(char) * num_chars;
   }
 
-  void TaskDelegation::processCallingFunctionData(StreamType& st, int num, std::vector<CallingFunctionData>& cfds, int offset) {
+  void TaskDelegation::nextMatrix16f(StreamType& st, float* matrix) {
+    memcpy(&matrix[0], &st.data[_offset], sizeof(float) * 16);
+    _offset += sizeof(float)*16;
+  }
+
+  void TaskDelegation::nextCallingFunctionData(StreamType& st, int num, std::vector<CallingFunctionData>& cfds) {
     for(int i = 0; i < num; ++i) {
       CallingFunctionData cfd;
       int id = static_cast<int>(cfd.id);
-      processInt(st, id, offset*(i+1));
+      nextInt(st, id);
       cfd.id = static_cast<CallingFunctionType>(id);
+
+      char svalue[32] = "";
+      int ivalue = 0;
+      float fvalue = 0.0f;
 
       switch(cfd.id) {
       case NONE:
@@ -259,13 +277,20 @@ namespace argosClient {
       case CREATE_FACTURE_HINT:
         break;
       case PLAY_SOUND:
-        // std::string (filename) from st.data
+        nextChars(st, svalue, 32); // filename
+        nextInt(st, ivalue); // loops
+        cfd.args.push_back(std::string(svalue));
+        cfd.args.push_back(std::to_string(ivalue));
         break;
-      case PLAY_SOUND_LOOP:
-        // std::string (filename) from st.data
-        // int (delay) from st.data
+      case PLAY_SOUND_DELAYED:
+        nextChars(st, svalue, 32); // filename
+        nextInt(st, ivalue); // seconds to wait among plays
+        cfd.args.push_back(std::string(svalue));
+        cfd.args.push_back(std::to_string(ivalue));
         break;
       }
+
+      cfds.push_back(cfd);
     }
   }
 

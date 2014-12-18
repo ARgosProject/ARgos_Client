@@ -37,6 +37,10 @@ namespace argosClient {
       return duration_cast<microseconds>(elapsed()).count();
     }
 
+    nanoseconds::rep getNanoseconds() const {
+      return duration_cast<nanoseconds>(elapsed()).count();
+    }
+
   private:
     high_resolution_clock::time_point epoch;
   };

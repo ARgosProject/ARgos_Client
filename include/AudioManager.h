@@ -18,7 +18,7 @@ namespace argosClient {
     void preload(const std::string& file_name);
     void preloadAll();
 
-    void play(const std::string& file_name);
+    void play(const std::string& file_name, int loops = 0);
     void pause();
     void resume();
     void stop();

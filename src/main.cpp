@@ -5,15 +5,6 @@
 #include <chrono>
 #include <csignal>
 
-// ffmpeg
-#ifdef __cplusplus
-extern "C"
-{
-  //#include <libavcodec/avcodec.h>
-  //#include <libavformat/avformat.h>
-}
-#endif
-
 // OpenCV
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -39,6 +30,8 @@ extern "C"
 
 // Logger
 #include "Log.h"
+
+#include "Timer.h"
 
 #define SCREEN_W 800
 #define SCREEN_H 600
@@ -105,13 +98,13 @@ int main(int argc, char **argv) {
   //Camera.set(CV_CAP_PROP_SATURATION, 55);
   //Camera.set(CV_CAP_PROP_GAIN, 55);
 
-  Log::info("Abriendo cámara...");
+  Log::info("Opening camera...");
   Camera.open();
   if(!Camera.isOpened()) {
     Log::error("Failed opening the camera.");
     return -1;
   }
-  Log::info("Camera open correctly.");
+  Log::info("Camera opened correctly.");
   Log::info("ARgos executing.");
 
   //Set the appropriate projection matrix so that rendering is done in a enrvironment like the real camera (without distorsion)
@@ -141,16 +134,42 @@ int main(int argc, char **argv) {
   AudioManager::getInstance().setSoundsPath("media/sounds/");
   AudioManager::getInstance().preloadAll();
 
+  unsigned long long acum1 = 0, acum2 = 0, acum3 = 0;
+  unsigned int loops = 0;
+  Timer t;
+  t.start();
   while(g_loop) {
+    unsigned long long tmp = 0;
+    ++loops;
+    Log::plain("--- ITERATION " + std::to_string(loops), "measures.log");
+
+    t.start();
     Camera.grab();
     Camera.retrieve(currentFrame);
+    tmp = t.getNanoseconds();
+    acum1 += tmp;
+    Log::plain("CAMERA GRAB: " + std::to_string(tmp), "measures.log");
 
+    t.start();
     paper_t paper;
     td->run(currentFrame, paper);
+    tmp = t.getNanoseconds();
+    acum2 += tmp;
+    Log::plain("SEND/RECEIVE: " + std::to_string(tmp), "measures.log");
 
+    t.start();
     glContext.update(currentFrame, paper);
     glContext.render();
+    tmp = t.getNanoseconds();
+    acum3 += tmp;
+    Log::plain("RENDER: " + std::to_string(tmp) + "\n", "measures.log");
   }
+  Log::plain("----- RESULTS -------", "measures.log");
+  Log::plain("NUMBER OF ITERATIONS: " + std::to_string(loops), "measures.log");
+  Log::plain("TOTAL TIME: " + std::to_string(t.getNanoseconds()) + " nanoseconds", "measures.log");
+  Log::plain("- CAMERA GRABS: " + std::to_string(acum1 / loops), "measures.log");
+  Log::plain("- SEND/RECEIVE GRABS: " + std::to_string(acum2 / loops), "measures.log");
+  Log::plain("- RENDER: " + std::to_string(acum3 / loops), "measures.log");
 
   Log::info("Stopping the camera...");
   Camera.release();

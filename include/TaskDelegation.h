@@ -26,12 +26,12 @@ namespace argosClient {
     CREATE_FACTURE_HINT        =  8,
 
     PLAY_SOUND                 =  9,
-    PLAY_SOUND_LOOP            = 10
+    PLAY_SOUND_DELAYED         = 10
   };
 
   struct CallingFunctionData {
     CallingFunctionType id;
-    std::vector<void*> args;
+    std::vector<std::string> args;
   };
 
   /**
@@ -62,7 +62,8 @@ namespace argosClient {
       VECTOR_I      =  0,
       MATRIX_16F    =  1,
       CV_MAT        =  2,
-      PAPER         =  3
+      PAPER         =  3,
+      VIDEO_STREAM  =  4
     };
 
   public:
@@ -147,21 +148,23 @@ namespace argosClient {
      * @param st The raw data structure
      * @param paper A reference to the integer variable we want to build against
      */
-    void processInt(StreamType& st, int& value, int offset = 0);
+    void nextInt(StreamType& st, int& value);
+
+    void nextChars(StreamType& st, char* chars, int num_chars);
 
     /**
      * Processes and build a 16 floats array (matrix) from raw data
      * @param st The raw data structure
      * @param paper A reference to the floats array we want to build against
      */
-    void processMatrix16f(StreamType& st, float* matrix, int offset = 0);
+    void nextMatrix16f(StreamType& st, float* matrix);
 
     /**
      * Processes and build a CallingFunctionData structure
      * @param st The raw data structure
      * @param cfd A reference to the calling function data we want to build against
      */
-    void processCallingFunctionData(StreamType& st, int num, std::vector<CallingFunctionData>& cfds, int offset = 0);
+    void nextCallingFunctionData(StreamType& st, int num, std::vector<CallingFunctionData>& cfds);
 
     /**
      * Sends the built _buff object to the server
@@ -201,6 +204,7 @@ namespace argosClient {
     std::string _ip; ///< The IP of the connected endpoint
     std::string _port; ///< The Port of the connected endpoint
     int _error; ///< Control variable used to handle errors
+    int _offset; ///< The offset used by process functions
   };
 
 }

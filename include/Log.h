@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#include <fstream>
 
 namespace argosClient {
 
@@ -48,43 +49,43 @@ namespace argosClient {
      * Logs a message using simple output, i.e. no colours
      * @param msg The message to output
      */
-    static void plain(const std::string& msg);
+    static void plain(const std::string& msg, const std::string& filename = "");
 
     /**
      * Logs an info message (blue)
      * @param msg The message to output
      */
-    static void info(const std::string& msg);
+    static void info(const std::string& msg, const std::string& filename = "");
 
     /**
      * Logs an error message (red)
      * @param msg The message to output
      */
-    static void error(const std::string& msg);
+    static void error(const std::string& msg, const std::string& filename = "");
 
     /**
      * Logs a success message (green)
      * @param msg The message to output
      */
-    static void success(const std::string& msg);
+    static void success(const std::string& msg, const std::string& filename = "");
 
     /**
      * Logs a video message (yellow)
      * @param msg The message to output
      */
-    static void video(const std::string& msg);
+    static void video(const std::string& msg, const std::string& filename = "");
 
     /**
      * Logs a templated std::vector
      * @param vec The vector to log
      */
-    template<typename T> static void vector(const std::vector<T>& vec);
+    template<typename T> static void vector(const std::vector<T>& vec, const std::string& filename = "");
 
     /**
      * Logs a templated plain 16 items array as a matrix
      * @param matrix The matrix to log
      */
-    template<typename T> static void matrix(const T* matrix);
+    template<typename T> static void matrix(const T* matrix, const std::string& filename = "");
 
     /**
      * Retrieves the current date and time
@@ -104,16 +105,25 @@ namespace argosClient {
   };
 
   template<typename T>
-  void Log::vector(const std::vector<T>& vec) {
+  void Log::vector(const std::vector<T>& vec, const std::string& filename) {
     std::cout << currentDateTime() << " [ ";
     typename std::vector<T>::const_iterator i;
     for(i = vec.begin(); i != vec.end(); ++i)
       std::cout << *i << ' ';
     std::cout << "] " << std::endl;
+
+    if(!filename.empty()) {
+      std::ofstream ofs(filename, std::ofstream::app);
+      ofs << currentDateTime() << " [ ";
+      for(i = vec.begin(); i != vec.end(); ++i)
+        ofs << *i << ' ';
+      ofs << "] " << std::endl;
+      ofs.close();
+    }
   }
 
   template<typename T>
-  void Log::matrix(const T* matrix) {
+  void Log::matrix(const T* matrix, const std::string& filename) {
     for(int i = 0; i < 16; i += 4) {
       if(i < 4) {
         std::cout << currentDateTime() << " [ ";
@@ -123,6 +133,21 @@ namespace argosClient {
       }
       std::cout << matrix[i] << " " << matrix[i+1] << " " << matrix[i+2] << " " << matrix[i+3];
       std::cout << " ] " << std::endl;
+    }
+
+    if(!filename.empty()) {
+      std::ofstream ofs(filename, std::ofstream::app);
+      for(int i = 0; i < 16; i += 4) {
+        if(i < 4) {
+          ofs << currentDateTime() << " [ ";
+        }
+        else {
+          ofs << "                      [ ";
+        }
+        ofs << matrix[i] << " " << matrix[i+1] << " " << matrix[i+2] << " " << matrix[i+3];
+        ofs << " ] " << std::endl;
+      }
+      ofs.close();
     }
   }
 
