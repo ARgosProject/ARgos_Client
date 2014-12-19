@@ -25,7 +25,7 @@ extern "C"
 
 // Camera stuff
 #include <raspicam/raspicam_cv.h>
-#include <CameraProjectorSystem.hpp>
+#include <CameraProjectorSystem.h>
 
 // Task delegation, OpenGL Stuff and script engine
 #include "TaskDelegation.h"
@@ -51,7 +51,8 @@ using namespace argosClient;
 
 sig_atomic_t g_loop = true;
 
-void makeIntroduction(GLContext& glContext, raspicam::RaspiCam_Cv& cam, TaskDelegation* td, float duration, float* projection_matrix);
+void makeIntroduction(GLContext& glContext, raspicam::RaspiCam_Cv& cam, TaskDelegation* td,
+                      float duration, float* projection_matrix);
 void signals_function_handler(int signum);
 
 int main(int argc, char **argv) {
@@ -75,8 +76,10 @@ int main(int argc, char **argv) {
 
   // Task delegation stuff (client)
   TaskDelegation* td = new TaskDelegation();
-  while(td->connect(argv[1]) < 0) {
+  while((td->connect(argv[1]) < 0)) {
     usleep(1 * 1000 * 1000); // Wait 1 second before trying to reconnect
+    if(!g_loop)
+      return 1;
   }
 
   // Images
@@ -86,9 +89,10 @@ int main(int argc, char **argv) {
   // Window
   const string projectorWindow = "Projector";
 
-  cout << "Loading camera & projector parameters... " << endl;
+  Log::info("Loading camera and projector parameters...");
   //- Camera Parameters ----
   CameraProjectorSystem cameraProjector;
+  cameraProjector.setCalibrationsPath("data/calibrations/");
   cameraProjector.load("calibrationCamera.xml", "calibrationProjector.xml", "CameraProjectorExtrinsics.xml");
   if(!cameraProjector.isValid()){
     Log::error("Camera or projector parameters is not set, need to run the calibrator tool.");
@@ -123,7 +127,7 @@ int main(int argc, char **argv) {
 
   float projection_matrix[16];
   cameraProjector.getProjector().glGetProjectionMatrix(imgSize, GlWindowSize, projection_matrix, 0.05f, 1000.0f);
-  Log::matrix(projection_matrix);
+  Log::matrix(projection_matrix, Log::Colour::FG_DARK_GRAY);
 
   // OpenGL stuff
   GLContext& glContext = GLContext::getInstance();
@@ -138,7 +142,7 @@ int main(int argc, char **argv) {
   glContext.start();
 
   // Audio dependencies
-  AudioManager::getInstance().setSoundsPath("media/sounds/");
+  AudioManager::getInstance().setSoundsPath("data/sounds/");
   AudioManager::getInstance().preloadAll();
 
   while(g_loop) {
@@ -146,7 +150,11 @@ int main(int argc, char **argv) {
     Camera.retrieve(currentFrame);
 
     paper_t paper;
+<<<<<<< Updated upstream
     td->run(currentFrame, paper);
+=======
+    td->run(currentFrame, paper, g_loop);
+>>>>>>> Stashed changes
 
     glContext.update(currentFrame, paper);
     glContext.render();
@@ -163,7 +171,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-void makeIntroduction(GLContext& glContext, raspicam::RaspiCam_Cv& cam, TaskDelegation* td, float duration, float* projection_matrix) {
+void makeIntroduction(GLContext& glContext, raspicam::RaspiCam_Cv& cam, TaskDelegation* td,
+                      float duration, float* projection_matrix) {
   float width = 21.0f / 2.0f;
   float height = 29.7f / 2.0f;
   bool next = true;
@@ -183,7 +192,7 @@ void makeIntroduction(GLContext& glContext, raspicam::RaspiCam_Cv& cam, TaskDele
     cam.retrieve(currentFrame);
 
     paper_t paper;
-    td->run(currentFrame, paper);
+    td->run(currentFrame, paper, g_loop);
 
     next = glContext.update(currentFrame, paper);
     glContext.render();

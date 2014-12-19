@@ -64,7 +64,6 @@ namespace argosClient {
     glGetIntegerv(GL_MAX_RENDERBUFFER_SIZE, &maxRenderbufferSize);
     assert(maxRenderbufferSize >= _texWidth);
     assert(maxRenderbufferSize >= _texHeight);
-    std::cout << "GL_MAX_RENDERBUFFER_SIZE: " << maxRenderbufferSize << std::endl;
 
     // Generate the framebuffer, renderbuffer and texture object names
     glGenFramebuffers(1, &_framebufferObject);

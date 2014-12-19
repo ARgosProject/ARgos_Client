@@ -38,9 +38,9 @@ namespace argosClient {
     // Graphic dependencies
     GraphicComponentsManager& gcManager = GraphicComponentsManager::getInstance();
     gcManager.setProjectionMatrix(_projectionMatrix);
-    gcManager.setImagesPath("media/images/");
-    gcManager.setVideosPath("media/videos/");
-    gcManager.setFontsPath("media/fonts/");
+    gcManager.setImagesPath("data/images/");
+    gcManager.setVideosPath("data/videos/");
+    gcManager.setFontsPath("data/fonts/");
 
     // Background
     /*ImageComponent* bg1 = new ImageComponent("media/images/background.jpg", 1.0, 1.0);
@@ -77,11 +77,17 @@ namespace argosClient {
     float width = 21.0f;
     float height = 29.7f;
 
-    gcManager.createImageFromFile("Background", "background.jpg", glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f))->noUpdate()->show(true);
-    gcManager.createVideoStream("Videostream", "videoconference.jpg", glm::vec2(width / 2.0f, height / 2.0f), 9999)->show(false);
-    //gcManager.createVideoFromFile("Video", "Megamind.avi", glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(width / 4.0f, height / 4.0f))->show(true);
-    gcManager.createCorners("Corners", 1.0f, 3.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), glm::vec2(width, height))->show(true);
-    gcManager.createAxis("Axis", 5, 3, glm::vec3(0.0f, 0.0f, 0.0f))->show(true);
+    gcManager.createImageFromFile("Background", "background.jpg",
+                                  glm::vec3(0.0f, 0.0f, 0.0f),
+                                  glm::vec2(1.0f, 1.0f))->noUpdate()->show(true);
+    gcManager.createVideoStream("Videostream", "videoconference.jpg",
+                                glm::vec2(width / 2.0f, height / 2.0f), 9999)->show(false);
+    gcManager.createVideoFromFile("Video", "Test.avi",
+                                  glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(width / 4.0f, height / 4.0f))->show(true);
+    gcManager.createCorners("Corners", 1.0f, 3.0f,
+                            glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), glm::vec2(width, height))->show(true);
+    gcManager.createAxis("Axis", 5, 3,
+                         glm::vec3(0.0f, 0.0f, 0.0f))->show(true);
 
     // Corners
     /*std::vector<GraphicComponent*> corners = makeCorners(1.0f, 1.0f, 1.0f, 1.0f);
@@ -208,9 +214,9 @@ namespace argosClient {
     float height = 6.43f;//9.85f;
 
     std::vector<GraphicComponent*> factures = {
-      new ImageComponent("media/images/active.jpg", width / 1.41, height / 1.41),
-      new ImageComponent("media/images/sinovo.jpg", width / 1.41, height / 1.41),
-      new ImageComponent("media/images/neobiz.jpg", width / 1.41, height / 1.41)
+      new ImageComponent("data/images/active.jpg", width / 1.41, height / 1.41),
+      new ImageComponent("data/images/sinovo.jpg", width / 1.41, height / 1.41),
+      new ImageComponent("data/images/neobiz.jpg", width / 1.41, height / 1.41)
     };
 
     float x = 5.64f;
@@ -274,14 +280,14 @@ namespace argosClient {
     bg->setColor(colour.r, colour.g, colour.b, colour.a);
     rtt->addGraphicComponent(bg);
 
-    TextComponent* tcTitle = new TextComponent("media/fonts/ProximaNova-Bold.ttf", 72);
+    TextComponent* tcTitle = new TextComponent("data/fonts/ProximaNova-Bold.ttf", 72);
     tcTitle->setScale(glm::vec3(1.0f, -1.0f, 1.0f));
     tcTitle->setPosition(glm::vec3(50.0f, 50.0f, 0.0f));
     tcTitle->setText(title);
     rtt->addGraphicComponent(tcTitle);
 
     for(auto& block : textBlocks) {
-      TextComponent* textComponent = new TextComponent("media/fonts/ProximaNova-Bold.ttf", 54);
+      TextComponent* textComponent = new TextComponent("data/fonts/ProximaNova-Bold.ttf", 54);
       textComponent->setScale(glm::vec3(1.0f, -1.0f, 1.0f));
       textComponent->setPosition(block.second);
       textComponent->setText(block.first);

@@ -59,10 +59,12 @@ namespace argosClient {
     return _error;
   }
 
-  void TaskDelegation::run(const cv::Mat& mat, paper_t& paper) {
+  void TaskDelegation::run(const cv::Mat& mat, paper_t& paper, sig_atomic_t& g_loop) {
     if(_error < 0) {
       while(reconnect() < 0) {
         usleep(1 * 1000 * 1000); // Wait 1 second before trying to reconnect
+        if(!g_loop)
+          return;
       }
     }
 
@@ -213,12 +215,23 @@ namespace argosClient {
         paper.modelview_matrix[i] = 0.0f;
     }
     else {
+<<<<<<< Updated upstream
       processInt(st, paper.id, 0);
       processMatrix16f(st, paper.modelview_matrix, sizeof(int));
       processInt(st, paper.num_calling_functions, sizeof(int)+(sizeof(float)*16));
       processCallingFunctionData(st, paper.num_calling_functions, paper.cfds, sizeof(int)+(sizeof(float)*16)+sizeof(int));
       Log::success("Nuevo Paper recibido, id: " + std::to_string(paper.id));
       Log::matrix(paper.modelview_matrix);
+=======
+      _offset = 0;
+      nextInt(st, paper.id);
+      nextMatrix16f(st, paper.modelview_matrix);
+      //nextInt(st, paper.num_calling_functions);
+      //nextCallingFunctionData(st, paper.num_calling_functions, paper.cfds);
+
+      //Log::success("Id: " + std::to_string(paper.id) + ". Num. functions: " + std::to_string(paper.cfds.size()));
+      Log::matrix(paper.modelview_matrix, Log::Colour::FG_DARK_GRAY);
+>>>>>>> Stashed changes
     }
   }
 

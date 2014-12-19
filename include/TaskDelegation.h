@@ -111,7 +111,7 @@ namespace argosClient {
      * Starts the main loop of the Task Delegation
      *
      */
-    void run(const cv::Mat& mat, paper_t& paper);
+    void run(const cv::Mat& mat, paper_t& paper, sig_atomic_t& g_loop);
 
     /**
      * Read a StreamType structure from the socket

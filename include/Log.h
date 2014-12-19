@@ -20,6 +20,7 @@ namespace argosClient {
      */
     enum Colour {
       FG_DEFAULT          = 39,
+
       FG_BLACK            = 30,
       FG_RED              = 31,
       FG_GREEN            = 32,
@@ -78,13 +79,23 @@ namespace argosClient {
      * Logs a templated std::vector
      * @param vec The vector to log
      */
+<<<<<<< Updated upstream
     template<typename T> static void vector(const std::vector<T>& vec);
+=======
+    template<typename T> static void vector(const std::vector<T>& vec, Colour color = Colour::FG_DEFAULT,
+                                            const std::string& filename = "");
+>>>>>>> Stashed changes
 
     /**
      * Logs a templated plain 16 items array as a matrix
      * @param matrix The matrix to log
      */
+<<<<<<< Updated upstream
     template<typename T> static void matrix(const T* matrix);
+=======
+    template<typename T> static void matrix(const T* matrix, Colour color = Colour::FG_DEFAULT,
+                                            const std::string& filename = "");
+>>>>>>> Stashed changes
 
     /**
      * Retrieves the current date and time
@@ -104,6 +115,7 @@ namespace argosClient {
   };
 
   template<typename T>
+<<<<<<< Updated upstream
   void Log::vector(const std::vector<T>& vec) {
     std::cout << currentDateTime() << " [ ";
     typename std::vector<T>::const_iterator i;
@@ -114,16 +126,61 @@ namespace argosClient {
 
   template<typename T>
   void Log::matrix(const T* matrix) {
-    for(int i = 0; i < 16; i += 4) {
-      if(i < 4) {
-        std::cout << currentDateTime() << " [ ";
-      }
-      else {
-        std::cout << "                      [ ";
-      }
-      std::cout << matrix[i] << " " << matrix[i+1] << " " << matrix[i+2] << " " << matrix[i+3];
-      std::cout << " ] " << std::endl;
+=======
+  void Log::vector(const std::vector<T>& vec, Colour color, const std::string& filename) {
+    if(coloured_output)
+      std::cout << "\033[" << color << "m";
+
+    std::cout << currentDateTime() << " [VECTOR] \n";
+    std::cout << "                      [";
+    typename std::vector<T>::const_iterator i;
+    for(i = vec.begin(); i != vec.end(); ++i)
+      std::cout << *i << ' ';
+    std::cout << "]" << std::endl;
+
+    if(coloured_output)
+      std::cout << "\033[" << Colour::FG_DEFAULT << "m";
+
+    if(!filename.empty()) {
+      std::ofstream ofs(filename, std::ofstream::app);
+      ofs << currentDateTime() << " [VECTOR] \n";
+      ofs << "                      [";
+      for(i = vec.begin(); i != vec.end(); ++i)
+        ofs << *i << ' ';
+      ofs << "]" << std::endl;
+      ofs.close();
     }
+  }
+
+  template<typename T>
+  void Log::matrix(const T* matrix, Colour color, const std::string& filename) {
+    if(coloured_output)
+      std::cout << "\033[" << color << "m";
+
+    std::cout << currentDateTime() << " [MATRIX] \n";
+>>>>>>> Stashed changes
+    for(int i = 0; i < 16; i += 4) {
+      std::cout << "                      [";
+      std::cout << matrix[i] << " " << matrix[i+1] << " " << matrix[i+2] << " " << matrix[i+3];
+      std::cout << "]" << std::endl;
+    }
+<<<<<<< Updated upstream
+=======
+
+    if(coloured_output)
+      std::cout << "\033[" << Colour::FG_DEFAULT << "m";
+
+    if(!filename.empty()) {
+      std::ofstream ofs(filename, std::ofstream::app);
+      ofs << currentDateTime() << " [MATRIX] \n";
+      for(int i = 0; i < 16; i += 4) {
+        ofs << "                      [";
+        ofs << matrix[i] << " " << matrix[i+1] << " " << matrix[i+2] << " " << matrix[i+3];
+        ofs << "]" << std::endl;
+      }
+      ofs.close();
+    }
+>>>>>>> Stashed changes
   }
 
 }

@@ -10,6 +10,7 @@ namespace argosClient {
     std::cout << currentDateTime() << " " << msg << std::endl;
   }
 
+<<<<<<< Updated upstream
   void Log::info(const std::string& msg) {
     if(coloured_output) {
       std::cout << "\033[" << Colour::FG_LIGHT_BLUE << "m" << currentDateTime() << " [INFO] " << msg << "\033[" << FG_DEFAULT << "m" << std::endl;
@@ -43,6 +44,69 @@ namespace argosClient {
     }
     else {
       std::cout << currentDateTime() << " [VIDEO] " << msg << std::endl;
+=======
+  void Log::info(const std::string& msg, const std::string& filename) {
+    if(coloured_output)
+      std::cout << "\033[" << Colour::FG_LIGHT_BLUE << "m";
+
+    std::cout << currentDateTime() << " [INFO] " << msg << std::endl;
+
+    if(coloured_output)
+      std::cout << "\033[" << FG_DEFAULT << "m";
+
+    if(!filename.empty()) {
+      std::ofstream ofs(filename, std::ofstream::app);
+      ofs << currentDateTime() << " [INFO] " << msg << std::endl;
+      ofs.close();
+    }
+  }
+
+  void Log::error(const std::string& msg, const std::string& filename) {
+    if(coloured_output)
+      std::cout << "\033[" << Colour::FG_LIGHT_RED << "m";
+
+    std::cout << currentDateTime() << " [ERROR] " << msg << std::endl;
+
+    if(coloured_output)
+      std::cout << "\033[" << FG_DEFAULT << "m";
+
+    if(!filename.empty()) {
+      std::ofstream ofs(filename, std::ofstream::app);
+      ofs << currentDateTime() << " [ERROR] " << msg << std::endl;
+      ofs.close();
+    }
+  }
+
+  void Log::success(const std::string& msg, const std::string& filename) {
+    if(coloured_output)
+      std::cout << "\033[" << Colour::FG_LIGHT_GREEN << "m";
+
+    std::cout << currentDateTime() << " [SUCCESS] " << msg << std::endl;
+
+    if(coloured_output)
+      std::cout << "\033[" << FG_DEFAULT << "m";
+
+    if(!filename.empty()) {
+      std::ofstream ofs(filename, std::ofstream::app);
+      ofs << currentDateTime() << " [SUCCESS] " << msg << std::endl;
+      ofs.close();
+    }
+  }
+
+  void Log::video(const std::string& msg, const std::string& filename) {
+    if(coloured_output)
+      std::cout << "\033[" << Colour::FG_LIGHT_YELLOW << "m";
+
+    std::cout << currentDateTime() << " [VIDEO] " << msg << std::endl;
+
+    if(coloured_output)
+      std::cout << "\033[" << FG_DEFAULT << "m";
+
+    if(!filename.empty()) {
+      std::ofstream ofs(filename, std::ofstream::app);
+      ofs << currentDateTime() << " [VIDEO] " << msg << std::endl;
+      ofs.close();
+>>>>>>> Stashed changes
     }
   }
 
