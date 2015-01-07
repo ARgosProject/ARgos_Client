@@ -5,15 +5,6 @@
 #include <chrono>
 #include <csignal>
 
-// ffmpeg
-#ifdef __cplusplus
-extern "C"
-{
-  //#include <libavcodec/avcodec.h>
-  //#include <libavformat/avformat.h>
-}
-#endif
-
 // OpenCV
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -150,11 +141,7 @@ int main(int argc, char **argv) {
     Camera.retrieve(currentFrame);
 
     paper_t paper;
-<<<<<<< Updated upstream
-    td->run(currentFrame, paper);
-=======
     td->run(currentFrame, paper, g_loop);
->>>>>>> Stashed changes
 
     glContext.update(currentFrame, paper);
     glContext.render();

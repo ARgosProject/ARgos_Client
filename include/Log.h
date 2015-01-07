@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#include <fstream>
 
 namespace argosClient {
 
@@ -14,7 +15,7 @@ namespace argosClient {
   class Log {
   public:
     /**
-     * The unicode codes for some colours
+     * Codes for some colours
      * FG_* states for foreground colours
      * BG_* states for background colours
      */
@@ -49,53 +50,45 @@ namespace argosClient {
      * Logs a message using simple output, i.e. no colours
      * @param msg The message to output
      */
-    static void plain(const std::string& msg);
+    static void plain(const std::string& msg, const std::string& filename = "");
 
     /**
      * Logs an info message (blue)
      * @param msg The message to output
      */
-    static void info(const std::string& msg);
+    static void info(const std::string& msg, const std::string& filename = "");
 
     /**
      * Logs an error message (red)
      * @param msg The message to output
      */
-    static void error(const std::string& msg);
+    static void error(const std::string& msg, const std::string& filename = "");
 
     /**
      * Logs a success message (green)
      * @param msg The message to output
      */
-    static void success(const std::string& msg);
+    static void success(const std::string& msg, const std::string& filename = "");
 
     /**
      * Logs a video message (yellow)
      * @param msg The message to output
      */
-    static void video(const std::string& msg);
+    static void video(const std::string& msg, const std::string& filename = "");
 
     /**
      * Logs a templated std::vector
      * @param vec The vector to log
      */
-<<<<<<< Updated upstream
-    template<typename T> static void vector(const std::vector<T>& vec);
-=======
     template<typename T> static void vector(const std::vector<T>& vec, Colour color = Colour::FG_DEFAULT,
                                             const std::string& filename = "");
->>>>>>> Stashed changes
 
     /**
      * Logs a templated plain 16 items array as a matrix
      * @param matrix The matrix to log
      */
-<<<<<<< Updated upstream
-    template<typename T> static void matrix(const T* matrix);
-=======
     template<typename T> static void matrix(const T* matrix, Colour color = Colour::FG_DEFAULT,
                                             const std::string& filename = "");
->>>>>>> Stashed changes
 
     /**
      * Retrieves the current date and time
@@ -115,18 +108,6 @@ namespace argosClient {
   };
 
   template<typename T>
-<<<<<<< Updated upstream
-  void Log::vector(const std::vector<T>& vec) {
-    std::cout << currentDateTime() << " [ ";
-    typename std::vector<T>::const_iterator i;
-    for(i = vec.begin(); i != vec.end(); ++i)
-      std::cout << *i << ' ';
-    std::cout << "] " << std::endl;
-  }
-
-  template<typename T>
-  void Log::matrix(const T* matrix) {
-=======
   void Log::vector(const std::vector<T>& vec, Colour color, const std::string& filename) {
     if(coloured_output)
       std::cout << "\033[" << color << "m";
@@ -158,14 +139,11 @@ namespace argosClient {
       std::cout << "\033[" << color << "m";
 
     std::cout << currentDateTime() << " [MATRIX] \n";
->>>>>>> Stashed changes
     for(int i = 0; i < 16; i += 4) {
       std::cout << "                      [";
       std::cout << matrix[i] << " " << matrix[i+1] << " " << matrix[i+2] << " " << matrix[i+3];
       std::cout << "]" << std::endl;
     }
-<<<<<<< Updated upstream
-=======
 
     if(coloured_output)
       std::cout << "\033[" << Colour::FG_DEFAULT << "m";
@@ -180,7 +158,6 @@ namespace argosClient {
       }
       ofs.close();
     }
->>>>>>> Stashed changes
   }
 
 }
