@@ -12,6 +12,7 @@
 
 namespace argosClient {
   class TextComponent;
+  class ScriptFunction;
 
   /**
    * The OpenGL ES 2.0 context
@@ -166,6 +167,7 @@ namespace argosClient {
     GraphicComponentMap _graphicComponents; ///< A map of the created graphic components
     cv::Mat* _frame; ///< The current frame of the camera used on video streaming
     glm::mat4 _projectionMatrix; ///< The projection matrix used to update the graphic components transformations
+    std::map<int, ScriptFunction*> _handlers;
   };
 
 }

@@ -13,20 +13,19 @@ namespace argosClient {
    * script engine
    */
   enum CallingFunctionType {
-    NONE                       = -1,
+    NONE                     = -1,
 
-    CREATE_IMAGE_FROM_FILE     =  0,
-    CREATE_VIDEO_FROM_FILE     =  1,
-    CREATE_CORNERS             =  2,
-    CREATE_AXIS                =  3,
-    CREATE_VIDEO_STREAM        =  4,
-    CREATE_TEXT_PANEL          =  5,
-    CREATE_HIGHLIGHT           =  6,
-    CREATE_BUTTON              =  7,
-    CREATE_FACTURE_HINT        =  8,
+    DRAW_IMAGE               =  0,
+    DRAW_VIDEO               =  1,
+    DRAW_CORNERS             =  2,
+    DRAW_AXIS                =  3,
+    DRAW_TEXT_PANEL          =  5,
+    DRAW_HIGHLIGHT           =  6,
+    DRAW_BUTTON              =  7,
+    DRAW_FACTURE_HINT        =  8,
 
-    PLAY_SOUND                 =  9,
-    PLAY_SOUND_DELAYED         = 10
+    PLAY_SOUND               =  9,
+    PLAY_SOUND_DELAYED       = 10
   };
 
   struct CallingFunctionData {
@@ -149,6 +148,8 @@ namespace argosClient {
      * @param paper A reference to the integer variable we want to build against
      */
     void nextInt(StreamType& st, int& value);
+
+    void nextFloat(StreamType& st, float& value);
 
     void nextChars(StreamType& st, char* chars, int num_chars);
 

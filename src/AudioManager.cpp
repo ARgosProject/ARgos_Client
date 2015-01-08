@@ -59,13 +59,13 @@ namespace argosClient {
     }
   }
 
-  void AudioManager::play(const std::string& file_name) {
+  void AudioManager::play(const std::string& file_name, int loops) {
     if(_soundsMap.find(file_name) != _soundsMap.end()) {
-      Mix_PlayChannel(-1, _soundsMap[file_name], 0);
+      Mix_PlayChannel(-1, _soundsMap[file_name], loops);
     }
     else {
       preload(file_name);
-      play(file_name);
+      play(file_name, loops);
     }
   }
 

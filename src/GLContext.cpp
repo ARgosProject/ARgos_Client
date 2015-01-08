@@ -20,6 +20,21 @@
 #include "Log.h"
 #include "GraphicComponentsManager.h"
 
+#include "TaskDelegation.h"
+
+#include "AudioManager.h"
+
+#include "DrawImageSF.h"
+#include "DrawVideoSF.h"
+#include "DrawCornersSF.h"
+#include "DrawAxisSF.h"
+#include "DrawTextPanelSF.h"
+#include "DrawHighlightSF.h"
+#include "DrawButtonSF.h"
+#include "DrawFactureHintSF.h"
+#include "PlaySoundSF.h"
+#include "PlaySoundDelayedSF.h"
+
 namespace argosClient {
 
   GLContext::GLContext(EGLconfig* config)
@@ -35,6 +50,22 @@ namespace argosClient {
   }
 
   void GLContext::start() {
+    // Audio dependencies
+    AudioManager::getInstance().setSoundsPath("data/sounds/");
+    AudioManager::getInstance().preloadAll();
+
+    // Handlers
+    _handlers[CallingFunctionType::DRAW_IMAGE] = new DrawImageSF;
+    _handlers[CallingFunctionType::DRAW_VIDEO] = new DrawVideoSF;
+    _handlers[CallingFunctionType::DRAW_CORNERS] = new DrawCornersSF;
+    _handlers[CallingFunctionType::DRAW_AXIS] = new DrawAxisSF;
+    _handlers[CallingFunctionType::DRAW_TEXT_PANEL] = new DrawTextPanelSF;
+    _handlers[CallingFunctionType::DRAW_HIGHLIGHT] = new DrawHighlightSF;
+    _handlers[CallingFunctionType::DRAW_BUTTON] = new DrawButtonSF;
+    _handlers[CallingFunctionType::DRAW_FACTURE_HINT] = new DrawFactureHintSF;
+    _handlers[CallingFunctionType::PLAY_SOUND] = new PlaySoundSF;
+    _handlers[CallingFunctionType::PLAY_SOUND_DELAYED] = new PlaySoundDelayedSF;
+
     // Graphic dependencies
     GraphicComponentsManager& gcManager = GraphicComponentsManager::getInstance();
     gcManager.setProjectionMatrix(_projectionMatrix);
@@ -82,8 +113,8 @@ namespace argosClient {
                                   glm::vec2(1.0f, 1.0f))->noUpdate()->show(true);
     gcManager.createVideoStream("Videostream", "videoconference.jpg",
                                 glm::vec2(width / 2.0f, height / 2.0f), 9999)->show(false);
-    gcManager.createVideoFromFile("Video", "Test.avi",
-                                  glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(width / 4.0f, height / 4.0f))->show(true);
+    //gcManager.createVideoFromFile("Video", "Test.avi",
+    //                              glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(width / 4.0f, height / 4.0f))->show(true);
     gcManager.createCorners("Corners", 1.0f, 3.0f,
                             glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), glm::vec2(width, height))->show(true);
     gcManager.createAxis("Axis", 5, 3,
@@ -374,12 +405,17 @@ namespace argosClient {
     }
     _frame = &currentFrame;
 
+    int sentences = paper.cfds.size();
+    for(int i = 0; i < sentences; ++i) {
+      _handlers[paper.cfds[i].id]->execute(paper.cfds[i].args);
+    }
+
     switch(_state) {
     case State::INTRODUCTION:
       next = paper.id != 0;
       break;
     case State::FETCH_PAPERS:
-      fetchPaperId(paper.id);
+      //fetchPaperId(paper.id);
       break;
     }
 
