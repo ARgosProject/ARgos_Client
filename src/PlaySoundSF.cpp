@@ -3,8 +3,14 @@
 
 namespace argosClient {
 
+  PlaySoundSF::PlaySoundSF()
+    : ScriptFunction(),
+      _audioManager(AudioManager::getInstance()) {
+
+  }
+
   void PlaySoundSF::execute(const std::vector<std::string>& args) {
-    AudioManager::getInstance().play(args[0], getArgAsInt(args[1]));
+    _audioManager.play(args[0], getArgAsInt(args[1]));
   }
 
 }

@@ -19,6 +19,7 @@ namespace argosClient {
     DRAW_VIDEO               =  1,
     DRAW_CORNERS             =  2,
     DRAW_AXIS                =  3,
+    INIT_VIDEO_STREAM        =  4,
     DRAW_TEXT_PANEL          =  5,
     DRAW_HIGHLIGHT           =  6,
     DRAW_BUTTON              =  7,
@@ -145,12 +146,23 @@ namespace argosClient {
     /**
      * Processes and build an integer value from raw data
      * @param st The raw data structure
-     * @param paper A reference to the integer variable we want to build against
+     * @param value The value to save the result
      */
     void nextInt(StreamType& st, int& value);
 
+    /**
+     * Processes and build a float value from raw data
+     * @param st The raw data structure
+     * @param value The value to save the result
+     */
     void nextFloat(StreamType& st, float& value);
 
+    /**
+     * Processes and build a string from raw data
+     * @param st The raw data structure
+     * @param chars The value to save the result
+     * @param num_chars The number of characters to save
+     */
     void nextChars(StreamType& st, char* chars, int num_chars);
 
     /**

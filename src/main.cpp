@@ -41,8 +41,6 @@ using namespace argosClient;
 
 sig_atomic_t g_loop = true;
 
-void makeIntroduction(GLContext& glContext, raspicam::RaspiCam_Cv& cam, TaskDelegation* td,
-                      float duration, float* projection_matrix);
 void signals_function_handler(int signum);
 
 int main(int argc, char **argv) {
@@ -69,7 +67,7 @@ int main(int argc, char **argv) {
   while((td->connect(argv[1]) < 0)) {
     usleep(1 * 1000 * 1000); // Wait 1 second before trying to reconnect
     if(!g_loop)
-      return 1;
+      exit(EXIT_FAILURE);
   }
 
   // Images
@@ -99,7 +97,7 @@ int main(int argc, char **argv) {
   //Camera.set(CV_CAP_PROP_SATURATION, 55);
   //Camera.set(CV_CAP_PROP_GAIN, 55);
 
-  Log::info("Abriendo cámara...");
+  Log::info("Opening camera...");
   Camera.open();
   if(!Camera.isOpened()) {
     Log::error("Failed opening the camera.");
@@ -111,9 +109,6 @@ int main(int argc, char **argv) {
   //Set the appropriate projection matrix so that rendering is done in a enrvironment like the real camera (without distorsion)
   cv::Size imgSize(SCREEN_W_CAMERA, SCREEN_H_CAMERA);
   cv::Size GlWindowSize(SCREEN_W, SCREEN_H);
-
-  vector<string> invoices = { "NONE", "NEOBIZ", "SINOVO", "ACTIVE" };
-  string lastSearch = "NONE";
 
   float projection_matrix[16];
   cameraProjector.getProjector().glGetProjectionMatrix(imgSize, GlWindowSize, projection_matrix, 0.05f, 1000.0f);
@@ -127,8 +122,6 @@ int main(int argc, char **argv) {
   glContext.setScreen(0, 0, SCREEN_W, SCREEN_H);
   glContext.setProjectionMatrix(glm::make_mat4(projection_matrix));
 
-  //makeIntroduction(glContext, Camera, td, 10, projection_matrix);
-
   glContext.start();
 
   while(g_loop) {
@@ -138,56 +131,19 @@ int main(int argc, char **argv) {
     paper_t paper;
     td->run(currentFrame, paper, g_loop);
 
-    glContext.update(currentFrame, paper);
+    glContext.update(paper);
     glContext.render();
   }
 
   Log::info("Stopping the camera...");
   Camera.release();
 
-  Log::info("Releasing the OpenGL 2.0 context...");
+  Log::info("Releasing the OpenGL ES 2.0 context...");
   glContext.destroy();
 
   Log::info("Shutdown successed.");
 
   return 0;
-}
-
-void makeIntroduction(GLContext& glContext, raspicam::RaspiCam_Cv& cam, TaskDelegation* td,
-                      float duration, float* projection_matrix) {
-  float width = 21.0f / 2.0f;
-  float height = 29.7f / 2.0f;
-  bool next = true;
-  cv::Mat currentFrame;
-  GraphicComponent* cover = new ImageComponent("cover.jpg", width, height);
-  cover->setProjectionMatrix(glm::make_mat4(projection_matrix));
-  cover->setScale(glm::vec3(-1.0f, 1.0f, 1.0f));
-  glContext.addGraphicComponent("Cover", cover);
-  glContext.setState(GLContext::State::INTRODUCTION);
-
-  /*
-  std::chrono::time_point<std::chrono::high_resolution_clock> begin = std::chrono::high_resolution_clock::now();;
-  std::chrono::time_point<std::chrono::high_resolution_clock> end;
-  */
-  while(next) {
-    cam.grab();
-    cam.retrieve(currentFrame);
-
-    paper_t paper;
-    td->run(currentFrame, paper, g_loop);
-
-    next = glContext.update(currentFrame, paper);
-    glContext.render();
-
-    /*
-    end = std::chrono::high_resolution_clock::now();
-    if(std::chrono::duration_cast<std::chrono::seconds>(end - begin).count() > duration) {
-      exit = true;
-    }
-    */
-  }
-
-  glContext.removeGraphicComponent("Cover");
 }
 
 void signals_function_handler(int signum) {

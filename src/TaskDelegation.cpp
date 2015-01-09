@@ -263,20 +263,22 @@ namespace argosClient {
       case NONE:
         break;
       case DRAW_IMAGE:
-        char filename[32] = "";
-        float pos[3] = { 0.0f, 0.0f, 0.0f };
-        float size[2] = { 0.0f, 0.0f };
+        {
+          char filename[32] = "";
+          float pos[3] = { 0.0f, 0.0f, 0.0f };
+          float size[2] = { 0.0f, 0.0f };
 
-        nextChars(st, filename, 32);
-        cfd.args.push_back(std::string(filename));
+          nextChars(st, filename, 32);
+          cfd.args.push_back(std::string(filename));
 
-        for(int i = 0; i < 3; ++i) {
-          nextFloat(st, pos[i]);
-          cfd.args.push_back(std::to_string(pos[i]));
-        }
-        for(int i = 0; i < 2; ++i) {
-          nextFloat(st, size[i]);
-          cfd.args.push_back(std::to_string(size[i]));
+          for(int i = 0; i < 3; ++i) {
+            nextFloat(st, pos[i]);
+            cfd.args.push_back(std::to_string(pos[i]));
+          }
+          for(int i = 0; i < 2; ++i) {
+            nextFloat(st, size[i]);
+            cfd.args.push_back(std::to_string(size[i]));
+          }
         }
         break;
       case DRAW_VIDEO:
@@ -362,7 +364,7 @@ namespace argosClient {
       case DRAW_HIGHLIGHT:
         {
           float colour[3] = { 0.0f, 0.0f, 0.0f };
-          float position[3] = { 0.0f, 0.0f, 0.0f };
+          float pos[3] = { 0.0f, 0.0f, 0.0f };
           float size[2] = { 0.0f, 0.0f };
 
           for(int i = 0; i < 3; ++i) {
@@ -445,8 +447,8 @@ namespace argosClient {
 
           cfd.args.push_back(std::string(filename));
           cfd.args.push_back(std::to_string(loops));
-          break;
         }
+        break;
       case PLAY_SOUND_DELAYED:
         {
           char filename[32] = "";
@@ -457,8 +459,8 @@ namespace argosClient {
 
           cfd.args.push_back(std::string(filename));
           cfd.args.push_back(std::to_string(delay));
-          break;
         }
+        break;
       }
 
       cfds.push_back(cfd);

@@ -185,7 +185,7 @@ namespace argosClient {
     return gcc;
   }
 
-  GraphicComponentsManager::GCCollectionPtr GraphicComponentsManager::createVideoStream(const std::string& name, const std::string& bg_file,
+  GraphicComponentsManager::GCCollectionPtr GraphicComponentsManager::createVideostream(const std::string& name, const std::string& bg_file,
                                                                                         const glm::vec2& size, int port) {
     std::shared_ptr<ImageComponent> bg = std::make_shared<ImageComponent>(_imagesPath + "videoconference.jpg", size.x, size.y);
     bg->setProjectionMatrix(_projectionMatrix);
@@ -205,18 +205,84 @@ namespace argosClient {
   }
 
   GraphicComponentsManager::GCCollectionPtr GraphicComponentsManager::createTextPanel(const std::string& name, const glm::vec4& colour,
-                                                                                      const std::string& text, const glm::vec3& pos) {
-    // TODO
+                                                                                      const std::wstring& text, const glm::vec3& pos) {
+    float scaleFactor = 0.008f;
+    float w = 300.0f;
+    float h = 200.0f;
+
+    std::shared_ptr<RenderToTextureComponent> rtt = std::make_shared<RenderToTextureComponent>(w, h);
+    rtt->setScale(glm::vec3(-scaleFactor, scaleFactor, scaleFactor));
+    rtt->setPosition(pos);
+    rtt->setProjectionMatrix(_projectionMatrix);
+
+    RectangleComponent* bg = new RectangleComponent(w, h);
+    bg->setColor(colour.r, colour.g, colour.b, colour.a);
+    rtt->addGraphicComponent(bg);
+
+    TextComponent* txt = new TextComponent(_fontsPath + "ProximaNova-Bold.ttf", 72);
+    txt->setScale(glm::vec3(1.0f, -1.0f, 1.0f));
+    txt->setPosition(glm::vec3(20.0f, 20.0f, 0.0f));
+    txt->setText(text);
+    rtt->addGraphicComponent(txt);
+
+    GCCollectionPtr gcc = std::make_shared<GCCollection>(name + "_Collection");
+    gcc->add(rtt);
+    gcc->show(false);
+    _gcCollections[name] = gcc;
+
+    return gcc;
   }
 
   GraphicComponentsManager::GCCollectionPtr GraphicComponentsManager::createHighlight(const std::string& name, const glm::vec4& colour,
                                                                                       const glm::vec3& pos, const glm::vec3& scale) {
-    // TODO
+    std::shared_ptr<RectangleComponent> hl = std::make_shared<RectangleComponent>(1.0f, 1.0f);
+    hl->setColor(colour.r, colour.g, colour.b, colour.a);
+    hl->setPosition(pos);
+    hl->setScale(scale);
+
+    GCCollectionPtr gcc = std::make_shared<GCCollection>(name + "_Collection");
+    gcc->add(hl);
+    gcc->show(false);
+    _gcCollections[name] = gcc;
+
+    return gcc;
   }
 
   GraphicComponentsManager::GCCollectionPtr GraphicComponentsManager::createButton(const std::string& name, const glm::vec4& colour,
-                                                                                   const std::string& text, const glm::vec3& pos) {
-    // TODO
+                                                                                   const std::wstring& text, const glm::vec3& pos) {
+    float scaleFactor = 0.008f;
+    float w = 150.0f;
+    float h = 75.0f;
+
+    std::shared_ptr<RenderToTextureComponent> rtt = std::make_shared<RenderToTextureComponent>(w, h);
+    rtt->setScale(glm::vec3(-scaleFactor, scaleFactor, scaleFactor));
+    rtt->setPosition(pos);
+    rtt->setProjectionMatrix(_projectionMatrix);
+
+    RectangleComponent* bg = new RectangleComponent(w, h);
+    bg->setColor(colour.r, colour.g, colour.b, colour.a);
+    rtt->addGraphicComponent(bg);
+
+    LineComponent* topLine = new LineComponent(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(w, 0.0f, 0.0f), 3.0f);
+    topLine->setColor(0.4f, 0.4f, 0.4f, 1.0f);
+    rtt->addGraphicComponent(topLine);
+
+    LineComponent* leftLine = new LineComponent(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, h, 0.0f), 3.0f);
+    topLine->setColor(0.8f, 0.8f, 0.8f, 1.0f);
+    rtt->addGraphicComponent(leftLine);
+
+    TextComponent* txt = new TextComponent(_fontsPath + "ProximaNova-Bold.ttf", 72);
+    txt->setScale(glm::vec3(1.0f, -1.0f, 1.0f));
+    txt->setPosition(glm::vec3(20.0f, 20.0f, 0.0f));
+    txt->setText(text);
+    rtt->addGraphicComponent(txt);
+
+    GCCollectionPtr gcc = std::make_shared<GCCollection>(name + "_Collection");
+    gcc->add(rtt);
+    gcc->show(false);
+    _gcCollections[name] = gcc;
+
+    return gcc;
   }
 
   GraphicComponentsManager::GCCollectionPtr GraphicComponentsManager::createFactureHint(const std::string& name, const glm::vec3& pos, const glm::vec2& size,
