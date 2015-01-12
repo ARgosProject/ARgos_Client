@@ -14,13 +14,10 @@ namespace argosClient {
   public:
     DrawButtonSF();
 
-    void execute(const std::vector<std::string>& args) override;
+    void execute(const std::vector<std::string>& args, int id) override;
 
   private:
     GraphicComponentsManager& _graphicComponentsManager;
-
-    static std::string name;
-    static unsigned long long counter;
   };
 
 }

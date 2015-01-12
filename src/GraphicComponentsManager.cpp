@@ -82,6 +82,7 @@ namespace argosClient {
                                                                                           const glm::vec3& pos, const glm::vec2& size) {
     std::shared_ptr<ImageComponent> imageComponent = std::make_shared<ImageComponent>(_imagesPath + file_name, size.x, size.y);
     imageComponent->setPosition(pos);
+    imageComponent->setProjectionMatrix(_projectionMatrix);
 
     GCCollectionPtr gcc = std::make_shared<GCCollection>(name + "_Collection");
     gcc->add(imageComponent);

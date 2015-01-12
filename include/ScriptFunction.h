@@ -18,7 +18,7 @@ namespace argosClient {
     /**
      * Constructs a new ScriptFunctions
      */
-    ScriptFunction() { }
+    ScriptFunction(const std::string& name) : _name(name) { }
 
     /**
      * Destroys the ScriptFunction
@@ -29,7 +29,7 @@ namespace argosClient {
      * Execute this ScriptFunctions
      * @param args The list of arguments of this ScriptFunctions
      */
-    virtual void execute(const std::vector<std::string>& args) = 0;
+    virtual void execute(const std::vector<std::string>& args, int id) = 0;
 
     /**
      * Retrieves the specified property by its key
@@ -38,6 +38,15 @@ namespace argosClient {
      */
     virtual std::string& getProperty(const std::string& key) {
       return _properties[key];
+    }
+
+    /**
+     * Sets the specified key with the value
+     * @param key The name of the property to set
+     * @param value The value to set the key
+     */
+    virtual void setProperty(const std::string& key, const std::string& value) {
+      _properties[key] = value;
     }
 
   protected:
@@ -75,6 +84,8 @@ namespace argosClient {
 
   protected:
     std::map<std::string, std::string> _properties; ///< An associative list of properties used to hold return values of the ScriptFunction
+
+    std::string _name; ///< The name of this scriptable function
   };
 
 }

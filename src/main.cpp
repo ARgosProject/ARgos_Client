@@ -23,6 +23,7 @@
 #include "GLContext.h"
 #include "GraphicComponent.h"
 #include "ImageComponent.h"
+#include "AudioManager.h"
 
 // RaspberryPi stuff
 #include "bcm_host.h"
@@ -81,7 +82,7 @@ int main(int argc, char **argv) {
   //- Camera Parameters ----
   CameraProjectorSystem cameraProjector;
   cameraProjector.setCalibrationsPath("data/calibrations/");
-  cameraProjector.load("calibrationCamera.xml", "calibrationProjector.xml", "CameraProjectorExtrinsics.xml");
+  cameraProjector.load("calibrationCamera.yml", "calibrationProjector.yml", "CameraProjectorExtrinsics.yml");
   if(!cameraProjector.isValid()){
     Log::error("Camera or projector parameters is not set, need to run the calibrator tool.");
     exit(1);
@@ -137,6 +138,9 @@ int main(int argc, char **argv) {
 
   Log::info("Stopping the camera...");
   Camera.release();
+
+  AudioManager::getInstance().play("apagando.wav");
+  usleep(2196 * 1000);
 
   Log::info("Releasing the OpenGL ES 2.0 context...");
   glContext.destroy();

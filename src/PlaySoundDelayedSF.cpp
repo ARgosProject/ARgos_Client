@@ -4,12 +4,12 @@
 namespace argosClient {
 
   PlaySoundDelayedSF::PlaySoundDelayedSF()
-    : ScriptFunction(),
+    : ScriptFunction("SoundDelayed"),
       _audioManager(AudioManager::getInstance()) {
 
   }
 
-  void PlaySoundDelayedSF::execute(const std::vector<std::string>& args) {
+  void PlaySoundDelayedSF::execute(const std::vector<std::string>& args, int id) {
     AudioManager::getInstance().play(args[0], getArgAsInt(args[1]));
   }
 

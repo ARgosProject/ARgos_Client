@@ -5,23 +5,18 @@
 
 namespace argosClient {
 
-  std::string DrawHighlightSF::name = "Highlight_";
-  unsigned long long DrawHighlightSF::counter = 0;
-
   DrawHighlightSF::DrawHighlightSF()
-    : ScriptFunction(),
+    : ScriptFunction("Highlight_"),
       _graphicComponentsManager(GraphicComponentsManager::getInstance()) {
 
   }
 
-  void DrawHighlightSF::execute(const std::vector<std::string>& args) {
-    _graphicComponentsManager.createHighlight(name + std::to_string(counter),
+  void DrawHighlightSF::execute(const std::vector<std::string>& args, int id) {
+    _graphicComponentsManager.createHighlight(_name + std::to_string(id),
                                               glm::vec4(getArgAsFloat(args[0]), getArgAsFloat(args[1]), getArgAsFloat(args[2]), 1.0f),
                                               glm::vec3(getArgAsFloat(args[3]), getArgAsFloat(args[4]), getArgAsFloat(args[5])),
                                               glm::vec3(getArgAsFloat(args[6]), getArgAsFloat(args[7]), 1.0f)
                                               )->show(true);
-
-    ++counter;
   }
 
 }

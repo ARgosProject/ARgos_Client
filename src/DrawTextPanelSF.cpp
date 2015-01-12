@@ -5,26 +5,21 @@
 
 namespace argosClient {
 
-  std::string DrawTextPanelSF::name = "TextPanel_";
-  unsigned long long DrawTextPanelSF::counter = 0;
-
   DrawTextPanelSF::DrawTextPanelSF()
-    : ScriptFunction(),
+    : ScriptFunction("TextPanel_"),
       _graphicComponentsManager(GraphicComponentsManager::getInstance()) {
 
   }
 
-  void DrawTextPanelSF::execute(const std::vector<std::string>& args) {
+  void DrawTextPanelSF::execute(const std::vector<std::string>& args, int id) {
     std::wstring text;
     text.assign(args[3].begin(), args[3].end());
 
-    _graphicComponentsManager.createTextPanel(name + std::to_string(counter),
+    _graphicComponentsManager.createTextPanel(_name + std::to_string(id),
                                               glm::vec4(getArgAsFloat(args[0]), getArgAsFloat(args[1]), getArgAsFloat(args[2]), 1.0f),
                                               text,
                                               glm::vec3(getArgAsFloat(args[4]), getArgAsFloat(args[5]), getArgAsFloat(args[6]))
                                               )->show(true);
-
-    ++counter;
   }
 
 }

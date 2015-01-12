@@ -35,6 +35,7 @@ namespace argosClient {
 
   GLContext::~GLContext() {
     GraphicComponentsManager::getInstance().destroy();
+    AudioManager::getInstance().destroy();
   }
 
   void GLContext::start() {
@@ -72,7 +73,7 @@ namespace argosClient {
 
     int sentences = paper.cfds.size();
     for(int i = 0; i < sentences; ++i) {
-      _handlers[paper.cfds[i].id]->execute(paper.cfds[i].args);
+      _handlers[paper.cfds[i].id]->execute(paper.cfds[i].args, paper.id);
     }
 
     return true;

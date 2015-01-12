@@ -173,7 +173,7 @@ namespace argosClient {
       st.data.insert(st.data.end(), &data_buf[0], &data_buf[st.size]);
       delete [] data_buf;
 
-      Log::info("PAPER received. " + std::to_string(bytes) + " bytes received.");
+      Log::info("PAPER received. " + std::to_string(st.size) + "/" + std::to_string(bytes) + " bytes received.");
     }
     else {
       Log::info("SKIP received.");
@@ -255,7 +255,7 @@ namespace argosClient {
   void TaskDelegation::nextCallingFunctionData(StreamType& st, int num, std::vector<CallingFunctionData>& cfds) {
     for(int i = 0; i < num; ++i) {
       CallingFunctionData cfd;
-      int id = static_cast<int>(cfd.id);
+      int id;
       nextInt(st, id);
       cfd.id = static_cast<CallingFunctionType>(id);
 
