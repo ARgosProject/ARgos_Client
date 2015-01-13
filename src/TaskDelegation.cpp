@@ -406,7 +406,7 @@ namespace argosClient {
       case DRAW_FACTURE_HINT:
         {
           float pos[3] = { 0.0f, 0.0f, 0.0f };
-          float size[3] = { 0.0f, 0.0f };
+          float size[2] = { 0.0f, 0.0f };
           float colour[3] = { 0.0f, 0.0f, 0.0f };
           char title[32] = "";
           char block1[32] = "";
@@ -435,6 +435,24 @@ namespace argosClient {
 
           nextChars(st, block2, 32);
           cfd.args.push_back(std::string(block2));
+        }
+        break;
+      case INIT_VIDEO_STREAM:
+        {
+          char filename[32] = "";
+          float size[2] = { 0.0f, 0.0f };
+          int port = -1;
+
+          nextChars(st, filename, 32);
+          cfd.args.push_back(std::string(filename));
+
+          for(int i = 0; i < 2; ++i) {
+            nextFloat(st, size[i]);
+            cfd.args.push_back(std::to_string(size[i]));
+          }
+
+          nextInt(st, port);
+          cfd.args.push_back(std::to_string(port));
         }
         break;
       case PLAY_SOUND:

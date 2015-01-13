@@ -52,6 +52,12 @@ namespace argosClient {
     void showGCCollection(const std::string& name, bool show = true);
 
     /**
+     * Removes all the graphic components for the given document ID
+     * @param id The document id
+     */
+    void cleanForId(int id);
+
+    /**
      * Render the specified graphic components collection
      */
     void render(const std::string& name);
@@ -99,7 +105,7 @@ namespace argosClient {
      * @param size The size
      * @return The resulting graphic components collection
      */
-    GCCollectionPtr createImageFromFile(const std::string& name, const std::string& file_name, const glm::vec3& pos, const glm::vec2& size);
+    GCCollectionPtr createImageFromFile(const std::string& name, const std::string& file_name, const glm::vec3& pos, const glm::vec2& size, bool flat = false);
 
     /**
      * Creates a new video from file

@@ -46,6 +46,16 @@ namespace argosClient {
     _gcCollections[name]->show(show);
   }
 
+  void GraphicComponentsManager::cleanForId(int id) {
+    std::string str = /* "id:" + */ std::to_string(id);
+
+    for(auto& pair : _gcCollections) {
+      if(pair.first.find(str) != std::string::npos) {
+        removeGCCollection(pair.first);
+      }
+    }
+  }
+
   void GraphicComponentsManager::render(const std::string& name) {
     _gcCollections[name]->render();
   }
@@ -79,10 +89,14 @@ namespace argosClient {
   }
 
   GraphicComponentsManager::GCCollectionPtr GraphicComponentsManager::createImageFromFile(const std::string& name, const std::string& file_name,
-                                                                                          const glm::vec3& pos, const glm::vec2& size) {
+                                                                                          const glm::vec3& pos, const glm::vec2& size, bool flat) {
     std::shared_ptr<ImageComponent> imageComponent = std::make_shared<ImageComponent>(_imagesPath + file_name, size.x, size.y);
     imageComponent->setPosition(pos);
-    imageComponent->setProjectionMatrix(_projectionMatrix);
+
+    if(!flat)
+      imageComponent->setProjectionMatrix(_projectionMatrix);
+    else
+      imageComponent->noUpdate();
 
     GCCollectionPtr gcc = std::make_shared<GCCollection>(name + "_Collection");
     gcc->add(imageComponent);
@@ -188,13 +202,14 @@ namespace argosClient {
 
   GraphicComponentsManager::GCCollectionPtr GraphicComponentsManager::createVideostream(const std::string& name, const std::string& bg_file,
                                                                                         const glm::vec2& size, int port) {
-    std::shared_ptr<ImageComponent> bg = std::make_shared<ImageComponent>(_imagesPath + "videoconference.jpg", size.x, size.y);
+    std::shared_ptr<ImageComponent> bg = std::make_shared<ImageComponent>(_imagesPath + bg_file, size.x, size.y);
     bg->setProjectionMatrix(_projectionMatrix);
 
     std::shared_ptr<VideoStreamComponent> videoStream = std::make_shared<VideoStreamComponent>(size.y / 1.77, size.x / 1.77);
     videoStream->startReceivingVideo(port);
+    videoStream->setProjectionMatrix(_projectionMatrix);
     videoStream->setPosition(glm::vec3(0.0f, 5.6f, 0.0f));
-    videoStream->setScale(glm::vec3(1.055f, 0.85f, 1.0f));
+    videoStream->setScale(glm::vec3(1.055f, -0.85f, 1.0f));
 
     GCCollectionPtr gcc = std::make_shared<GCCollection>(name + "_Collection");
     gcc->add(bg);
@@ -237,6 +252,7 @@ namespace argosClient {
   GraphicComponentsManager::GCCollectionPtr GraphicComponentsManager::createHighlight(const std::string& name, const glm::vec4& colour,
                                                                                       const glm::vec3& pos, const glm::vec3& scale) {
     std::shared_ptr<RectangleComponent> hl = std::make_shared<RectangleComponent>(1.0f, 1.0f);
+    hl->setProjectionMatrix(_projectionMatrix);
     hl->setColor(colour.r, colour.g, colour.b, colour.a);
     hl->setPosition(pos);
     hl->setScale(scale);

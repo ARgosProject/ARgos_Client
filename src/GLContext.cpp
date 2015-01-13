@@ -26,10 +26,13 @@
 #include "PlaySoundSF.h"
 #include "PlaySoundDelayedSF.h"
 
+#include "ImageComponent.h"
+
 namespace argosClient {
 
   GLContext::GLContext(EGLconfig* config)
-    : EGLWindow(config), _projectionMatrix(glm::mat4(1.0f)) {
+    : EGLWindow(config), _projectionMatrix(glm::mat4(1.0f)),
+      _gcManager(GraphicComponentsManager::getInstance()) {
 
   }
 
@@ -57,24 +60,47 @@ namespace argosClient {
     _handlers[CallingFunctionType::PLAY_SOUND_DELAYED] = new PlaySoundDelayedSF;
 
     // Graphic dependencies
-    GraphicComponentsManager& gcManager = GraphicComponentsManager::getInstance();
-    gcManager.setProjectionMatrix(_projectionMatrix);
-    gcManager.setImagesPath("data/images/");
-    gcManager.setVideosPath("data/videos/");
-    gcManager.setFontsPath("data/fonts/");
+    _gcManager.setProjectionMatrix(_projectionMatrix);
+    _gcManager.setImagesPath("data/images/");
+    _gcManager.setVideosPath("data/videos/");
+    _gcManager.setFontsPath("data/fonts/");
+
+    // Projection area
+    /*_gcManager.createImageFromFile("ProjectionArea", "background.jpg",
+                                   glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f), true)
+                                   ->show(true);*/
+    _projArea = new ImageComponent("data/images/background.jpg", 1.0f, 1.0f);
+    _projArea->setPosition(glm::vec3(0.0f, 0.0f, 0.0f));
+    _projArea->noUpdate();
+    _projArea->show(true);
+
+    // Videostream
+    _gcManager.createVideostream("Videostream", "videoconference.jpg", glm::vec2(10.5f, 14.85f), 9999);
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     Log::success("OpenGL ES 2.0 context initialized.");
   }
 
   bool GLContext::update(paper_t& paper) {
+    static int oldId = -2;
+
     glm::mat4 modelview_matrix = glm::make_mat4(paper.modelview_matrix);
     GraphicComponentsManager::getInstance().update(modelview_matrix);
+
+    if(paper.id != oldId) {
+      _gcManager.cleanForId(oldId);
+    }
+
+    if(paper.id != 999) {
+      _gcManager.showGCCollection("Videostream", false);
+    }
 
     int sentences = paper.cfds.size();
     for(int i = 0; i < sentences; ++i) {
       _handlers[paper.cfds[i].id]->execute(paper.cfds[i].args, paper.id);
     }
+
+    oldId = paper.id;
 
     return true;
   }
@@ -83,6 +109,9 @@ namespace argosClient {
     // Clears the screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, _width, _height);
+
+    // Render background
+    _projArea->render();
 
     // Render all objects
     GraphicComponentsManager::getInstance().renderAll();

@@ -10,6 +10,7 @@ namespace argosClient {
   }
 
   void PlaySoundSF::execute(const std::vector<std::string>& args, int id) {
+    _audioManager.stop();
     _audioManager.play(args[0], getArgAsInt(args[1]));
   }
 

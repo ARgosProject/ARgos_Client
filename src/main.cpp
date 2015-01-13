@@ -73,10 +73,10 @@ int main(int argc, char **argv) {
 
   // Images
   cv::Mat currentFrame;     // current frame
-  cv::Mat projectorFrame;   // projector openCV frame
+  //cv::Mat projectorFrame;   // projector openCV frame
 
   // Window
-  const string projectorWindow = "Projector";
+  //const string projectorWindow = "Projector";
 
   Log::info("Loading camera and projector parameters...");
   //- Camera Parameters ----

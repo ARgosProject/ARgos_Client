@@ -10,7 +10,10 @@
 #include "TaskDelegation.h"
 
 namespace argosClient {
+
+  class GraphicComponentsManager;
   class ScriptFunction;
+  class ImageComponent;
 
   /**
    * The OpenGL ES 2.0 context
@@ -64,6 +67,8 @@ namespace argosClient {
   private:
     glm::mat4 _projectionMatrix; ///< The projection matrix used to update the graphic components transformations
     std::map<int, ScriptFunction*> _handlers; ///< An associative list of function pointer to script functions
+    GraphicComponentsManager& _gcManager; ///< A reference to the GraphicComponentsManager
+    ImageComponent* _projArea;
   };
 
 }

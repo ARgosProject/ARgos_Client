@@ -72,7 +72,7 @@ namespace argosClient {
 
   void VideoComponent::readVideoFrame(cv::Mat& videoFrame) {
     _videoReader >> videoFrame;
-    //cvtColor(videoFrame, videoFrame, CV_BGR2RGB);
+    cvtColor(videoFrame, videoFrame, CV_BGR2RGB);
   }
 
   void VideoComponent::makeVideoTexture(const cv::Mat& mat) {
