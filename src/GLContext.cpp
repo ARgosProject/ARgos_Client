@@ -39,6 +39,7 @@ namespace argosClient {
   GLContext::~GLContext() {
     GraphicComponentsManager::getInstance().destroy();
     AudioManager::getInstance().destroy();
+    delete _projArea;
   }
 
   void GLContext::start() {

@@ -24,6 +24,7 @@
 #include "GraphicComponent.h"
 #include "ImageComponent.h"
 #include "AudioManager.h"
+#include "Timer.h"
 
 // RaspberryPi stuff
 #include "bcm_host.h"
@@ -42,11 +43,12 @@ using namespace argosClient;
 
 sig_atomic_t g_loop = true;
 
+void showIntro(GLContext& glContext, float duration, float* projection_matrix);
 void signals_function_handler(int signum);
 
 int main(int argc, char **argv) {
   if(argc < 2) {
-    std::cout << "Usage: " + std::string(argv[0]) + " <ip:port>" << std::endl;
+    std::cout << "Usage: " + std::string(argv[0]) + " <ip:port> [-i]" << std::endl;
     return 0;
   }
 
@@ -69,6 +71,13 @@ int main(int argc, char **argv) {
     usleep(1 * 1000 * 1000); // Wait 1 second before trying to reconnect
     if(!g_loop)
       exit(EXIT_FAILURE);
+  }
+
+  bool show_intro = false;
+  if(argc == 3) {
+    if(argv[2][1] == 'i') {
+      show_intro = true;
+    }
   }
 
   // Images
@@ -123,6 +132,9 @@ int main(int argc, char **argv) {
   glContext.setScreen(0, 0, SCREEN_W, SCREEN_H);
   glContext.setProjectionMatrix(glm::make_mat4(projection_matrix));
 
+  if(show_intro)
+    showIntro(glContext, 5, projection_matrix);
+
   glContext.start();
 
   while(g_loop) {
@@ -148,6 +160,32 @@ int main(int argc, char **argv) {
   Log::info("Shutdown successed.");
 
   return 0;
+}
+
+void showIntro(GLContext& glContext, float duration, float* projection_matrix) {
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+  ImageComponent* cover = new ImageComponent("data/images/cover.jpg", 1.0f, 1.0f);
+  cover->setPosition(glm::vec3(0.0f, 0.0f, 0.0f));
+  cover->noUpdate();
+  cover->show(true);
+
+  bool exit = false;
+  Timer t;
+  t.start();
+  while(!exit) {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, glContext.getWidth(), glContext.getHeight());
+
+    cover->render();
+    glContext.swapBuffers();
+
+    if(t.getSeconds() > duration) {
+      exit = true;
+    }
+  }
+
+  delete cover;
 }
 
 void signals_function_handler(int signum) {
