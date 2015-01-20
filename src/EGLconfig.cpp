@@ -5,6 +5,8 @@
 #include <iostream>
 #include <cstdlib>
 
+#include "Log.h"
+
 namespace argosClient {
 
   EGLconfig::EGLconfig() {
@@ -52,13 +54,13 @@ namespace argosClient {
     EGLint numConfig;
 
     result = eglChooseConfig(display, &attribs[0], &_config, 1, &numConfig);
-    std::cout << "Got numCofig = " << numConfig << std::endl;
+    Log::info("Got numCofig = " + std::to_string(numConfig) + ".");
     if(result == EGL_FALSE) {
-      std::cerr << "Error setting config check your setting or if you have a valid display" << std::endl;
+      Log::error("Setting config. Check your setting or if you have a valid display.");
       exit(EXIT_FAILURE);
     }
 
-    std::cout << "Config chosed successfully!" << std::endl;
+    Log::success("Config chosed successfully!");
   }
 
   EGLConfig EGLconfig::getConfig() const {

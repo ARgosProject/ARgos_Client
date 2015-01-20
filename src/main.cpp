@@ -16,14 +16,15 @@
 
 // Camera stuff
 #include <raspicam/raspicam_cv.h>
-#include <CameraProjectorSystem.hpp>
+#include <CameraProjectorSystem.h>
 
 // Task delegation, OpenGL Stuff and script engine
 #include "TaskDelegation.h"
-#include "AudioManager.h"
 #include "GLContext.h"
 #include "GraphicComponent.h"
 #include "ImageComponent.h"
+#include "AudioManager.h"
+#include "Timer.h"
 
 // RaspberryPi stuff
 #include "bcm_host.h"
@@ -44,12 +45,12 @@ using namespace argosClient;
 
 sig_atomic_t g_loop = true;
 
-void makeIntroduction(GLContext& glContext, raspicam::RaspiCam_Cv& cam, TaskDelegation* td, float duration, float* projection_matrix);
+void showIntro(GLContext& glContext, float duration, float* projection_matrix);
 void signals_function_handler(int signum);
 
 int main(int argc, char **argv) {
   if(argc < 2) {
-    std::cout << "Usage: " + std::string(argv[0]) + " <ip:port>" << std::endl;
+    std::cout << "Usage: " + std::string(argv[0]) + " <ip:port> [-i]" << std::endl;
     return 0;
   }
 
@@ -68,21 +69,31 @@ int main(int argc, char **argv) {
 
   // Task delegation stuff (client)
   TaskDelegation* td = new TaskDelegation();
-  while(td->connect(argv[1]) < 0) {
+  while((td->connect(argv[1]) < 0)) {
     usleep(1 * 1000 * 1000); // Wait 1 second before trying to reconnect
+    if(!g_loop)
+      exit(EXIT_FAILURE);
+  }
+
+  bool show_intro = false;
+  if(argc == 3) {
+    if(argv[2][1] == 'i') {
+      show_intro = true;
+    }
   }
 
   // Images
   cv::Mat currentFrame;     // current frame
-  cv::Mat projectorFrame;   // projector openCV frame
+  //cv::Mat projectorFrame;   // projector openCV frame
 
   // Window
-  const string projectorWindow = "Projector";
+  //const string projectorWindow = "Projector";
 
-  cout << "Loading camera & projector parameters... " << endl;
+  Log::info("Loading camera and projector parameters...");
   //- Camera Parameters ----
   CameraProjectorSystem cameraProjector;
-  cameraProjector.load("calibrationCamera.xml", "calibrationProjector.xml", "CameraProjectorExtrinsics.xml");
+  cameraProjector.setCalibrationsPath("data/calibrations/");
+  cameraProjector.load("calibrationCamera.yml", "calibrationProjector.yml", "CameraProjectorExtrinsics.yml");
   if(!cameraProjector.isValid()){
     Log::error("Camera or projector parameters is not set, need to run the calibrator tool.");
     exit(1);
@@ -111,12 +122,9 @@ int main(int argc, char **argv) {
   cv::Size imgSize(SCREEN_W_CAMERA, SCREEN_H_CAMERA);
   cv::Size GlWindowSize(SCREEN_W, SCREEN_H);
 
-  vector<string> invoices = { "NONE", "NEOBIZ", "SINOVO", "ACTIVE" };
-  string lastSearch = "NONE";
-
   float projection_matrix[16];
   cameraProjector.getProjector().glGetProjectionMatrix(imgSize, GlWindowSize, projection_matrix, 0.05f, 1000.0f);
-  Log::matrix(projection_matrix);
+  Log::matrix(projection_matrix, Log::Colour::FG_DARK_GRAY);
 
   // OpenGL stuff
   GLContext& glContext = GLContext::getInstance();
@@ -126,55 +134,29 @@ int main(int argc, char **argv) {
   glContext.setScreen(0, 0, SCREEN_W, SCREEN_H);
   glContext.setProjectionMatrix(glm::make_mat4(projection_matrix));
 
-  //makeIntroduction(glContext, Camera, td, 10, projection_matrix);
+  if(show_intro)
+    showIntro(glContext, 5, projection_matrix);
 
   glContext.start();
 
-  // Audio dependencies
-  AudioManager::getInstance().setSoundsPath("media/sounds/");
-  AudioManager::getInstance().preloadAll();
-
-  unsigned long long acum1 = 0, acum2 = 0, acum3 = 0;
-  unsigned int loops = 0;
-  Timer t;
-  t.start();
   while(g_loop) {
-    unsigned long long tmp = 0;
-    ++loops;
-    Log::plain("--- ITERATION " + std::to_string(loops), "measures.log");
-
-    t.start();
     Camera.grab();
     Camera.retrieve(currentFrame);
-    tmp = t.getNanoseconds();
-    acum1 += tmp;
-    Log::plain("CAMERA GRAB: " + std::to_string(tmp), "measures.log");
 
-    t.start();
     paper_t paper;
-    td->run(currentFrame, paper);
-    tmp = t.getNanoseconds();
-    acum2 += tmp;
-    Log::plain("SEND/RECEIVE: " + std::to_string(tmp), "measures.log");
+    td->run(currentFrame, paper, g_loop);
 
-    t.start();
-    glContext.update(currentFrame, paper);
+    glContext.update(paper);
     glContext.render();
-    tmp = t.getNanoseconds();
-    acum3 += tmp;
-    Log::plain("RENDER: " + std::to_string(tmp) + "\n", "measures.log");
   }
-  Log::plain("----- RESULTS -------", "measures.log");
-  Log::plain("NUMBER OF ITERATIONS: " + std::to_string(loops), "measures.log");
-  Log::plain("TOTAL TIME: " + std::to_string(t.getNanoseconds()) + " nanoseconds", "measures.log");
-  Log::plain("- CAMERA GRABS: " + std::to_string(acum1 / loops), "measures.log");
-  Log::plain("- SEND/RECEIVE GRABS: " + std::to_string(acum2 / loops), "measures.log");
-  Log::plain("- RENDER: " + std::to_string(acum3 / loops), "measures.log");
 
   Log::info("Stopping the camera...");
   Camera.release();
 
-  Log::info("Releasing the OpenGL 2.0 context...");
+  AudioManager::getInstance().play("apagando.wav");
+  usleep(2196 * 1000);
+
+  Log::info("Releasing the OpenGL ES 2.0 context...");
   glContext.destroy();
 
   Log::info("Shutdown successed.");
@@ -182,40 +164,30 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-void makeIntroduction(GLContext& glContext, raspicam::RaspiCam_Cv& cam, TaskDelegation* td, float duration, float* projection_matrix) {
-  float width = 21.0f / 2.0f;
-  float height = 29.7f / 2.0f;
-  bool next = true;
-  cv::Mat currentFrame;
-  GraphicComponent* cover = new ImageComponent("cover.jpg", width, height);
-  cover->setProjectionMatrix(glm::make_mat4(projection_matrix));
-  cover->setScale(glm::vec3(-1.0f, 1.0f, 1.0f));
-  glContext.addGraphicComponent("Cover", cover);
-  glContext.setState(GLContext::State::INTRODUCTION);
+void showIntro(GLContext& glContext, float duration, float* projection_matrix) {
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-  /*
-  std::chrono::time_point<std::chrono::high_resolution_clock> begin = std::chrono::high_resolution_clock::now();;
-  std::chrono::time_point<std::chrono::high_resolution_clock> end;
-  */
-  while(next) {
-    cam.grab();
-    cam.retrieve(currentFrame);
+  ImageComponent* cover = new ImageComponent("data/images/cover.jpg", 1.0f, 1.0f);
+  cover->setPosition(glm::vec3(0.0f, 0.0f, 0.0f));
+  cover->noUpdate();
+  cover->show(true);
 
-    paper_t paper;
-    td->run(currentFrame, paper);
+  bool exit = false;
+  Timer t;
+  t.start();
+  while(!exit) {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, glContext.getWidth(), glContext.getHeight());
 
-    next = glContext.update(currentFrame, paper);
-    glContext.render();
+    cover->render();
+    glContext.swapBuffers();
 
-    /*
-    end = std::chrono::high_resolution_clock::now();
-    if(std::chrono::duration_cast<std::chrono::seconds>(end - begin).count() > duration) {
+    if(t.getSeconds() > duration) {
       exit = true;
     }
-    */
   }
 
-  glContext.removeGraphicComponent("Cover");
+  delete cover;
 }
 
 void signals_function_handler(int signum) {

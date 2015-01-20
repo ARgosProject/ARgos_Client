@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <opencv2/highgui/highgui.hpp>
+#include <iomanip>
 
 #include "Log.h"
 
@@ -59,10 +60,12 @@ namespace argosClient {
     return _error;
   }
 
-  void TaskDelegation::run(const cv::Mat& mat, paper_t& paper) {
+  void TaskDelegation::run(const cv::Mat& mat, paper_t& paper, sig_atomic_t& g_loop) {
     if(_error < 0) {
       while(reconnect() < 0) {
         usleep(1 * 1000 * 1000); // Wait 1 second before trying to reconnect
+        if(!g_loop)
+          return;
       }
     }
 
@@ -170,7 +173,7 @@ namespace argosClient {
       st.data.insert(st.data.end(), &data_buf[0], &data_buf[st.size]);
       delete [] data_buf;
 
-      Log::info("PAPER received.");
+      Log::info("PAPER received. " + std::to_string(st.size) + "/" + std::to_string(bytes) + " bytes received.");
     }
     else {
       Log::info("SKIP received.");
@@ -221,11 +224,11 @@ namespace argosClient {
       _offset = 0;
       nextInt(st, paper.id);
       nextMatrix16f(st, paper.modelview_matrix);
-      //nextInt(st, paper.num_calling_functions);
-      //nextCallingFunctionData(st, paper.num_calling_functions, paper.cfds);
+      nextInt(st, paper.num_calling_functions);
+      nextCallingFunctionData(st, paper.num_calling_functions, paper.cfds);
 
-      //Log::success("Id: " + std::to_string(paper.id) + ". Num. functions: " + std::to_string(paper.cfds.size()));
-      Log::matrix(paper.modelview_matrix);
+      Log::success("Id: " + std::to_string(paper.id) + ". Num. functions: " + std::to_string(paper.cfds.size()));
+      Log::matrix(paper.modelview_matrix, Log::Colour::FG_DARK_GRAY);
     }
   }
 
@@ -234,59 +237,248 @@ namespace argosClient {
     _offset += sizeof(int);
   }
 
+  void TaskDelegation::nextFloat(StreamType& st, float& value) {
+    memcpy(&value, &st.data[_offset], sizeof(float));
+    _offset += sizeof(float);
+  }
+
   void TaskDelegation::nextChars(StreamType& st, char* chars, int num_chars) {
-    memcpy(&chars, &st.data[_offset], sizeof(char) * num_chars);
+    memcpy(chars, &st.data[_offset], sizeof(char) * num_chars);
     _offset += sizeof(char) * num_chars;
   }
 
   void TaskDelegation::nextMatrix16f(StreamType& st, float* matrix) {
     memcpy(&matrix[0], &st.data[_offset], sizeof(float) * 16);
-    _offset += sizeof(float)*16;
+    _offset += sizeof(float) * 16;
   }
 
   void TaskDelegation::nextCallingFunctionData(StreamType& st, int num, std::vector<CallingFunctionData>& cfds) {
     for(int i = 0; i < num; ++i) {
       CallingFunctionData cfd;
-      int id = static_cast<int>(cfd.id);
+      int id;
+
       nextInt(st, id);
       cfd.id = static_cast<CallingFunctionType>(id);
-
-      char svalue[32] = "";
-      int ivalue = 0;
-      float fvalue = 0.0f;
 
       switch(cfd.id) {
       case NONE:
         break;
-      case CREATE_IMAGE_FROM_FILE:
+      case DRAW_IMAGE:
+        {
+          char filename[32] = "";
+          float pos[3] = { 0.0f, 0.0f, 0.0f };
+          float size[2] = { 0.0f, 0.0f };
+
+          nextChars(st, filename, 32);
+          cfd.args.push_back(std::string(filename));
+
+          for(int i = 0; i < 3; ++i) {
+            nextFloat(st, pos[i]);
+            cfd.args.push_back(std::to_string(pos[i]));
+          }
+          for(int i = 0; i < 2; ++i) {
+            nextFloat(st, size[i]);
+            cfd.args.push_back(std::to_string(size[i]));
+          }
+        }
         break;
-      case CREATE_VIDEO_FROM_FILE:
+      case DRAW_VIDEO:
+        {
+          char filename[32] = "";
+          float pos[3] = { 0.0f, 0.0f, 0.0f };
+          float size[2] = { 0.0f, 0.0f };
+
+          nextChars(st, filename, 32);
+          cfd.args.push_back(std::string(filename));
+
+          for(int i = 0; i < 3; ++i) {
+            nextFloat(st, pos[i]);
+            cfd.args.push_back(std::to_string(pos[i]));
+          }
+          for(int i = 0; i < 2; ++i) {
+            nextFloat(st, size[i]);
+            cfd.args.push_back(std::to_string(size[i]));
+          }
+        }
         break;
-      case CREATE_CORNERS:
+      case DRAW_CORNERS:
+        {
+          float length = 0.0f;
+          float wide = 0.0f;
+          float colour[3] = { 0.0f, 0.0f, 0.0f };
+          float size[2] = { 0.0f, 0.0f };
+
+          nextFloat(st, length);
+          cfd.args.push_back(std::to_string(length));
+
+          nextFloat(st, wide);
+          cfd.args.push_back(std::to_string(wide));
+
+          for(int i = 0; i < 3; ++i) {
+            nextFloat(st, colour[i]);
+            cfd.args.push_back(std::to_string(colour[i]));
+          }
+          for(int i = 0; i < 2; ++i) {
+            nextFloat(st, size[i]);
+            cfd.args.push_back(std::to_string(size[i]));
+          }
+        }
         break;
-      case CREATE_AXIS:
+      case DRAW_AXIS:
+        {
+          float length = 0.0f;
+          float wide = 0.0f;
+          float pos[3] = { 0.0f, 0.0f, 0.0f };
+
+          nextFloat(st, length);
+          cfd.args.push_back(std::to_string(length));
+
+          nextFloat(st, wide);
+          cfd.args.push_back(std::to_string(wide));
+
+          for(int i = 0; i < 3; ++i) {
+            nextFloat(st, pos[i]);
+            cfd.args.push_back(std::to_string(pos[i]));
+          }
+        }
         break;
-      case CREATE_VIDEO_STREAM:
+      case DRAW_TEXT_PANEL:
+        {
+          float colour[3] = { 0.0f, 0.0f, 0.0f };
+          char text[32] = "";
+          float pos[3] = { 0.0f, 0.0f, 0.0f };
+
+          for(int i = 0; i < 3; ++i) {
+            nextFloat(st, colour[i]);
+            cfd.args.push_back(std::to_string(colour[i]));
+          }
+
+          nextChars(st, text, 32);
+          cfd.args.push_back(std::string(text));
+
+          for(int i = 0; i < 3; ++i) {
+            nextFloat(st, pos[i]);
+            cfd.args.push_back(std::to_string(pos[i]));
+          }
+        }
         break;
-      case CREATE_TEXT_PANEL:
+      case DRAW_HIGHLIGHT:
+        {
+          float colour[3] = { 0.0f, 0.0f, 0.0f };
+          float pos[3] = { 0.0f, 0.0f, 0.0f };
+          float size[2] = { 0.0f, 0.0f };
+
+          for(int i = 0; i < 3; ++i) {
+            nextFloat(st, colour[i]);
+            cfd.args.push_back(std::to_string(colour[i]));
+          }
+
+          for(int i = 0; i < 3; ++i) {
+            nextFloat(st, pos[i]);
+            cfd.args.push_back(std::to_string(pos[i]));
+          }
+
+          for(int i = 0; i < 2; ++i) {
+            nextFloat(st, size[i]);
+            cfd.args.push_back(std::to_string(size[i]));
+          }
+        }
         break;
-      case CREATE_HIGHLIGHT:
+      case DRAW_BUTTON:
+        {
+          float colour[3] = { 0.0f, 0.0f, 0.0f };
+          char text[32] = "";
+          float pos[3] = { 0.0f, 0.0f, 0.0f };
+
+          for(int i = 0; i < 3; ++i) {
+            nextFloat(st, colour[i]);
+            cfd.args.push_back(std::to_string(colour[i]));
+          }
+
+          nextChars(st, text, 32);
+          cfd.args.push_back(std::string(text));
+
+          for(int i = 0; i < 3; ++i) {
+            nextFloat(st, pos[i]);
+            cfd.args.push_back(std::to_string(pos[i]));
+          }
+        }
         break;
-      case CREATE_BUTTON:
+      case DRAW_FACTURE_HINT:
+        {
+          float pos[3] = { 0.0f, 0.0f, 0.0f };
+          float size[2] = { 0.0f, 0.0f };
+          float colour[3] = { 0.0f, 0.0f, 0.0f };
+          char title[32] = "";
+          char block1[32] = "";
+          char block2[32] = "";
+
+          for(int i = 0; i < 3; ++i) {
+            nextFloat(st, pos[i]);
+            cfd.args.push_back(std::to_string(pos[i]));
+          }
+
+          for(int i = 0; i < 2; ++i) {
+            nextFloat(st, size[i]);
+            cfd.args.push_back(std::to_string(size[i]));
+          }
+
+          for(int i = 0; i < 3; ++i) {
+            nextFloat(st, colour[i]);
+            cfd.args.push_back(std::to_string(colour[i]));
+          }
+
+          nextChars(st, title, 32);
+          cfd.args.push_back(std::string(title));
+
+          nextChars(st, block1, 32);
+          cfd.args.push_back(std::string(block1));
+
+          nextChars(st, block2, 32);
+          cfd.args.push_back(std::string(block2));
+        }
         break;
-      case CREATE_FACTURE_HINT:
+      case INIT_VIDEO_STREAM:
+        {
+          char filename[32] = "";
+          float size[2] = { 0.0f, 0.0f };
+          int port = -1;
+
+          nextChars(st, filename, 32);
+          cfd.args.push_back(std::string(filename));
+
+          for(int i = 0; i < 2; ++i) {
+            nextFloat(st, size[i]);
+            cfd.args.push_back(std::to_string(size[i]));
+          }
+
+          nextInt(st, port);
+          cfd.args.push_back(std::to_string(port));
+        }
         break;
       case PLAY_SOUND:
-        nextChars(st, svalue, 32); // filename
-        nextInt(st, ivalue); // loops
-        cfd.args.push_back(std::string(svalue));
-        cfd.args.push_back(std::to_string(ivalue));
+        {
+          char filename[32] = "";
+          int loops = 0;
+
+          nextChars(st, filename, 32);
+          nextInt(st, loops);
+
+          cfd.args.push_back(std::string(filename));
+          cfd.args.push_back(std::to_string(loops));
+        }
         break;
       case PLAY_SOUND_DELAYED:
-        nextChars(st, svalue, 32); // filename
-        nextInt(st, ivalue); // seconds to wait among plays
-        cfd.args.push_back(std::string(svalue));
-        cfd.args.push_back(std::to_string(ivalue));
+        {
+          char filename[32] = "";
+          int delay = 0;
+
+          nextChars(st, filename, 32);
+          nextInt(st, delay);
+
+          cfd.args.push_back(std::string(filename));
+          cfd.args.push_back(std::to_string(delay));
+        }
         break;
       }
 

@@ -8,7 +8,7 @@ namespace argosClient {
 
   AudioManager::AudioManager() {
     if(SDL_Init(SDL_INIT_AUDIO) < 0) {
-      Log::error("No se pudo inicializar el sistema de audio");
+      Log::error("Could not init audio system.");
       SDL_Quit();
     }
 
@@ -16,7 +16,7 @@ namespace argosClient {
 
     // Inicializando SDL mixer...
     if(Mix_OpenAudio(16000, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 4096) < 0) {
-      Log::error("No se pudo inicializar el mezclador de sonido");
+      Log::error("Could not init audio mixer.");
       SDL_Quit();
     }
 
@@ -24,7 +24,8 @@ namespace argosClient {
   }
 
   AudioManager::~AudioManager() {
-
+    for(auto& pair : _soundsMap)
+      Mix_FreeChunk(pair.second);
   }
 
   void AudioManager::setSoundsPath(const std::string& path) {
@@ -35,11 +36,11 @@ namespace argosClient {
     _soundsMap[file_name] = Mix_LoadWAV((_soundsPath + file_name).c_str());
 
     if(_soundsMap[file_name] == NULL) {
-      Log::error("Loading the sound: '" + _soundsPath + file_name + "'");
-      SDL_Quit();
+      Log::error("Loading the sound: '" + _soundsPath + file_name + "'.");
     }
-
-    Log::success("Sound '" + _soundsPath + file_name + "' successfully loaded");
+    else {
+      Log::success("Sound '" + _soundsPath + file_name + "' successfully loaded.");
+    }
   }
 
   void AudioManager::preloadAll() {
@@ -54,13 +55,13 @@ namespace argosClient {
       closedir(dir);
     }
     else {
-      Log::error("There was an error loading the sounds from '" + _soundsPath + "'. Aborting");
-      SDL_Quit();
+      Log::error("There was an error loading the sounds from '" + _soundsPath + "'. ");
     }
   }
 
   void AudioManager::play(const std::string& file_name, int loops) {
     if(_soundsMap.find(file_name) != _soundsMap.end()) {
+      Log::info("Playing sound: '" + file_name + "'.");
       Mix_PlayChannel(-1, _soundsMap[file_name], loops);
     }
     else {

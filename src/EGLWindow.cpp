@@ -9,6 +9,8 @@
 #include <fcntl.h>
 #include <cstring>
 
+#include "Log.h"
+
 namespace argosClient {
 
   EGLWindow::EGLWindow(EGLconfig* config) {
@@ -22,10 +24,10 @@ namespace argosClient {
     int32_t success = 0;
     success = graphics_get_display_size(0, &_width, &_height);
     assert(success >= 0);
-    std::cout << "Resolution: " << _width << "x" << _height << std::endl;
+    Log::info("OpenGL ES 2.0 context resolution: " + std::to_string(_width) + "x" + std::to_string(_height) + ".");
 
     if(!config) {
-      std::cout << "Making new config" << std::endl;
+      Log::info("Making new config...");
       _config = new EGLconfig();
     }
     else {
@@ -45,6 +47,10 @@ namespace argosClient {
   void EGLWindow::setScreen(uint32_t x, uint32_t y, uint32_t w, uint32_t h) {
     destroySurface();
     makeSurface(x, y, w, h);
+
+    GLint maxRenderbufferSize;
+    glGetIntegerv(GL_MAX_RENDERBUFFER_SIZE, &maxRenderbufferSize);
+    Log::info("GL_MAX_RENDERBUFFER_SIZE: " + std::to_string(maxRenderbufferSize));
   }
 
   void EGLWindow::makeSurface(uint32_t x, uint32_t y, uint32_t w, uint32_t h) {
@@ -60,15 +66,15 @@ namespace argosClient {
 
     _display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if(_display == EGL_NO_DISPLAY) {
-      std::cerr << "Error getting display" << std::endl;
+      Log::error("Getting display: EGL_NO_DISPLAY.");
       exit(EXIT_FAILURE);
     }
 
     int major, minor;
     result = eglInitialize(_display, &major, &minor);
-    std::cout << "EGL init version " << major << "." << minor << std::endl;
+    Log::info("EGL init version " + std::to_string(major) + "." + std::to_string(minor));
     if(result == EGL_FALSE) {
-      std::cerr << "Error initialising display" << std::endl;
+      Log::error("Error initialising display.");
       exit(EXIT_FAILURE);
     }
 
@@ -76,13 +82,13 @@ namespace argosClient {
     EGLConfig config = _config->getConfig();
     result = eglBindAPI(EGL_OPENGL_ES_API);
     if(result == EGL_FALSE) {
-      std::cerr << "Error binding OpenGL ES API to EGL" << std::endl;
+      Log::error("Binding OpenGL ES API to EGL: EGL_FALSE.");
       exit(EXIT_FAILURE);
     }
 
     _context = eglCreateContext(_display, config, EGL_NO_CONTEXT, contextAttributes);
     if(_context == EGL_NO_CONTEXT) {
-      std::cerr << "Couldn't get a valid context" << std::endl;
+      Log::error("Couldn't get a valid context: EGL_NO_CONTEXT.");
       exit(EXIT_FAILURE);
     }
 
@@ -127,7 +133,7 @@ namespace argosClient {
 
     _activeSurface = true;
 
-    std::cout << "Surface created" << std::endl;
+    Log::success("Surface created.");
   }
 
   void EGLWindow::destroySurface() {
