@@ -32,6 +32,8 @@
 // Logger
 #include "Log.h"
 
+#include "Timer.h"
+
 #define SCREEN_W 800
 #define SCREEN_H 600
 #define SCREEN_W_CAMERA 800
@@ -113,7 +115,7 @@ int main(int argc, char **argv) {
     Log::error("Failed opening the camera.");
     return -1;
   }
-  Log::info("Camera open correctly.");
+  Log::info("Camera opened correctly.");
   Log::info("ARgos executing.");
 
   //Set the appropriate projection matrix so that rendering is done in a enrvironment like the real camera (without distorsion)

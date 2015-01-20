@@ -256,6 +256,7 @@ namespace argosClient {
     for(int i = 0; i < num; ++i) {
       CallingFunctionData cfd;
       int id;
+
       nextInt(st, id);
       cfd.id = static_cast<CallingFunctionType>(id);
 

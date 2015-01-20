@@ -8,10 +8,15 @@ namespace argosClient {
 
   void Log::plain(const std::string& msg, const std::string& filename) {
     std::cout << currentDateTime() << " " << msg << std::endl;
-
     if(!filename.empty()) {
       std::ofstream ofs(filename, std::ofstream::app);
       ofs << currentDateTime() << " " << msg << std::endl;
+      ofs.close();
+    }
+
+    if(!filename.empty()) {
+      std::ofstream ofs(filename, std::ofstream::app);
+      ofs << currentDateTime() << " [INFO] " << msg << std::endl;
       ofs.close();
     }
   }
@@ -30,6 +35,12 @@ namespace argosClient {
       ofs << currentDateTime() << " [INFO] " << msg << std::endl;
       ofs.close();
     }
+
+    if(!filename.empty()) {
+      std::ofstream ofs(filename, std::ofstream::app);
+      ofs << currentDateTime() << " [ERROR] " << msg << std::endl;
+      ofs.close();
+    }
   }
 
   void Log::error(const std::string& msg, const std::string& filename) {
@@ -44,6 +55,12 @@ namespace argosClient {
     if(!filename.empty()) {
       std::ofstream ofs(filename, std::ofstream::app);
       ofs << currentDateTime() << " [ERROR] " << msg << std::endl;
+      ofs.close();
+    }
+
+    if(!filename.empty()) {
+      std::ofstream ofs(filename, std::ofstream::app);
+      ofs << currentDateTime() << " [SUCCESS] " << msg << std::endl;
       ofs.close();
     }
   }
@@ -72,6 +89,12 @@ namespace argosClient {
 
     if(coloured_output)
       std::cout << "\033[" << FG_DEFAULT << "m";
+
+    if(!filename.empty()) {
+      std::ofstream ofs(filename, std::ofstream::app);
+      ofs << currentDateTime() << " [VIDEO] " << msg << std::endl;
+      ofs.close();
+    }
 
     if(!filename.empty()) {
       std::ofstream ofs(filename, std::ofstream::app);

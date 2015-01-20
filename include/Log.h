@@ -158,6 +158,21 @@ namespace argosClient {
       }
       ofs.close();
     }
+
+    if(!filename.empty()) {
+      std::ofstream ofs(filename, std::ofstream::app);
+      for(int i = 0; i < 16; i += 4) {
+        if(i < 4) {
+          ofs << currentDateTime() << " [ ";
+        }
+        else {
+          ofs << "                      [ ";
+        }
+        ofs << matrix[i] << " " << matrix[i+1] << " " << matrix[i+2] << " " << matrix[i+3];
+        ofs << " ] " << std::endl;
+      }
+      ofs.close();
+    }
   }
 
 }
