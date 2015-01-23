@@ -32,5 +32,12 @@ text="$2"
 filename=$3
 request="http://translate.google.com/translate_tts?ie=UTF-8&tl=$lang&q=${text// /%20}"
 
+# Download text to speeched file
 echo $request
 wget -q -U Mozilla -O $filename $request
+
+# Convert it to wav
+mplayer -ao pcm:fast:waveheader:file=$filename.wav -vo null -vc null $filename
+
+# Delete temp
+rm $filename

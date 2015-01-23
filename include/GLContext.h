@@ -14,6 +14,7 @@ namespace argosClient {
   class GraphicComponentsManager;
   class ScriptFunction;
   class ImageComponent;
+  class RectangleComponent;
 
   /**
    * The OpenGL ES 2.0 context
@@ -69,6 +70,7 @@ namespace argosClient {
     std::map<int, ScriptFunction*> _handlers; ///< An associative list of function pointer to script functions
     GraphicComponentsManager& _gcManager; ///< A reference to the GraphicComponentsManager
     ImageComponent* _projArea;
+    RectangleComponent* _fingerPoint;
   };
 
 }

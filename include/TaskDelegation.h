@@ -41,6 +41,7 @@ namespace argosClient {
   struct paper_t {
     int id; ///< The Paper id
     float modelview_matrix[16]; ///< The model view matrix of the Paper
+    int x, y; ///< The point of the document where the finger is
     int num_calling_functions; ///< The number of calling functions for this Paper
     std::vector<CallingFunctionData> cfds; ///< A list of calling function for this Paper
   };

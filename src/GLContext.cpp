@@ -27,6 +27,7 @@
 #include "PlaySoundDelayedSF.h"
 
 #include "ImageComponent.h"
+#include "RectangleComponent.h"
 
 namespace argosClient {
 
@@ -39,6 +40,7 @@ namespace argosClient {
   GLContext::~GLContext() {
     GraphicComponentsManager::getInstance().destroy();
     AudioManager::getInstance().destroy();
+    delete _fingerPoint;
     delete _projArea;
   }
 
@@ -66,10 +68,14 @@ namespace argosClient {
     _gcManager.setVideosPath("data/videos/");
     _gcManager.setFontsPath("data/fonts/");
 
+    // Finger point
+    _fingerPoint = new RectangleComponent(1.0f, 1.0f);
+    _fingerPoint->setProjectionMatrix(_projectionMatrix);
+    _fingerPoint->setColor(1.0f, 0.0f, 0.0f, 1.0f);
+    _fingerPoint->setPosition(glm::vec3(0.0f, 0.0f, 0.0f));
+    _fingerPoint->show(true);
+
     // Projection area
-    /*_gcManager.createImageFromFile("ProjectionArea", "background.jpg",
-                                   glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f), true)
-                                   ->show(true);*/
     _projArea = new ImageComponent("data/images/background.jpg", 1.0f, 1.0f);
     _projArea->setPosition(glm::vec3(0.0f, 0.0f, 0.0f));
     _projArea->noUpdate();
@@ -87,6 +93,11 @@ namespace argosClient {
 
     glm::mat4 modelview_matrix = glm::make_mat4(paper.modelview_matrix);
     GraphicComponentsManager::getInstance().update(modelview_matrix);
+
+    glm::vec4 transformed_point = _projectionMatrix * modelview_matrix * glm::vec4(glm::vec3(paper.x, paper.y, 0.0f), 1.0f);
+    _fingerPoint->setPosition(glm::vec3(transformed_point));
+    _fingerPoint->setModelViewMatrix(modelview_matrix);
+    std::cout << transformed_point.x << " " << transformed_point.y << std::endl;
 
     if(paper.id != oldId) {
       _gcManager.cleanForId(oldId);
@@ -116,6 +127,8 @@ namespace argosClient {
 
     // Render all objects
     GraphicComponentsManager::getInstance().renderAll();
+
+    _fingerPoint->render();
 
     // To update we need to swap the buffers
     swapBuffers();

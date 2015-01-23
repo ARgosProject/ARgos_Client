@@ -217,17 +217,19 @@ namespace argosClient {
   void TaskDelegation::processPaper(StreamType& st, paper_t& paper) {
     if(st.type == Type::SKIP) {
       paper.id = 0;
-      for(int i = 0; i < 16; ++i)
-        paper.modelview_matrix[i] = 0.0f;
+      std::fill(paper.modelview_matrix, paper.modelview_matrix + 16, 0.0f);
     }
     else {
       _offset = 0;
       nextInt(st, paper.id);
       nextMatrix16f(st, paper.modelview_matrix);
+      nextInt(st, paper.x);
+      nextInt(st, paper.y);
       nextInt(st, paper.num_calling_functions);
       nextCallingFunctionData(st, paper.num_calling_functions, paper.cfds);
 
-      Log::success("Id: " + std::to_string(paper.id) + ". Num. functions: " + std::to_string(paper.cfds.size()));
+      Log::success("Id: " + std::to_string(paper.id) + ". Num. functions: " + std::to_string(paper.cfds.size())
+                   + ". FingerPoint: (" + std::to_string(paper.x) + ", " + std::to_string(paper.y) + ")");
       Log::matrix(paper.modelview_matrix, Log::Colour::FG_DARK_GRAY);
     }
   }
