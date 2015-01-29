@@ -35,7 +35,7 @@ namespace argosClient {
   void AudioManager::preload(const std::string& file_name) {
     _soundsMap[file_name] = Mix_LoadWAV((_soundsPath + file_name).c_str());
 
-    if(_soundsMap[file_name] == NULL) {
+    if(_soundsMap[file_name] == nullptr) {
       Log::error("Loading the sound: '" + _soundsPath + file_name + "'.");
     }
     else {
@@ -47,8 +47,8 @@ namespace argosClient {
     DIR *dir;
     dirent *ent;
 
-    if((dir = opendir(_soundsPath.c_str())) != NULL) {
-      while((ent = readdir(dir)) != NULL) {
+    if((dir = opendir(_soundsPath.c_str())) != nullptr) {
+      while((ent = readdir(dir)) != nullptr) {
         if((strcmp(ent->d_name, ".") != 0) && (strcmp(ent->d_name, "..") != 0))
           preload(ent->d_name);
       }

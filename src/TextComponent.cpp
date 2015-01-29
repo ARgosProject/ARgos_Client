@@ -10,7 +10,7 @@
 namespace argosClient {
 
   TextComponent::TextComponent(std::string filename, GLint fontSize)
-    : _vector(NULL), _font(NULL), _atlas(NULL) {
+    : _vector(nullptr), _font(nullptr), _atlas(nullptr) {
     _atlas = texture_atlas_new(fontSize*8, fontSize*8, 1);
     _vector = vector_new(sizeof(GLfloat));
 
@@ -37,9 +37,9 @@ namespace argosClient {
       vector_delete(_vector);
     }
 
-    _font = NULL;
-    _atlas = NULL;
-    _vector = NULL;
+    _font = nullptr;
+    _atlas = nullptr;
+    _vector = nullptr;
   }
 
   void TextComponent::setUpShader() {
@@ -95,7 +95,7 @@ namespace argosClient {
 
       texture_glyph_t* glyph = texture_font_get_glyph(_font, text[i]);
 
-      if(glyph != NULL) {
+      if(glyph != nullptr) {
         int kerning = 0;
 
         if(i > 0) {

@@ -37,7 +37,7 @@ echo $request
 wget -q -U Mozilla -O $filename $request
 
 # Convert it to wav
-mplayer -ao pcm:fast:waveheader:file=$filename.wav -vo null -vc null $filename
+mplayer -ao pcm:fast:waveheader:file=sounds/$filename.wav -vo null -vc null $filename
 
 # Delete temp
 rm $filename

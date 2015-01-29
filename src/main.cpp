@@ -18,21 +18,21 @@
 #include <raspicam/raspicam_cv.h>
 #include <CameraProjectorSystem.h>
 
-// Task delegation, OpenGL Stuff and script engine
+// Task delegation, OpenGL and other stuff
 #include "TaskDelegation.h"
 #include "GLContext.h"
-#include "GraphicComponent.h"
 #include "ImageComponent.h"
-#include "AudioManager.h"
 #include "Timer.h"
+
+// Managers
+#include "AudioManager.h"
+#include "EventManager.h"
 
 // RaspberryPi stuff
 #include "bcm_host.h"
 
 // Logger
 #include "Log.h"
-
-#include "Timer.h"
 
 #define SCREEN_W 800
 #define SCREEN_H 600
@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
   sigIntHandler.sa_handler = signals_function_handler;
   sigemptyset(&sigIntHandler.sa_mask);
   sigIntHandler.sa_flags = 0;
-  sigaction(SIGINT, &sigIntHandler, NULL);
+  sigaction(SIGINT, &sigIntHandler, nullptr);
 
   Log::setColouredOutput(isatty(fileno(stdout)));
   Log::info("Launching ARgos Client...");
@@ -134,21 +134,41 @@ int main(int argc, char **argv) {
   glContext.setScreen(0, 0, SCREEN_W, SCREEN_H);
   glContext.setProjectionMatrix(glm::make_mat4(projection_matrix));
 
+  // Event Manager
+  EventManager& eventManager = EventManager::getInstance();
+
   if(show_intro)
     showIntro(glContext, 5, projection_matrix);
 
   glContext.start();
+  td->start(g_loop);
 
   while(g_loop) {
-    Camera.grab();
-    Camera.retrieve(currentFrame);
+    td->checkForErrors();
 
-    paper_t paper;
-    td->run(currentFrame, paper, g_loop);
+    switch(eventManager.popEvent()) {
+    case EventManager::EventType::TD_THREAD_READY:
+      Camera.grab();
+      Camera.retrieve(currentFrame);
+      td->injectData(currentFrame, paper_t());
+      break;
+    case EventManager::EventType::TD_THREAD_FINISHED:
+      glContext.update(td->getModifiedPaper());
+      td->continueThread();
+      break;
+    default:
+      break;
+    }
 
-    glContext.update(paper);
     glContext.render();
   }
+
+  Log::info("Waiting for task delegation to stop...");
+  td->release();
+  delete td;
+
+  Log::info("Releasing the event manager...");
+  eventManager.destroy();
 
   Log::info("Stopping the camera...");
   Camera.release();

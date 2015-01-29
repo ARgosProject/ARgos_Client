@@ -6,12 +6,12 @@
 namespace argosClient {
 
   DrawTextPanelSF::DrawTextPanelSF()
-    : ScriptFunction("TextPanel_"),
+    : ScriptFunction("TextPanel_", "DrawTextPanelSF"),
       _graphicComponentsManager(GraphicComponentsManager::getInstance()) {
 
   }
 
-  void DrawTextPanelSF::execute(const std::vector<std::string>& args, int id) {
+  void DrawTextPanelSF::_execute(const std::vector<std::string>& args, int id) {
     std::wstring text;
     text.assign(args[3].begin(), args[3].end());
 

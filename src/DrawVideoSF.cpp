@@ -6,12 +6,12 @@
 namespace argosClient {
 
   DrawVideoSF::DrawVideoSF()
-    : ScriptFunction("Video_"),
+    : ScriptFunction("Video_", "DrawVideoSF"),
       _graphicComponentsManager(GraphicComponentsManager::getInstance()) {
 
   }
 
-  void DrawVideoSF::execute(const std::vector<std::string>& args, int id) {
+  void DrawVideoSF::_execute(const std::vector<std::string>& args, int id) {
     _graphicComponentsManager.createVideoFromFile(_name + std::to_string(id),
                                                   args[0],
                                                   glm::vec3(getArgAsFloat(args[1]), getArgAsFloat(args[2]), getArgAsFloat(args[3])),

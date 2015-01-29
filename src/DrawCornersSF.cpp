@@ -6,12 +6,12 @@
 namespace argosClient {
 
   DrawCornersSF::DrawCornersSF()
-    : ScriptFunction("Corners_"),
+    : ScriptFunction("Corners_", "DrawCornersSF"),
       _graphicComponentsManager(GraphicComponentsManager::getInstance()) {
 
   }
 
-  void DrawCornersSF::execute(const std::vector<std::string>& args, int id) {
+  void DrawCornersSF::_execute(const std::vector<std::string>& args, int id) {
     _graphicComponentsManager.createCorners(_name + std::to_string(id),
                                             getArgAsFloat(args[0]),
                                             getArgAsFloat(args[1]),

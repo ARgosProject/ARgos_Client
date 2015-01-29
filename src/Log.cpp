@@ -95,10 +95,28 @@ namespace argosClient {
       ofs << currentDateTime() << " [VIDEO] " << msg << std::endl;
       ofs.close();
     }
+  }
+
+  void Log::function(const std::string& name, const std::vector<std::string>& args, const std::string& filename) {
+    if(coloured_output)
+      std::cout << "\033[" << Colour::FG_LIGHT_MAGENTA << "m";
+
+    std::cout << currentDateTime() << " [FUNCTION] " << name;
+    for(auto& str : args) {
+      std::cout << str << " ";
+    }
+    std::cout << std::endl;
+
+    if(coloured_output)
+      std::cout << "\033[" << FG_DEFAULT << "m";
 
     if(!filename.empty()) {
       std::ofstream ofs(filename, std::ofstream::app);
-      ofs << currentDateTime() << " [VIDEO] " << msg << std::endl;
+      ofs << currentDateTime() << " [FUNCTION] " << name << "(";
+      for(auto& str : args) {
+        ofs << str << " ";
+      }
+      ofs << ")" << std::endl;
       ofs.close();
     }
   }

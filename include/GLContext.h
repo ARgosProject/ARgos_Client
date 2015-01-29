@@ -29,7 +29,7 @@ namespace argosClient {
      * @param config The config we want for the context. If NULL, a default
      * config is built
      */
-    GLContext(EGLconfig* config = NULL);
+    GLContext(EGLconfig* config = nullptr);
 
     /**
      * Destroys the OpenGL ES 2.0 context
@@ -45,7 +45,7 @@ namespace argosClient {
      * Updates the Model View matrix of all graphic components according to a paper
      * @param paper The paper we want to center all the graphic components
      */
-    bool update(paper_t& paper);
+    bool update(paper_t paper);
 
     /**
      * Sets the projection matrix used to update the graphic components transforms

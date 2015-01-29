@@ -6,12 +6,12 @@
 namespace argosClient {
 
   InitVideostreamSF::InitVideostreamSF()
-    : ScriptFunction("Videostream_"),
+    : ScriptFunction("Videostream_", "InitVideoStreamSF"),
       _graphicComponentsManager(GraphicComponentsManager::getInstance()) {
 
   }
 
-  void InitVideostreamSF::execute(const std::vector<std::string>& args, int id) {
+  void InitVideostreamSF::_execute(const std::vector<std::string>& args, int id) {
     /*_graphicComponentsManager.createVideostream(_name + std::to_string(id),
                                                 args[0],
                                                 glm::vec2(getArgAsFloat(args[1]), getArgAsFloat(args[2])),

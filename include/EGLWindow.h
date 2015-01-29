@@ -20,7 +20,7 @@ namespace argosClient {
      * @param config The config we want for the context. If NULL, a default
      * config is built
      */
-    EGLWindow(EGLconfig* config = NULL);
+    EGLWindow(EGLconfig* config = nullptr);
 
     /**
      * Destroys the EGL window and its surface

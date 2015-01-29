@@ -6,12 +6,12 @@
 namespace argosClient {
 
   DrawFactureHintSF::DrawFactureHintSF()
-    : ScriptFunction("FactureHint_"),
+    : ScriptFunction("FactureHint_", "DrawFactureHintSF"),
       _graphicComponentsManager(GraphicComponentsManager::getInstance()) {
 
   }
 
-  void DrawFactureHintSF::execute(const std::vector<std::string>& args, int id) {
+  void DrawFactureHintSF::_execute(const std::vector<std::string>& args, int id) {
     std::wstring title, block1, block2;
     title.assign(args[8].begin(), args[8].end());
     block1.assign(args[9].begin(), args[9].end());

@@ -8,6 +8,8 @@
 #include <algorithm>
 #include <iostream>
 
+#include "Log.h"
+
 namespace argosClient {
 
   /**
@@ -18,7 +20,7 @@ namespace argosClient {
     /**
      * Constructs a new ScriptFunctions
      */
-    ScriptFunction(const std::string& name) : _name(name) { }
+    ScriptFunction(const std::string& name, const std::string& type) : _name(name), _type(type) { }
 
     /**
      * Destroys the ScriptFunction
@@ -29,7 +31,12 @@ namespace argosClient {
      * Execute this ScriptFunctions
      * @param args The list of arguments of this ScriptFunctions
      */
-    virtual void execute(const std::vector<std::string>& args, int id) = 0;
+    virtual void execute(const std::vector<std::string>& args, int id) {
+      Log::function(_type, args);
+      _execute(args, id);
+    }
+
+    virtual void _execute(const std::vector<std::string>& args, int id) = 0;
 
     /**
      * Retrieves the specified property by its key
@@ -86,6 +93,7 @@ namespace argosClient {
     std::map<std::string, std::string> _properties; ///< An associative list of properties used to hold return values of the ScriptFunction
 
     std::string _name; ///< The name of this scriptable function
+    std::string _type; ///> The type of this scriptable function
   };
 
 }

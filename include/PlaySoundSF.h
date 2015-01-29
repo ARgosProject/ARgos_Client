@@ -14,7 +14,7 @@ namespace argosClient {
   public:
     PlaySoundSF();
 
-    void execute(const std::vector<std::string>& args, int id) override;
+    void _execute(const std::vector<std::string>& args, int id) override;
 
   private:
     AudioManager& _audioManager;

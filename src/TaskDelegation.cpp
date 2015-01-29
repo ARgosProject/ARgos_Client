@@ -4,6 +4,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <iomanip>
 
+#include "EventManager.h"
 #include "Log.h"
 
 namespace argosClient {
@@ -60,18 +61,65 @@ namespace argosClient {
     return _error;
   }
 
-  void TaskDelegation::run(const cv::Mat& mat, paper_t& paper, sig_atomic_t& g_loop) {
+  void TaskDelegation::checkForErrors() {
     if(_error < 0) {
       while(reconnect() < 0) {
         usleep(1 * 1000 * 1000); // Wait 1 second before trying to reconnect
-        if(!g_loop)
+        if(!_g_loop)
           return;
       }
     }
+  }
 
-    addCvMat(mat);
-    send();
-    receive(paper);
+  void TaskDelegation::start(sig_atomic_t& g_loop) {
+    _g_loop = &g_loop;
+    _tdThread = std::thread(&TaskDelegation::runThread, this);
+    //_tdThread.detach();
+    Log::success("Task Delegation thread running.");
+  }
+
+  void TaskDelegation::release() {
+    _tdThread.join();
+  }
+
+  void TaskDelegation::injectData(cv::Mat mat, paper_t paper) {
+    _receivedMat = mat;
+    _receivedPaper = paper;
+
+    _condInjected.notify_one();
+  }
+
+  paper_t TaskDelegation::getModifiedPaper() {
+    return _receivedPaper;
+  }
+
+  void TaskDelegation::continueThread() {
+    _condPrepared.notify_one();
+  }
+
+  void TaskDelegation::runThread() {
+    std::mutex injectedMutex;
+    std::mutex preparedMutex;
+
+    while(*_g_loop) {
+      // Thread ready
+      EventManager::getInstance().addEvent(EventManager::EventType::TD_THREAD_READY);
+      std::unique_lock<std::mutex> lock1(injectedMutex);
+      _condInjected.wait(lock1);
+
+      std::lock_guard<std::mutex> guard(_mutex);
+      // Prepare data
+      addCvMat(_receivedMat, 20);
+      // Send data
+      send();
+      // Receive results
+      receive(_receivedPaper);
+
+      // Thread finished
+      EventManager::getInstance().addEvent(EventManager::EventType::TD_THREAD_FINISHED);
+      std::unique_lock<std::mutex> lock2(preparedMutex);
+      _condPrepared.wait(lock2);
+    }
   }
 
   int TaskDelegation::send() {
@@ -129,13 +177,13 @@ namespace argosClient {
     _buff.insert(_buff.end(), &sVector[0], &sVector[size]);                // Datos
   }
 
-  void TaskDelegation::addCvMat(const cv::Mat& mat) {
+  void TaskDelegation::addCvMat(cv::Mat& mat, int quality) {
     std::vector<unsigned char> mat_buff;
     std::vector<int> params;
     int type = Type::CV_MAT;
 
     params.push_back(CV_IMWRITE_JPEG_QUALITY);
-    params.push_back(80);
+    params.push_back(quality);
     cv::imencode(".jpg", mat, mat_buff, params);
 
     unsigned char packet_type[sizeof(int)];
@@ -226,10 +274,11 @@ namespace argosClient {
       nextInt(st, paper.x);
       nextInt(st, paper.y);
       nextInt(st, paper.num_calling_functions);
-      nextCallingFunctionData(st, paper.num_calling_functions, paper.cfds);
+      nextCallingFunctionData(st, paper);
 
-      Log::success("Id: " + std::to_string(paper.id) + ". Num. functions: " + std::to_string(paper.cfds.size())
-                   + ". FingerPoint: (" + std::to_string(paper.x) + ", " + std::to_string(paper.y) + ")");
+      Log::success("Id: " + std::to_string(paper.id) +
+                   ". Num. functions: " + std::to_string(paper.cfds.size()) + "/" + std::to_string(paper.num_calling_functions) +
+                   ". FingerPoint: (" + std::to_string(paper.x) + ", " + std::to_string(paper.y) + ")");
       Log::matrix(paper.modelview_matrix, Log::Colour::FG_DARK_GRAY);
     }
   }
@@ -254,8 +303,8 @@ namespace argosClient {
     _offset += sizeof(float) * 16;
   }
 
-  void TaskDelegation::nextCallingFunctionData(StreamType& st, int num, std::vector<CallingFunctionData>& cfds) {
-    for(int i = 0; i < num; ++i) {
+  void TaskDelegation::nextCallingFunctionData(StreamType& st, paper_t& paper) {
+    for(int i = 0; i < paper.num_calling_functions; ++i) {
       CallingFunctionData cfd;
       int id;
 
@@ -484,7 +533,7 @@ namespace argosClient {
         break;
       }
 
-      cfds.push_back(cfd);
+      paper.cfds.push_back(cfd);
     }
   }
 

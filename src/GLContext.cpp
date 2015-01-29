@@ -88,7 +88,7 @@ namespace argosClient {
     Log::success("OpenGL ES 2.0 context initialized.");
   }
 
-  bool GLContext::update(paper_t& paper) {
+  bool GLContext::update(paper_t paper) {
     static int oldId = -2;
 
     glm::mat4 modelview_matrix = glm::make_mat4(paper.modelview_matrix);
@@ -97,7 +97,7 @@ namespace argosClient {
     glm::vec4 transformed_point = _projectionMatrix * modelview_matrix * glm::vec4(glm::vec3(paper.x, paper.y, 0.0f), 1.0f);
     _fingerPoint->setPosition(glm::vec3(transformed_point));
     _fingerPoint->setModelViewMatrix(modelview_matrix);
-    std::cout << transformed_point.x << " " << transformed_point.y << std::endl;
+    Log::info("Finger point: (" + std::to_string(transformed_point.x) + ", " + std::to_string(transformed_point.y) + ")");
 
     if(paper.id != oldId) {
       _gcManager.cleanForId(oldId);

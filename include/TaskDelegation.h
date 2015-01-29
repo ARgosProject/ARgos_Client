@@ -3,6 +3,9 @@
 
 #include <boost/asio.hpp>
 #include <opencv2/opencv.hpp>
+#include <thread>
+#include <condition_variable>
+#include <mutex>
 
 using boost::asio::ip::tcp;
 
@@ -109,11 +112,15 @@ namespace argosClient {
      */
     int reconnect();
 
-    /**
-     * Starts the main loop of the Task Delegation
-     *
-     */
-    void run(const cv::Mat& mat, paper_t& paper, sig_atomic_t& g_loop);
+    void start(sig_atomic_t& g_loop);
+    void release();
+
+    void checkForErrors();
+
+    void injectData(cv::Mat mat, paper_t paper);
+    void continueThread();
+
+    paper_t getModifiedPaper();
 
     /**
      * Read a StreamType structure from the socket
@@ -178,7 +185,7 @@ namespace argosClient {
      * @param st The raw data structure
      * @param cfd A reference to the calling function data we want to build against
      */
-    void nextCallingFunctionData(StreamType& st, int num, std::vector<CallingFunctionData>& cfds);
+    void nextCallingFunctionData(StreamType& st, paper_t& paper);
 
     /**
      * Sends the built _buff object to the server
@@ -202,7 +209,7 @@ namespace argosClient {
      * Adds an OpenCV::Mat to the _buff object
      * @param mat The OpenCV::Mat
      */
-    void addCvMat(const cv::Mat& mat);
+    void addCvMat(cv::Mat& mat, int quality = 80);
 
     /**
      * Checks the _error variable looking for errors
@@ -211,7 +218,11 @@ namespace argosClient {
     int error() const;
 
   private:
+    void runThread();
+
+  private:
     boost::asio::io_service _ioService; ///< The needed I/O service for establishing communications
+    std::thread _tdThread; ///< The main task delegation thread
     tcp::socket* _tcpSocket; ///< The TCP socket object used for communication
     tcp::resolver* _tcpResolver; ///< Query resolver to a list of endpoints
     std::vector<unsigned char> _buff; ///< Raw data buffer used to be sent to the server
@@ -219,6 +230,13 @@ namespace argosClient {
     std::string _port; ///< The Port of the connected endpoint
     int _error; ///< Control variable used to handle errors
     int _offset; ///< The offset used by "next" functions
+    paper_t _receivedPaper;
+    cv::Mat _receivedMat;
+
+    sig_atomic_t* _g_loop;
+    std::mutex _mutex;
+    std::condition_variable _condInjected;
+    std::condition_variable _condPrepared;
   };
 
 }

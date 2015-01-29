@@ -6,12 +6,12 @@
 namespace argosClient {
 
   DrawImageSF::DrawImageSF()
-    : ScriptFunction("Image_"),
+    : ScriptFunction("Image_", "DrawImageSF"),
       _graphicComponentsManager(GraphicComponentsManager::getInstance()) {
 
   }
 
-  void DrawImageSF::execute(const std::vector<std::string>& args, int id) {
+  void DrawImageSF::_execute(const std::vector<std::string>& args, int id) {
     _graphicComponentsManager.createImageFromFile(_name + std::to_string(id),
                                                   args[0],
                                                   glm::vec3(getArgAsFloat(args[1]), getArgAsFloat(args[2]), getArgAsFloat(args[3])),
