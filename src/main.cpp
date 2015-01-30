@@ -164,7 +164,7 @@ int main(int argc, char **argv) {
   }
 
   Log::info("Waiting for task delegation to stop...");
-  td->release();
+  //td->release();
   delete td;
 
   Log::info("Releasing the event manager...");

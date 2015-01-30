@@ -9,6 +9,8 @@
 #include "VideoComponent.h"
 #include "Log.h"
 
+#include <sstream>
+
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -47,7 +49,7 @@ namespace argosClient {
   }
 
   void GraphicComponentsManager::cleanForId(int id) {
-    std::string str = /* "id:" + */ std::to_string(id);
+    std::string str = "id:" + std::to_string(id);
 
     for(auto& pair : _gcCollections) {
       if(pair.first.find(str) != std::string::npos) {
