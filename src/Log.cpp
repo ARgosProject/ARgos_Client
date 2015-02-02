@@ -101,11 +101,17 @@ namespace argosClient {
     if(coloured_output)
       std::cout << "\033[" << Colour::FG_LIGHT_MAGENTA << "m";
 
-    std::cout << currentDateTime() << " [FUNCTION] " << name;
-    for(auto& str : args) {
-      std::cout << str << " ";
+    std::cout << currentDateTime() << " [FUNCTION] " << name << "(";
+    int size = args.size();
+    for(int i = 0; i < size; ++i) {
+      if(args[i].empty())
+        std::cout << "*";
+      else
+        std::cout << args[i];
+      if(i < size - 1)
+        std::cout << ", ";
     }
-    std::cout << std::endl;
+    std::cout << ")" << std::endl;
 
     if(coloured_output)
       std::cout << "\033[" << FG_DEFAULT << "m";
@@ -113,8 +119,14 @@ namespace argosClient {
     if(!filename.empty()) {
       std::ofstream ofs(filename, std::ofstream::app);
       ofs << currentDateTime() << " [FUNCTION] " << name << "(";
-      for(auto& str : args) {
-        ofs << str << " ";
+      int size = args.size();
+      for(int i = 0; i < size; ++i) {
+        if(args[i].empty())
+          ofs << "*";
+        else
+          ofs << args[i];
+        if(i < size - 1)
+          ofs << ", ";
       }
       ofs << ")" << std::endl;
       ofs.close();

@@ -68,8 +68,8 @@ int main(int argc, char **argv) {
   Log::info("Launching ARgos Client...");
 
   // Task delegation stuff (client)
-  TaskDelegation* td = new TaskDelegation();
-  while((td->connect(argv[1]) < 0)) {
+  TaskDelegation td;;
+  while((td.connect(argv[1]) < 0)) {
     usleep(1 * 1000 * 1000); // Wait 1 second before trying to reconnect
     if(!g_loop)
       exit(EXIT_FAILURE);
@@ -141,20 +141,21 @@ int main(int argc, char **argv) {
     showIntro(glContext, 5, projection_matrix);
 
   glContext.start();
-  td->start(g_loop);
+  td.start(g_loop);
 
   while(g_loop) {
-    td->checkForErrors();
+    td.checkForErrors();
 
     switch(eventManager.popEvent()) {
     case EventManager::EventType::TD_THREAD_READY:
       Camera.grab();
       Camera.retrieve(currentFrame);
-      td->injectData(currentFrame, paper_t());
+      td.injectData(currentFrame, paper_t());
+      td.notify("ThreadReady");
       break;
     case EventManager::EventType::TD_THREAD_FINISHED:
-      glContext.update(td->getModifiedPaper());
-      td->continueThread();
+      glContext.update(td.getModifiedPaper());
+      td.notify("ThreadFinished");
       break;
     default:
       break;
@@ -164,8 +165,8 @@ int main(int argc, char **argv) {
   }
 
   Log::info("Waiting for task delegation to stop...");
-  //td->release();
-  delete td;
+  td.notifyAll();
+  td.join();
 
   Log::info("Releasing the event manager...");
   eventManager.destroy();

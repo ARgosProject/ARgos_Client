@@ -74,51 +74,70 @@ namespace argosClient {
   void TaskDelegation::start(sig_atomic_t& g_loop) {
     _g_loop = &g_loop;
     _tdThread = std::thread(&TaskDelegation::runThread, this);
-    //_tdThread.detach();
     Log::success("Task Delegation thread running.");
-  }
-
-  void TaskDelegation::release() {
-    _tdThread.join();
   }
 
   void TaskDelegation::injectData(cv::Mat mat, paper_t paper) {
     _receivedMat = mat;
     _receivedPaper = paper;
-
-    _condInjected.notify_one();
   }
 
   paper_t TaskDelegation::getModifiedPaper() {
     return _receivedPaper;
   }
 
-  void TaskDelegation::continueThread() {
-    _condPrepared.notify_one();
+  void TaskDelegation::notify(const std::string& name) {
+    _conditionVariables[name].first = true;
+    _conditionVariables[name].second->notify_one();
+  }
+
+  void TaskDelegation::notifyAll() {
+    for(auto& pair : _conditionVariables) {
+      pair.second.first = true;
+      pair.second.second->notify_one();
+    }
+  }
+
+  void TaskDelegation::join() {
+    _tdThread.join();
   }
 
   void TaskDelegation::runThread() {
+    std::mutex synchronousMutex;
     std::mutex injectedMutex;
     std::mutex preparedMutex;
+
+    _conditionVariables["ThreadReady"].first = false;
+    _conditionVariables["ThreadReady"].second = std::unique_ptr<std::condition_variable>(new std::condition_variable());;
+    _conditionVariables["ThreadFinished"].first = false;
+    _conditionVariables["ThreadFinished"].second = std::unique_ptr<std::condition_variable>(new std::condition_variable());;
 
     while(*_g_loop) {
       // Thread ready
       EventManager::getInstance().addEvent(EventManager::EventType::TD_THREAD_READY);
       std::unique_lock<std::mutex> lock1(injectedMutex);
-      _condInjected.wait(lock1);
+      _conditionVariables["ThreadReady"].second->wait(lock1, [this]{ return _conditionVariables["ThreadReady"].first; });
+      _conditionVariables["ThreadReady"].first = false;
 
-      std::lock_guard<std::mutex> guard(_mutex);
-      // Prepare data
-      addCvMat(_receivedMat, 20);
-      // Send data
-      send();
-      // Receive results
-      receive(_receivedPaper);
+      if(!(*_g_loop)) {
+        break;
+      }
+
+      {
+        std::lock_guard<std::mutex> guard(synchronousMutex);
+        // Prepare data
+        addCvMat(_receivedMat, 80);
+        // Send data
+        send();
+        // Receive results
+        receive(_receivedPaper);
+      }
 
       // Thread finished
       EventManager::getInstance().addEvent(EventManager::EventType::TD_THREAD_FINISHED);
       std::unique_lock<std::mutex> lock2(preparedMutex);
-      _condPrepared.wait(lock2);
+      _conditionVariables["ThreadFinished"].second->wait(lock2, [this]{ return _conditionVariables["ThreadFinished"].first; });
+      _conditionVariables["ThreadFinished"].first = false;
     }
   }
 
@@ -271,8 +290,8 @@ namespace argosClient {
       _offset = 0;
       nextInt(st, paper.id);
       nextMatrix16f(st, paper.modelview_matrix);
-      nextInt(st, paper.x);
-      nextInt(st, paper.y);
+      nextFloat(st, paper.x);
+      nextFloat(st, paper.y);
       nextInt(st, paper.num_calling_functions);
       nextCallingFunctionData(st, paper);
 
@@ -396,20 +415,31 @@ namespace argosClient {
       case DRAW_TEXT_PANEL:
         {
           float colour[3] = { 0.0f, 0.0f, 0.0f };
+          int fontSize = 0;
           char text[32] = "";
           float pos[3] = { 0.0f, 0.0f, 0.0f };
+          float size[2] = { 0.0f, 0.0f };
 
           for(int i = 0; i < 3; ++i) {
             nextFloat(st, colour[i]);
             cfd.args.push_back(std::to_string(colour[i]));
           }
 
+          nextInt(st, fontSize);
+          cfd.args.push_back(std::to_string(fontSize));
+
           nextChars(st, text, 32);
+          std::cout << ">>>>>>>>>>>>" << text << std::endl;
           cfd.args.push_back(std::string(text));
 
           for(int i = 0; i < 3; ++i) {
             nextFloat(st, pos[i]);
             cfd.args.push_back(std::to_string(pos[i]));
+          }
+
+          for(int i = 0; i < 2; ++i) {
+            nextFloat(st, size[i]);
+            cfd.args.push_back(std::to_string(size[i]));
           }
         }
         break;

@@ -152,11 +152,13 @@ namespace argosClient {
      * Creates a new text panel
      * @param name The given name to the resulting graphic components collection
      * @param colour The colour
+     * @param fontSize The font size
      * @param text The text
      * @param pos The position
+     * @param size The size
      * @return The resulting graphic components collection
      */
-    GCCollectionPtr createTextPanel(const std::string& name, const glm::vec4& colour, const std::wstring& text, const glm::vec3& pos);
+    GCCollectionPtr createTextPanel(const std::string& name, const glm::vec4& colour, int fontSize, const std::wstring& text, const glm::vec3& pos, const glm::vec2& size);
 
     /**
      * Creates an area highlight

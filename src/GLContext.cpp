@@ -33,21 +33,28 @@ namespace argosClient {
 
   GLContext::GLContext(EGLconfig* config)
     : EGLWindow(config), _projectionMatrix(glm::mat4(1.0f)),
-      _gcManager(GraphicComponentsManager::getInstance()) {
+      _gcManager(GraphicComponentsManager::getInstance()),
+      _audioManager(AudioManager::getInstance()),
+      _isVideostream(0), _isVideo1(0), _isVideo2(0), _isClothes(0) {
 
   }
 
   GLContext::~GLContext() {
     GraphicComponentsManager::getInstance().destroy();
     AudioManager::getInstance().destroy();
+
+    for(auto& pair : _handlers) {
+      delete pair.second;
+    }
+
     delete _fingerPoint;
     delete _projArea;
   }
 
   void GLContext::start() {
     // Audio dependencies
-    AudioManager::getInstance().setSoundsPath("data/sounds/");
-    AudioManager::getInstance().preloadAll();
+    _audioManager.setSoundsPath("data/sounds/");
+    _audioManager.getInstance().preloadAll();
 
     // Handlers
     _handlers[CallingFunctionType::DRAW_IMAGE] = new DrawImageSF;
@@ -69,11 +76,18 @@ namespace argosClient {
     _gcManager.setFontsPath("data/fonts/");
 
     // Finger point
-    _fingerPoint = new RectangleComponent(1.0f, 1.0f);
+    _fingerPoint = new RectangleComponent(0.5f, 0.5f);
     _fingerPoint->setProjectionMatrix(_projectionMatrix);
     _fingerPoint->setColor(1.0f, 0.0f, 0.0f, 1.0f);
-    _fingerPoint->setPosition(glm::vec3(0.0f, 0.0f, 0.0f));
+    _fingerPoint->setPosition(glm::vec3(-6.69f, -3.072f, 0.0f));
     _fingerPoint->show(true);
+
+    // Region
+    _region = new RectangleComponent(2.0f, 2.0f);
+    _region->setProjectionMatrix(_projectionMatrix);
+    _region->setColor(0.25f, 0.25f, 0.0f, 1.0f);
+    _region->setPosition(glm::vec3(-9.25f, -2.00f, 0.0f));
+    _region->show(false);
 
     // Projection area
     _projArea = new ImageComponent("data/images/background.jpg", 1.0f, 1.0f);
@@ -83,6 +97,41 @@ namespace argosClient {
 
     // Videostream
     _gcManager.createVideostream("Videostream", "videoconference.jpg", glm::vec2(10.5f, 14.85f), 9999);
+
+    // Inverted buttons
+    _videoButtonInv[0] = new ImageComponent("data/images/VideoButton_inv.jpg", -1.0f, 1.0f);
+    _videoButtonInv[0]->setProjectionMatrix(_projectionMatrix);
+    _videoButtonInv[0]->setPosition(glm::vec3(-9.25f, -2.00f, 0.00f));
+    _videoButtonInv[0]->show(false);
+    _videoButtonInv[1] = new ImageComponent("data/images/VideoButton_inv.jpg", -1.0f, 1.0f);
+    _videoButtonInv[1]->setProjectionMatrix(_projectionMatrix);
+    _videoButtonInv[1]->setPosition(glm::vec3(-9.25f, 3.75f, 0.00f));
+    _videoButtonInv[1]->show(false);
+    _handButtonInv[0] = new ImageComponent("data/images/HandButton_inv.jpg", -1.25f, 1.25f);
+    _handButtonInv[0]->setProjectionMatrix(_projectionMatrix);
+    _handButtonInv[0]->setPosition(glm::vec3(-9.00f, 4.00f, 0.00f));
+    _handButtonInv[0]->show(false);
+    _handButtonInv[1] = new ImageComponent("data/images/HandButton_inv.jpg", -1.25f, 1.25f);
+    _handButtonInv[1]->setProjectionMatrix(_projectionMatrix);
+    _handButtonInv[1]->setPosition(glm::vec3(-9.00f, -2.50f, 0.00f));
+    _handButtonInv[1]->show(false);
+    _helpButtonInv[0] = new ImageComponent("data/images/HelpButton_inv.jpg", -1.25f, 1.25f);
+    _helpButtonInv[0]->setProjectionMatrix(_projectionMatrix);
+    _helpButtonInv[0]->setPosition(glm::vec3(-9.00f, 3.50f, 0.00f));
+    _helpButtonInv[0]->show(false);
+    _helpButtonInv[1] = new ImageComponent("data/images/HelpButton_inv.jpg", -1.25f, 1.25f);
+    _helpButtonInv[1]->setProjectionMatrix(_projectionMatrix);
+    _helpButtonInv[1]->setPosition(glm::vec3(-9.00f, -3.15f, 0.00f));
+    _helpButtonInv[1]->show(false);
+    _helpButtonInv[2] = new ImageComponent("data/images/HelpButton_inv.jpg", -1.25f, 1.25f);
+    _helpButtonInv[2]->setProjectionMatrix(_projectionMatrix);
+    _helpButtonInv[2]->setPosition(glm::vec3(-9.00f, -8.85f, 0.00f));
+    _helpButtonInv[2]->show(false);
+
+    // PointsFlags
+    for(int i = 0; i < 7; ++i) {
+      _pointsFlags[i] = false;
+    }
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     Log::success("OpenGL ES 2.0 context initialized.");
@@ -94,15 +143,134 @@ namespace argosClient {
     glm::mat4 modelview_matrix = glm::make_mat4(paper.modelview_matrix);
     GraphicComponentsManager::getInstance().update(modelview_matrix);
 
-    glm::vec4 transformed_point = _projectionMatrix * modelview_matrix * glm::vec4(glm::vec3(paper.x, paper.y, 0.0f), 1.0f);
-    _fingerPoint->setPosition(glm::vec3(transformed_point));
-    _fingerPoint->setModelViewMatrix(modelview_matrix);
-    Log::info("Finger point: (" + std::to_string(transformed_point.x) + ", " + std::to_string(transformed_point.y) + ")");
+    glm::vec3 point(paper.x, paper.y, 0.0f);
+    //_fingerPoint->setModelMatrix(glm::mat4(1.0f));
+    //_fingerPoint->setPosition(point);
+    //_fingerPoint->setModelViewMatrix(modelview_matrix);
+    //_region->setModelViewMatrix(modelview_matrix);
+    Log::info("Finger point: (" + std::to_string(point.x) + ", " + std::to_string(point.y) + ")");
+
+    // Operarios
+    if(paper.id == 0) {
+      for(int i = 0; i < 2; ++i) {
+        _videoButtonInv[i]->setModelViewMatrix(modelview_matrix);
+      }
+
+      if(isInRegion(point, glm::vec4(-9.25f, -2.00f, 2.00f, 2.00f)) && !_pointsFlags[0]) {
+        _pointsFlags[0] = true;
+        _videoButtonInv[0]->show(true);
+
+        _audioManager.stop();
+        _audioManager.play("success.wav", 0);
+        _audioManager.play("iniciar_videoconferencia.wav", 0);
+
+        _isVideostream = 1;
+      }
+      else {
+        _pointsFlags[0] = false;
+        _videoButtonInv[0]->show(false);
+      }
+
+      if(isInRegion(point, glm::vec4(-9.25f, 3.75f, 2.00f, 2.00f)) && !_pointsFlags[1]) {
+        _pointsFlags[1] = true;
+        _videoButtonInv[1]->show(true);
+
+        _audioManager.stop();
+        _audioManager.play("success.wav", 0);
+        _audioManager.play("iniciar_videoconferencia.wav", 0);
+
+        _isVideostream = 1;
+      }
+      else {
+        _pointsFlags[1] = false;
+        _videoButtonInv[1]->show(false);
+      }
+    }
+    // Estampaciones
+    else if(paper.id == 1) {
+      for(int i = 0; i < 2; ++i) {
+        _handButtonInv[i]->setModelViewMatrix(modelview_matrix);
+      }
+
+      if(isInRegion(point, glm::vec4(-9.00f, 4.00f, 2.50f, 2.50f)) && !_pointsFlags[2] && !_isVideo1) {
+        _pointsFlags[2] = true;
+        _handButtonInv[0]->show(true);
+        _isVideo1 = 1;
+
+        _audioManager.play("success.wav", 0);
+        _gcManager.createVideoFromFile("Tampo_id:1_num:0", "Signos.avi",
+                                       glm::vec3(-1.25f, 2.65f, 0.00f),
+                                       glm::vec2(-3.50f, 2.00f))->show(true);
+      }
+      else {
+        _pointsFlags[2] = false;
+        _handButtonInv[0]->show(false);
+      }
+
+      if(isInRegion(point, glm::vec4(-9.00f, -2.50f, 2.50f, 2.50f)) && !_pointsFlags[3] && !_isVideo2) {
+        _pointsFlags[3] = true;
+        _handButtonInv[1]->show(true);
+        _isVideo2 = 1;
+
+        _audioManager.play("success.wav", 0);
+        _gcManager.createVideoFromFile("Tampo_id:1_num:1", "Signos.avi",
+                                       glm::vec3(-1.25f, -3.95f, 0.00f),
+                                       glm::vec2(-3.50f, 2.00f))->show(true);
+      }
+      else {
+        _pointsFlags[3] = false;
+        _handButtonInv[1]->show(false);
+      }
+    }
+    // Textil
+    else if(paper.id == 2) {
+      for(int i = 0; i < 3; ++i) {
+        _helpButtonInv[i]->setModelViewMatrix(modelview_matrix);
+      }
+
+      if(isInRegion(point, glm::vec4(-9.00f, 3.50f, 2.50f, 2.50f)) && !_pointsFlags[4]) {
+        _pointsFlags[4] = true;
+        _helpButtonInv[0]->show(true);
+        _isClothes = 1;
+        _audioManager.play("success.wav", 0);
+        _audioManager.play("estampacion.wav", 0);
+      }
+      else {
+        _pointsFlags[4] = false;
+        _helpButtonInv[0]->show(false);
+      }
+
+      if(isInRegion(point, glm::vec4(-9.00f, -3.15f, 2.50f, 2.50f)) && !_pointsFlags[5]) {
+        _pointsFlags[5] = true;
+        _helpButtonInv[1]->show(true);
+        _isClothes = 2;
+        _audioManager.play("success.wav", 0);
+        _audioManager.play("estampacion.wav", 0);
+      }
+      else {
+        _pointsFlags[5] = false;
+        _helpButtonInv[1]->show(false);
+      }
+
+      if(isInRegion(point, glm::vec4(-9.00f, -8.85f, 2.50f, 2.50f)) && !_pointsFlags[6]) {
+        _pointsFlags[6] = true;
+        _helpButtonInv[2]->show(true);
+        _isClothes = 3;
+        _audioManager.play("success.wav", 0);
+        _audioManager.play("estampacion.wav", 0);
+      }
+      else {
+        _pointsFlags[6] = false;
+        _helpButtonInv[2]->show(false);
+      }
+    }
 
     if(paper.id != oldId) {
+      _isVideo1 = _isVideo2 = 0;
       _gcManager.cleanForId(oldId);
     }
 
+    // Blank
     if(paper.id != 999) {
       _gcManager.showGCCollection("Videostream", false);
     }
@@ -125,10 +293,21 @@ namespace argosClient {
     // Render background
     _projArea->render();
 
+    //_region->render();
+
     // Render all objects
     GraphicComponentsManager::getInstance().renderAll();
+    for(int i = 0; i < 2; ++i) {
+      _videoButtonInv[i]->render();
+    }
+    for(int i = 0; i < 2; ++i) {
+      _handButtonInv[i]->render();
+    }
+    for(int i = 0; i < 3; ++i) {
+      _helpButtonInv[i]->render();
+    }
 
-    _fingerPoint->render();
+    //_fingerPoint->render();
 
     // To update we need to swap the buffers
     swapBuffers();
@@ -140,6 +319,37 @@ namespace argosClient {
 
   const glm::mat4& GLContext::getProjectionMatrix() const {
     return _projectionMatrix;
+  }
+
+  bool GLContext::isInRegion(const glm::vec3& p, const glm::vec4& r) const {
+    float rx = r.x;
+    float ry = r.y;
+    float rw = r.z;
+    float rh = r.w;
+    float px = p.x;
+    float py = p.y;
+    float m  = 1.0f;
+
+    if((px > (rx - (m * rw))) && (px < (rx + (m * rw))) && (py > (ry - (m * rh))) && (py < (ry + (m * rh))))
+      return true;
+
+    return false;
+  }
+
+  void GLContext::setIsVideoStreaming(int isVideostream) {
+    _isVideostream = isVideostream;
+  }
+
+  int GLContext::isVideoStreaming() const {
+    return _isVideostream;
+  }
+
+  void GLContext::setIsClothes(int isClothes) {
+    _isClothes = isClothes;
+  }
+
+  int GLContext::isClothes() const {
+    return _isClothes;
   }
 
 }

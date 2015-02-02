@@ -18,6 +18,7 @@ namespace argosClient {
 
   private:
     GraphicComponentsManager& _graphicComponentsManager;
+    static unsigned long long counter;
   };
 
 }

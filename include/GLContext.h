@@ -12,6 +12,7 @@
 namespace argosClient {
 
   class GraphicComponentsManager;
+  class AudioManager;
   class ScriptFunction;
   class ImageComponent;
   class RectangleComponent;
@@ -65,12 +66,32 @@ namespace argosClient {
      */
     void start() override;
 
+    void setIsVideoStreaming(int isVideostream);
+    int isVideoStreaming() const;
+
+    void setIsClothes(int isClothes);
+    int isClothes() const;
+
+  private:
+    bool isInRegion(const glm::vec3& p, const glm::vec4& r) const;
+
   private:
     glm::mat4 _projectionMatrix; ///< The projection matrix used to update the graphic components transformations
     std::map<int, ScriptFunction*> _handlers; ///< An associative list of function pointer to script functions
     GraphicComponentsManager& _gcManager; ///< A reference to the GraphicComponentsManager
+    AudioManager& _audioManager;
     ImageComponent* _projArea;
     RectangleComponent* _fingerPoint;
+    bool _pointsFlags[7];
+
+    RectangleComponent* _region;
+    ImageComponent* _videoButtonInv[2];
+    ImageComponent* _handButtonInv[2];
+    ImageComponent* _helpButtonInv[3];
+
+    int _isVideostream;
+    int _isVideo1, _isVideo2;
+    int _isClothes;
   };
 
 }

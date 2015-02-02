@@ -222,25 +222,22 @@ namespace argosClient {
     return gcc;
   }
 
-  GraphicComponentsManager::GCCollectionPtr GraphicComponentsManager::createTextPanel(const std::string& name, const glm::vec4& colour,
-                                                                                      const std::wstring& text, const glm::vec3& pos) {
-    float scaleFactor = 0.008f;
-    float w = 300.0f;
-    float h = 200.0f;
+  GraphicComponentsManager::GCCollectionPtr GraphicComponentsManager::createTextPanel(const std::string& name, const glm::vec4& colour, int fontSize, const std::wstring& text, const glm::vec3& pos, const glm::vec2& size) {
+    float scaleFactor = 0.016f;
 
-    std::shared_ptr<RenderToTextureComponent> rtt = std::make_shared<RenderToTextureComponent>(w, h);
+    std::shared_ptr<RenderToTextureComponent> rtt = std::make_shared<RenderToTextureComponent>(size.x, size.y);
     rtt->setScale(glm::vec3(-scaleFactor, scaleFactor, scaleFactor));
     rtt->setPosition(pos);
     rtt->setProjectionMatrix(_projectionMatrix);
 
-    RectangleComponent* bg = new RectangleComponent(w, h);
+    RectangleComponent* bg = new RectangleComponent(size.x, size.y);
     bg->setColor(colour.r, colour.g, colour.b, colour.a);
     rtt->addGraphicComponent(bg);
 
-    TextComponent* txt = new TextComponent(_fontsPath + "ProximaNova-Bold.ttf", 72);
-    txt->setScale(glm::vec3(1.0f, -1.0f, 1.0f));
-    txt->setPosition(glm::vec3(20.0f, 20.0f, 0.0f));
-    txt->setText(text);
+    TextComponent* txt = new TextComponent(_fontsPath + "ProximaNova-Bold.ttf", fontSize);
+    txt->setScale(glm::vec3(scaleFactor, -scaleFactor, scaleFactor));
+    txt->setPosition(glm::vec3(0.0f, 0.0f, 0.0f));
+    txt->setText(text, 1.0f, 0.0f, 0.0f);
     rtt->addGraphicComponent(txt);
 
     GCCollectionPtr gcc = std::make_shared<GCCollection>(name + "_Collection");

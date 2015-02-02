@@ -61,7 +61,6 @@ namespace argosClient {
 
   void AudioManager::play(const std::string& file_name, int loops) {
     if(_soundsMap.find(file_name) != _soundsMap.end()) {
-      Log::info("Playing sound: '" + file_name + "'.");
       Mix_PlayChannel(-1, _soundsMap[file_name], loops);
     }
     else {

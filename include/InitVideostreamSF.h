@@ -9,6 +9,8 @@
 namespace argosClient {
 
   class GraphicComponentsManager;
+  class AudioManager;
+  class GLContext;
 
   class InitVideostreamSF : public ScriptFunction {
   public:
@@ -18,6 +20,8 @@ namespace argosClient {
 
   private:
     GraphicComponentsManager& _graphicComponentsManager;
+    AudioManager& _audioManager;
+    GLContext& _glContext;
   };
 
 }

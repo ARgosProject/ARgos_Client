@@ -6,6 +6,8 @@
 #include <thread>
 #include <condition_variable>
 #include <mutex>
+#include <map>
+#include <memory>
 
 using boost::asio::ip::tcp;
 
@@ -44,7 +46,7 @@ namespace argosClient {
   struct paper_t {
     int id; ///< The Paper id
     float modelview_matrix[16]; ///< The model view matrix of the Paper
-    int x, y; ///< The point of the document where the finger is
+    float x, y; ///< The point of the document where the finger is
     int num_calling_functions; ///< The number of calling functions for this Paper
     std::vector<CallingFunctionData> cfds; ///< A list of calling function for this Paper
   };
@@ -113,14 +115,15 @@ namespace argosClient {
     int reconnect();
 
     void start(sig_atomic_t& g_loop);
-    void release();
 
     void checkForErrors();
 
     void injectData(cv::Mat mat, paper_t paper);
-    void continueThread();
-
     paper_t getModifiedPaper();
+
+    void notify(const std::string& name);
+    void notifyAll();
+    void join();
 
     /**
      * Read a StreamType structure from the socket
@@ -234,9 +237,7 @@ namespace argosClient {
     cv::Mat _receivedMat;
 
     sig_atomic_t* _g_loop;
-    std::mutex _mutex;
-    std::condition_variable _condInjected;
-    std::condition_variable _condPrepared;
+    std::map<std::string, std::pair<bool, std::unique_ptr<std::condition_variable>>> _conditionVariables;
   };
 
 }
