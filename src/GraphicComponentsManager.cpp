@@ -37,12 +37,14 @@ namespace argosClient {
 
   void GraphicComponentsManager::removeGCCollection(const std::string& name) {
     auto it = _gcCollections.find(name);
-    _gcCollections.erase(it);
+    if(it != _gcCollections.end())
+      _gcCollections.erase(it);
   }
 
   void GraphicComponentsManager::showGCCollection(const std::string& name, bool show) {
     if(_gcCollections.find(name) == _gcCollections.end()) {
       Log::error("Could not show the GCCollection named '" + name + "'");
+      return;
     }
 
     _gcCollections[name]->show(show);

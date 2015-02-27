@@ -21,6 +21,10 @@ namespace argosClient {
     return ev;
   }
 
+  void EventManager::clearQueue() {
+    _eventsQueue.clear();
+  }
+
   void EventManager::visualizeQueue() {
     std::cout << "[";
     for(EventType ev : _eventsQueue) {

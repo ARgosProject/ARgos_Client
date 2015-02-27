@@ -9,15 +9,15 @@ namespace argosClient {
   class EventManager : public Singleton<EventManager> {
   public:
     enum EventType {
-      NONE,
-      TD_THREAD_READY,
-      TD_THREAD_FINISHED
+      NONE = -1,
+      TD_THREAD_READY = 0,
+      TD_THREAD_FINISHED = 1
     };
 
   public:
     void addEvent(EventType ev);
     EventType popEvent();
-
+    void clearQueue();
     void visualizeQueue();
 
   private:

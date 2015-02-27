@@ -22,6 +22,9 @@ namespace argosClient {
                                                 getArgAsInt(args[3])
                                                 )->show(true);*/
 
+    int isVideoStreaming = _glContext.isVideoStreaming();
+    int isClothes = _glContext.isClothes();
+
     if(_glContext.isVideoStreaming()) {
       _glContext.setIsVideoStreaming(0);
       _graphicComponentsManager.showGCCollection("Videostream", true);
@@ -51,6 +54,8 @@ namespace argosClient {
     default:
       break;
     }
+
+
   }
 
 }

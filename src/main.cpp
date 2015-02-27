@@ -46,6 +46,8 @@ using namespace argosClient;
 sig_atomic_t g_loop = true;
 
 void showIntro(GLContext& glContext, float duration, float* projection_matrix);
+void showAdaptedIntro(GLContext& glContext, float duration, float* projection_matrix,
+                      char **argv, EventManager& eventManager, raspicam::RaspiCam_Cv& Camera);
 void signals_function_handler(int signum);
 
 int main(int argc, char **argv) {
@@ -66,14 +68,6 @@ int main(int argc, char **argv) {
 
   Log::setColouredOutput(isatty(fileno(stdout)));
   Log::info("Launching ARgos Client...");
-
-  // Task delegation stuff (client)
-  TaskDelegation td;;
-  while((td.connect(argv[1]) < 0)) {
-    usleep(1 * 1000 * 1000); // Wait 1 second before trying to reconnect
-    if(!g_loop)
-      exit(EXIT_FAILURE);
-  }
 
   bool show_intro = false;
   if(argc == 3) {
@@ -137,11 +131,21 @@ int main(int argc, char **argv) {
   // Event Manager
   EventManager& eventManager = EventManager::getInstance();
 
-  if(show_intro)
+  if(show_intro) {
     showIntro(glContext, 5, projection_matrix);
+    //showAdaptedIntro(glContext, 5, projection_matrix, argv, eventManager, Camera);
+  }
 
-  glContext.start();
+  // Task delegation stuff (client)
+  TaskDelegation td;;
+  while((td.connect(argv[1]) < 0)) {
+    usleep(1 * 1000 * 1000); // Wait 1 second before trying to reconnect
+    if(!g_loop)
+      exit(EXIT_FAILURE);
+  }
+
   td.start(g_loop);
+  glContext.start();
 
   while(g_loop) {
     td.checkForErrors();
@@ -188,7 +192,7 @@ int main(int argc, char **argv) {
 void showIntro(GLContext& glContext, float duration, float* projection_matrix) {
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-  ImageComponent* cover = new ImageComponent("data/images/cover.jpg", 1.0f, 1.0f);
+  ImageComponent* cover = new ImageComponent("data/images/introduction.jpg", 1.0f, 1.0f);
   cover->setPosition(glm::vec3(0.0f, 0.0f, 0.0f));
   cover->noUpdate();
   cover->show(true);
@@ -209,6 +213,63 @@ void showIntro(GLContext& glContext, float duration, float* projection_matrix) {
   }
 
   delete cover;
+}
+
+void showAdaptedIntro(GLContext& glContext, float duration, float* projection_matrix,
+                      char **argv, EventManager& eventManager, raspicam::RaspiCam_Cv& Camera) {
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+  ImageComponent cover("data/images/cover.jpg", 10.5f, 14.85f);
+  cover.setPosition(glm::vec3(0.0f, 0.0f, 0.0f));
+  cover.setProjectionMatrix(glm::make_mat4(projection_matrix));
+  cover.show(true);
+
+  TaskDelegation td;;
+  while((td.connect(argv[1]) < 0)) {
+    usleep(1 * 1000 * 1000); // Wait 1 second before trying to reconnect
+    if(!g_loop)
+      exit(EXIT_FAILURE);
+  }
+
+  sig_atomic_t exit_td = true;
+  td.start(exit_td);
+
+  cv::Mat currentFrame;
+  bool exit = false;
+  Timer t;
+  t.start();
+  while(!exit) {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, glContext.getWidth(), glContext.getHeight());
+
+    switch(eventManager.popEvent()) {
+    case EventManager::EventType::TD_THREAD_READY:
+      Camera.grab();
+      Camera.retrieve(currentFrame);
+      td.injectData(currentFrame, paper_t());
+      td.notify("ThreadReady");
+      break;
+    case EventManager::EventType::TD_THREAD_FINISHED:
+      cover.setModelViewMatrix(glm::make_mat4(td.getModifiedPaper().modelview_matrix));
+      td.notify("ThreadFinished");
+      break;
+    default:
+      break;
+    }
+
+    cover.render();
+    glContext.swapBuffers();
+
+    if(t.getSeconds() > duration) {
+      exit = true;
+    }
+  }
+
+  eventManager.clearQueue();
+
+  exit_td = false;
+  td.notifyAll();
+  td.join();
 }
 
 void signals_function_handler(int signum) {

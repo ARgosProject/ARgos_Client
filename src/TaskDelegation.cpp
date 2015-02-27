@@ -9,7 +9,7 @@
 
 namespace argosClient {
 
-  TaskDelegation::TaskDelegation() : _ip("-1"), _port("-1"), _error(0), _offset(0) {
+  TaskDelegation::TaskDelegation() : _ip("-1"), _port("-1"), _error(0), _offset(0), _state(State::NORMAL) {
     _tcpSocket = new tcp::socket(_ioService);
     _tcpResolver = new tcp::resolver(_ioService);
   }
@@ -260,6 +260,8 @@ namespace argosClient {
 
       switch(st.type) {
       case Type::SKIP:
+        paper.id = -1;
+        break;
       case Type::PAPER:
         processPaper(st, paper);
         break;

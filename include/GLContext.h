@@ -84,7 +84,6 @@ namespace argosClient {
     RectangleComponent* _fingerPoint;
     bool _pointsFlags[7];
 
-    RectangleComponent* _region;
     ImageComponent* _videoButtonInv[2];
     ImageComponent* _handButtonInv[2];
     ImageComponent* _helpButtonInv[3];

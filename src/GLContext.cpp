@@ -47,8 +47,15 @@ namespace argosClient {
       delete pair.second;
     }
 
-    delete _fingerPoint;
+    //delete _fingerPoint;
     delete _projArea;
+
+    for(int i = 0; i < 2; ++i) {
+      delete _videoButtonInv[i];
+      delete _handButtonInv[i];
+      delete _helpButtonInv[i];
+    }
+    //delete _helpButtonInv[2];
   }
 
   void GLContext::start() {
@@ -76,18 +83,11 @@ namespace argosClient {
     _gcManager.setFontsPath("data/fonts/");
 
     // Finger point
-    _fingerPoint = new RectangleComponent(0.5f, 0.5f);
-    _fingerPoint->setProjectionMatrix(_projectionMatrix);
-    _fingerPoint->setColor(1.0f, 0.0f, 0.0f, 1.0f);
-    _fingerPoint->setPosition(glm::vec3(-6.69f, -3.072f, 0.0f));
-    _fingerPoint->show(true);
-
-    // Region
-    _region = new RectangleComponent(2.0f, 2.0f);
-    _region->setProjectionMatrix(_projectionMatrix);
-    _region->setColor(0.25f, 0.25f, 0.0f, 1.0f);
-    _region->setPosition(glm::vec3(-9.25f, -2.00f, 0.0f));
-    _region->show(false);
+    //_fingerPoint = new RectangleComponent(0.5f, 0.5f);
+    //_fingerPoint->setProjectionMatrix(_projectionMatrix);
+    //_fingerPoint->setColor(1.0f, 0.0f, 0.0f, 1.0f);
+    //_fingerPoint->setPosition(glm::vec3(-6.69f, -3.072f, 0.0f));
+    //_fingerPoint->show(true);
 
     // Projection area
     _projArea = new ImageComponent("data/images/background.jpg", 1.0f, 1.0f);
@@ -99,14 +99,15 @@ namespace argosClient {
     _gcManager.createVideostream("Videostream", "videoconference.jpg", glm::vec2(10.5f, 14.85f), 9999);
 
     // Inverted buttons
-    _videoButtonInv[0] = new ImageComponent("data/images/VideoButton_inv.jpg", -1.0f, 1.0f);
+    _videoButtonInv[0] = new ImageComponent("data/images/VideoButton_inv.jpg", -1.25f, 1.25f);
     _videoButtonInv[0]->setProjectionMatrix(_projectionMatrix);
-    _videoButtonInv[0]->setPosition(glm::vec3(-9.25f, -2.00f, 0.00f));
+    _videoButtonInv[0]->setPosition(glm::vec3(-9.00f, -2.00f, 0.00f));
     _videoButtonInv[0]->show(false);
-    _videoButtonInv[1] = new ImageComponent("data/images/VideoButton_inv.jpg", -1.0f, 1.0f);
+    _videoButtonInv[1] = new ImageComponent("data/images/VideoButton_inv.jpg", -1.25f, 1.25f);
     _videoButtonInv[1]->setProjectionMatrix(_projectionMatrix);
-    _videoButtonInv[1]->setPosition(glm::vec3(-9.25f, 3.75f, 0.00f));
+    _videoButtonInv[1]->setPosition(glm::vec3(-9.00f, 3.75f, 0.00f));
     _videoButtonInv[1]->show(false);
+
     _handButtonInv[0] = new ImageComponent("data/images/HandButton_inv.jpg", -1.25f, 1.25f);
     _handButtonInv[0]->setProjectionMatrix(_projectionMatrix);
     _handButtonInv[0]->setPosition(glm::vec3(-9.00f, 4.00f, 0.00f));
@@ -115,18 +116,21 @@ namespace argosClient {
     _handButtonInv[1]->setProjectionMatrix(_projectionMatrix);
     _handButtonInv[1]->setPosition(glm::vec3(-9.00f, -2.50f, 0.00f));
     _handButtonInv[1]->show(false);
+
     _helpButtonInv[0] = new ImageComponent("data/images/HelpButton_inv.jpg", -1.25f, 1.25f);
     _helpButtonInv[0]->setProjectionMatrix(_projectionMatrix);
     _helpButtonInv[0]->setPosition(glm::vec3(-9.00f, 3.50f, 0.00f));
     _helpButtonInv[0]->show(false);
     _helpButtonInv[1] = new ImageComponent("data/images/HelpButton_inv.jpg", -1.25f, 1.25f);
     _helpButtonInv[1]->setProjectionMatrix(_projectionMatrix);
-    _helpButtonInv[1]->setPosition(glm::vec3(-9.00f, -3.15f, 0.00f));
+    _helpButtonInv[1]->setPosition(glm::vec3(-9.00f, -2.65f, 0.00f));
     _helpButtonInv[1]->show(false);
+    /*
     _helpButtonInv[2] = new ImageComponent("data/images/HelpButton_inv.jpg", -1.25f, 1.25f);
     _helpButtonInv[2]->setProjectionMatrix(_projectionMatrix);
     _helpButtonInv[2]->setPosition(glm::vec3(-9.00f, -8.85f, 0.00f));
     _helpButtonInv[2]->show(false);
+    */
 
     // PointsFlags
     for(int i = 0; i < 7; ++i) {
@@ -147,7 +151,6 @@ namespace argosClient {
     //_fingerPoint->setModelMatrix(glm::mat4(1.0f));
     //_fingerPoint->setPosition(point);
     //_fingerPoint->setModelViewMatrix(modelview_matrix);
-    //_region->setModelViewMatrix(modelview_matrix);
     Log::info("Finger point: (" + std::to_string(point.x) + ", " + std::to_string(point.y) + ")");
 
     // Operarios
@@ -156,7 +159,9 @@ namespace argosClient {
         _videoButtonInv[i]->setModelViewMatrix(modelview_matrix);
       }
 
-      if(isInRegion(point, glm::vec4(-9.25f, -2.00f, 2.00f, 2.00f)) && !_pointsFlags[0]) {
+      _isClothes = 0;
+
+      if(isInRegion(point, glm::vec4(-9.00f, -2.00f, 2.50f, 2.50f)) && !_pointsFlags[0]) {
         _pointsFlags[0] = true;
         _videoButtonInv[0]->show(true);
 
@@ -171,7 +176,7 @@ namespace argosClient {
         _videoButtonInv[0]->show(false);
       }
 
-      if(isInRegion(point, glm::vec4(-9.25f, 3.75f, 2.00f, 2.00f)) && !_pointsFlags[1]) {
+      if(isInRegion(point, glm::vec4(-9.00f, 3.75f, 2.50f, 2.50f)) && !_pointsFlags[1]) {
         _pointsFlags[1] = true;
         _videoButtonInv[1]->show(true);
 
@@ -196,10 +201,12 @@ namespace argosClient {
         _pointsFlags[2] = true;
         _handButtonInv[0]->show(true);
         _isVideo1 = 1;
+        _isVideo2 = 0;
 
         _audioManager.play("success.wav", 0);
+        _gcManager.removeGCCollection("Tampo_id:1_num:1");
         _gcManager.createVideoFromFile("Tampo_id:1_num:0", "Signos.avi",
-                                       glm::vec3(-1.25f, 2.65f, 0.00f),
+                                       glm::vec3(-1.25f, 2.15f, 0.00f),
                                        glm::vec2(-3.50f, 2.00f))->show(true);
       }
       else {
@@ -210,11 +217,13 @@ namespace argosClient {
       if(isInRegion(point, glm::vec4(-9.00f, -2.50f, 2.50f, 2.50f)) && !_pointsFlags[3] && !_isVideo2) {
         _pointsFlags[3] = true;
         _handButtonInv[1]->show(true);
+        _isVideo1 = 0;
         _isVideo2 = 1;
 
         _audioManager.play("success.wav", 0);
+        _gcManager.removeGCCollection("Tampo_id:1_num:0");
         _gcManager.createVideoFromFile("Tampo_id:1_num:1", "Signos.avi",
-                                       glm::vec3(-1.25f, -3.95f, 0.00f),
+                                       glm::vec3(-1.25f, -4.50f, 0.00f),
                                        glm::vec2(-3.50f, 2.00f))->show(true);
       }
       else {
@@ -224,9 +233,11 @@ namespace argosClient {
     }
     // Textil
     else if(paper.id == 2) {
-      for(int i = 0; i < 3; ++i) {
+      for(int i = 0; i < 2; ++i) {
         _helpButtonInv[i]->setModelViewMatrix(modelview_matrix);
       }
+
+      _isVideostream = 0;
 
       if(isInRegion(point, glm::vec4(-9.00f, 3.50f, 2.50f, 2.50f)) && !_pointsFlags[4]) {
         _pointsFlags[4] = true;
@@ -240,7 +251,7 @@ namespace argosClient {
         _helpButtonInv[0]->show(false);
       }
 
-      if(isInRegion(point, glm::vec4(-9.00f, -3.15f, 2.50f, 2.50f)) && !_pointsFlags[5]) {
+      if(isInRegion(point, glm::vec4(-9.00f, -2.65f, 2.50f, 2.50f)) && !_pointsFlags[5]) {
         _pointsFlags[5] = true;
         _helpButtonInv[1]->show(true);
         _isClothes = 2;
@@ -251,7 +262,7 @@ namespace argosClient {
         _pointsFlags[5] = false;
         _helpButtonInv[1]->show(false);
       }
-
+      /*
       if(isInRegion(point, glm::vec4(-9.00f, -8.85f, 2.50f, 2.50f)) && !_pointsFlags[6]) {
         _pointsFlags[6] = true;
         _helpButtonInv[2]->show(true);
@@ -263,10 +274,17 @@ namespace argosClient {
         _pointsFlags[6] = false;
         _helpButtonInv[2]->show(false);
       }
+      */
     }
 
     if(paper.id != oldId) {
       _isVideo1 = _isVideo2 = 0;
+      for(int i = 0; i < 2; ++i) {
+        _videoButtonInv[i]->show(false);
+        _handButtonInv[i]->show(false);
+        _helpButtonInv[i]->show(false);
+      }
+      //_helpButtonInv[2]->show(false);
       _gcManager.cleanForId(oldId);
     }
 
@@ -293,19 +311,14 @@ namespace argosClient {
     // Render background
     _projArea->render();
 
-    //_region->render();
-
     // Render all objects
     GraphicComponentsManager::getInstance().renderAll();
     for(int i = 0; i < 2; ++i) {
       _videoButtonInv[i]->render();
-    }
-    for(int i = 0; i < 2; ++i) {
       _handButtonInv[i]->render();
-    }
-    for(int i = 0; i < 3; ++i) {
       _helpButtonInv[i]->render();
     }
+    //_helpButtonInv[2]->render();
 
     //_fingerPoint->render();
 

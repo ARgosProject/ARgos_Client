@@ -34,6 +34,11 @@ namespace argosClient {
     PLAY_SOUND_DELAYED       = 10
   };
 
+  enum State {
+    INTRO,
+    NORMAL
+  };
+
   struct CallingFunctionData {
     CallingFunctionType id;
     std::vector<std::string> args;
@@ -219,6 +224,8 @@ namespace argosClient {
      * @return < 0 if there was any error
      */
     int error() const;
+
+    State _state;
 
   private:
     void runThread();
