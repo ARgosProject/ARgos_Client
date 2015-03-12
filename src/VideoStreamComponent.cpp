@@ -11,8 +11,8 @@ using boost::asio::ip::udp;
 namespace argosClient {
 
   VideoStreamComponent::VideoStreamComponent(GLfloat width, GLfloat height)
-    : _vertexData(NULL), _width(width), _height(height),
-      _textureId(-1), _ready(false), _receive(false), _videoThread(NULL) {
+    : _vertexData(nullptr), _width(width), _height(height),
+      _textureId(-1), _ready(false), _receive(false), _videoThread(nullptr) {
     /**
      *    0__1
      *    | /|

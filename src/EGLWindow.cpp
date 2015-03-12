@@ -17,9 +17,9 @@ namespace argosClient {
     _activeSurface = false;
     _upscale = false;
 
-    _display = NULL;
-    _context = NULL;
-    _surface = NULL;
+    _display = nullptr;
+    _context = nullptr;
+    _surface = nullptr;
 
     int32_t success = 0;
     success = graphics_get_display_size(0, &_width, &_height);
@@ -125,7 +125,7 @@ namespace argosClient {
 
     vc_dispmanx_update_submit_sync(_dispmanUpdate);
 
-    _surface = eglCreateWindowSurface(_display, config, &nativeWindow, NULL);
+    _surface = eglCreateWindowSurface(_display, config, &nativeWindow, nullptr);
     assert(_surface != EGL_NO_SURFACE);
 
     result = eglMakeCurrent(_display, _surface, _surface, _context);

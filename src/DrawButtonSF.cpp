@@ -6,12 +6,12 @@
 namespace argosClient {
 
   DrawButtonSF::DrawButtonSF()
-    : ScriptFunction("Button_"),
+    : ScriptFunction("Button_", "DrawButtonSF"),
       _graphicComponentsManager(GraphicComponentsManager::getInstance()) {
 
   }
 
-  void DrawButtonSF::execute(const std::vector<std::string>& args, int id) {
+  void DrawButtonSF::_execute(const std::vector<std::string>& args, int id) {
     std::wstring text;
     text.assign(args[3].begin(), args[3].end());
 

@@ -12,8 +12,10 @@
 namespace argosClient {
 
   class GraphicComponentsManager;
+  class AudioManager;
   class ScriptFunction;
   class ImageComponent;
+  class RectangleComponent;
 
   /**
    * The OpenGL ES 2.0 context
@@ -28,7 +30,7 @@ namespace argosClient {
      * @param config The config we want for the context. If NULL, a default
      * config is built
      */
-    GLContext(EGLconfig* config = NULL);
+    GLContext(EGLconfig* config = nullptr);
 
     /**
      * Destroys the OpenGL ES 2.0 context
@@ -44,7 +46,7 @@ namespace argosClient {
      * Updates the Model View matrix of all graphic components according to a paper
      * @param paper The paper we want to center all the graphic components
      */
-    bool update(paper_t& paper);
+    bool update(paper_t paper);
 
     /**
      * Sets the projection matrix used to update the graphic components transforms
@@ -64,11 +66,31 @@ namespace argosClient {
      */
     void start() override;
 
+    void setIsVideoStreaming(int isVideostream);
+    int isVideoStreaming() const;
+
+    void setIsClothes(int isClothes);
+    int isClothes() const;
+
+  private:
+    bool isInRegion(const glm::vec3& p, const glm::vec4& r) const;
+
   private:
     glm::mat4 _projectionMatrix; ///< The projection matrix used to update the graphic components transformations
     std::map<int, ScriptFunction*> _handlers; ///< An associative list of function pointer to script functions
     GraphicComponentsManager& _gcManager; ///< A reference to the GraphicComponentsManager
+    AudioManager& _audioManager;
     ImageComponent* _projArea;
+    RectangleComponent* _fingerPoint;
+    bool _pointsFlags[7];
+
+    ImageComponent* _videoButtonInv[2];
+    ImageComponent* _handButtonInv[2];
+    ImageComponent* _helpButtonInv[3];
+
+    int _isVideostream;
+    int _isVideo1, _isVideo2;
+    int _isClothes;
   };
 
 }

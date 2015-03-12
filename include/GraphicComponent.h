@@ -82,6 +82,12 @@ namespace argosClient {
     virtual void setPosition(glm::vec3 const & position);
 
     /**
+     * Sets the model matrix for this graphic component
+     * @param modelMatrix The model matrix
+     */
+    virtual void setModelMatrix(const glm::mat4& modelMatrix);
+
+    /**
      * Sets the model view matrix for this graphic component
      * @param modelViewMatrix The model view matrix
      */

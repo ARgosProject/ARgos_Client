@@ -4,11 +4,12 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <iomanip>
 
+#include "EventManager.h"
 #include "Log.h"
 
 namespace argosClient {
 
-  TaskDelegation::TaskDelegation() : _ip("-1"), _port("-1"), _error(0), _offset(0) {
+  TaskDelegation::TaskDelegation() : _ip("-1"), _port("-1"), _error(0), _offset(0), _state(State::NORMAL) {
     _tcpSocket = new tcp::socket(_ioService);
     _tcpResolver = new tcp::resolver(_ioService);
   }
@@ -60,18 +61,84 @@ namespace argosClient {
     return _error;
   }
 
-  void TaskDelegation::run(const cv::Mat& mat, paper_t& paper, sig_atomic_t& g_loop) {
+  void TaskDelegation::checkForErrors() {
     if(_error < 0) {
       while(reconnect() < 0) {
         usleep(1 * 1000 * 1000); // Wait 1 second before trying to reconnect
-        if(!g_loop)
+        if(!_g_loop)
           return;
       }
     }
+  }
 
-    addCvMat(mat);
-    send();
-    receive(paper);
+  void TaskDelegation::start(sig_atomic_t& g_loop) {
+    _g_loop = &g_loop;
+    _tdThread = std::thread(&TaskDelegation::runThread, this);
+    Log::success("Task Delegation thread running.");
+  }
+
+  void TaskDelegation::injectData(cv::Mat mat, paper_t paper) {
+    _receivedMat = mat;
+    _receivedPaper = paper;
+  }
+
+  paper_t TaskDelegation::getModifiedPaper() {
+    return _receivedPaper;
+  }
+
+  void TaskDelegation::notify(const std::string& name) {
+    _conditionVariables[name].first = true;
+    _conditionVariables[name].second->notify_one();
+  }
+
+  void TaskDelegation::notifyAll() {
+    for(auto& pair : _conditionVariables) {
+      pair.second.first = true;
+      pair.second.second->notify_one();
+    }
+  }
+
+  void TaskDelegation::join() {
+    _tdThread.join();
+  }
+
+  void TaskDelegation::runThread() {
+    std::mutex synchronousMutex;
+    std::mutex injectedMutex;
+    std::mutex preparedMutex;
+
+    _conditionVariables["ThreadReady"].first = false;
+    _conditionVariables["ThreadReady"].second = std::unique_ptr<std::condition_variable>(new std::condition_variable());;
+    _conditionVariables["ThreadFinished"].first = false;
+    _conditionVariables["ThreadFinished"].second = std::unique_ptr<std::condition_variable>(new std::condition_variable());;
+
+    while(*_g_loop) {
+      // Thread ready
+      EventManager::getInstance().addEvent(EventManager::EventType::TD_THREAD_READY);
+      std::unique_lock<std::mutex> lock1(injectedMutex);
+      _conditionVariables["ThreadReady"].second->wait(lock1, [this]{ return _conditionVariables["ThreadReady"].first; });
+      _conditionVariables["ThreadReady"].first = false;
+
+      if(!(*_g_loop)) {
+        break;
+      }
+
+      {
+        std::lock_guard<std::mutex> guard(synchronousMutex);
+        // Prepare data
+        addCvMat(_receivedMat, 80);
+        // Send data
+        send();
+        // Receive results
+        receive(_receivedPaper);
+      }
+
+      // Thread finished
+      EventManager::getInstance().addEvent(EventManager::EventType::TD_THREAD_FINISHED);
+      std::unique_lock<std::mutex> lock2(preparedMutex);
+      _conditionVariables["ThreadFinished"].second->wait(lock2, [this]{ return _conditionVariables["ThreadFinished"].first; });
+      _conditionVariables["ThreadFinished"].first = false;
+    }
   }
 
   int TaskDelegation::send() {
@@ -129,13 +196,13 @@ namespace argosClient {
     _buff.insert(_buff.end(), &sVector[0], &sVector[size]);                // Datos
   }
 
-  void TaskDelegation::addCvMat(const cv::Mat& mat) {
+  void TaskDelegation::addCvMat(cv::Mat& mat, int quality) {
     std::vector<unsigned char> mat_buff;
     std::vector<int> params;
     int type = Type::CV_MAT;
 
     params.push_back(CV_IMWRITE_JPEG_QUALITY);
-    params.push_back(80);
+    params.push_back(quality);
     cv::imencode(".jpg", mat, mat_buff, params);
 
     unsigned char packet_type[sizeof(int)];
@@ -193,6 +260,8 @@ namespace argosClient {
 
       switch(st.type) {
       case Type::SKIP:
+        paper.id = -1;
+        break;
       case Type::PAPER:
         processPaper(st, paper);
         break;
@@ -217,17 +286,20 @@ namespace argosClient {
   void TaskDelegation::processPaper(StreamType& st, paper_t& paper) {
     if(st.type == Type::SKIP) {
       paper.id = 0;
-      for(int i = 0; i < 16; ++i)
-        paper.modelview_matrix[i] = 0.0f;
+      std::fill(paper.modelview_matrix, paper.modelview_matrix + 16, 0.0f);
     }
     else {
       _offset = 0;
       nextInt(st, paper.id);
       nextMatrix16f(st, paper.modelview_matrix);
+      nextFloat(st, paper.x);
+      nextFloat(st, paper.y);
       nextInt(st, paper.num_calling_functions);
-      nextCallingFunctionData(st, paper.num_calling_functions, paper.cfds);
+      nextCallingFunctionData(st, paper);
 
-      Log::success("Id: " + std::to_string(paper.id) + ". Num. functions: " + std::to_string(paper.cfds.size()));
+      Log::success("Id: " + std::to_string(paper.id) +
+                   ". Num. functions: " + std::to_string(paper.cfds.size()) + "/" + std::to_string(paper.num_calling_functions) +
+                   ". FingerPoint: (" + std::to_string(paper.x) + ", " + std::to_string(paper.y) + ")");
       Log::matrix(paper.modelview_matrix, Log::Colour::FG_DARK_GRAY);
     }
   }
@@ -252,8 +324,8 @@ namespace argosClient {
     _offset += sizeof(float) * 16;
   }
 
-  void TaskDelegation::nextCallingFunctionData(StreamType& st, int num, std::vector<CallingFunctionData>& cfds) {
-    for(int i = 0; i < num; ++i) {
+  void TaskDelegation::nextCallingFunctionData(StreamType& st, paper_t& paper) {
+    for(int i = 0; i < paper.num_calling_functions; ++i) {
       CallingFunctionData cfd;
       int id;
 
@@ -345,20 +417,31 @@ namespace argosClient {
       case DRAW_TEXT_PANEL:
         {
           float colour[3] = { 0.0f, 0.0f, 0.0f };
+          int fontSize = 0;
           char text[32] = "";
           float pos[3] = { 0.0f, 0.0f, 0.0f };
+          float size[2] = { 0.0f, 0.0f };
 
           for(int i = 0; i < 3; ++i) {
             nextFloat(st, colour[i]);
             cfd.args.push_back(std::to_string(colour[i]));
           }
 
+          nextInt(st, fontSize);
+          cfd.args.push_back(std::to_string(fontSize));
+
           nextChars(st, text, 32);
+          std::cout << ">>>>>>>>>>>>" << text << std::endl;
           cfd.args.push_back(std::string(text));
 
           for(int i = 0; i < 3; ++i) {
             nextFloat(st, pos[i]);
             cfd.args.push_back(std::to_string(pos[i]));
+          }
+
+          for(int i = 0; i < 2; ++i) {
+            nextFloat(st, size[i]);
+            cfd.args.push_back(std::to_string(size[i]));
           }
         }
         break;
@@ -482,7 +565,7 @@ namespace argosClient {
         break;
       }
 
-      cfds.push_back(cfd);
+      paper.cfds.push_back(cfd);
     }
   }
 

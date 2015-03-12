@@ -6,12 +6,12 @@
 namespace argosClient {
 
   DrawAxisSF::DrawAxisSF()
-    : ScriptFunction("Axis_"),
+    : ScriptFunction("Axis_", "DrawAxisSF"),
       _graphicComponentsManager(GraphicComponentsManager::getInstance()) {
 
   }
 
-  void DrawAxisSF::execute(const std::vector<std::string>& args, int id) {
+  void DrawAxisSF::_execute(const std::vector<std::string>& args, int id) {
     _graphicComponentsManager.createAxis(_name + std::to_string(id),
                                          getArgAsFloat(args[0]),
                                          getArgAsFloat(args[1]),

@@ -48,7 +48,7 @@ namespace argosClient {
     int width, height, channels;
 
     unsigned char* buffer = SOIL_load_image(file_name.c_str(), &width, &height, &channels, SOIL_LOAD_AUTO);
-    if(buffer == NULL) {
+    if(buffer == nullptr) {
       Log::error("Image '" + file_name + "' loaded incorrectly");
       Log::error(std::string(SOIL_last_result()));
       exit(1);

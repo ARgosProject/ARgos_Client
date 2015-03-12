@@ -77,6 +77,13 @@ namespace argosClient {
     static void video(const std::string& msg, const std::string& filename = "");
 
     /**
+     * Logs a function message (magenta)
+     * @param name The function name
+     * @param args The function arguments
+     */
+    static void function(const std::string& name, const std::vector<std::string>& args, const std::string& filename = "");
+
+    /**
      * Logs a templated std::vector
      * @param vec The vector to log
      */

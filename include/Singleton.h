@@ -15,7 +15,7 @@ namespace argosClient {
      * @return a reference to the instanced class
      */
     static T& getInstance() {
-      if (instance == NULL) instance = new T;
+      if (instance == nullptr) instance = new T;
       return *instance;
     }
 
@@ -24,7 +24,7 @@ namespace argosClient {
      * @return a pointer to the instanced class
      */
     static T* getInstancePtr() {
-      if (instance == NULL) instance = new T;
+      if (instance == nullptr) instance = new T;
       return instance;
     }
 
@@ -32,7 +32,7 @@ namespace argosClient {
      * Destroys the instanced class
      */
     static void destroy() {
-      if(instance != NULL) delete instance;
+      if(instance != nullptr) delete instance;
     }
 
   private:
@@ -42,7 +42,7 @@ namespace argosClient {
   };
 
   template<typename T>
-  T* Singleton<T>::instance = NULL;
+  T* Singleton<T>::instance = nullptr;
 
 }
 

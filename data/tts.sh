@@ -32,5 +32,19 @@ text="$2"
 filename=$3
 request="http://translate.google.com/translate_tts?ie=UTF-8&tl=$lang&q=${text// /%20}"
 
-echo $request
+# Download text to speeched file
+echo "[1/2] Downloading requested audio..."
 wget -q -U Mozilla -O $filename $request
+
+# Convert it to wav
+echo "[2/2] Converting it to wav format..."
+mplayer \
+    -quiet \
+    -vo null \
+    -vc null \
+    -af volume=0,resample=16000:0:1 \
+    -format s16le \
+    -ao pcm:waveheader:file=sounds/$filename.wav $filename
+
+# Delete temp
+rm $filename

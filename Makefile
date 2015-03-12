@@ -9,7 +9,7 @@ DIRSHADERS := shaders/
 CXX := g++
 
 CXXFLAGS := `pkg-config --cflags opencv`
-CXXFLAGS += -Wall -fexceptions -ggdb -O0 -std=c++0x -MMD -MP -pg
+CXXFLAGS += -Wall -fexceptions -O3 -std=c++0x -MMD -MP -pg
 CXXFLAGS += -DGLM_FORCE_RADIANS
 
 INCLUDES := -I$(SDKSTAGE)/opt/vc/include/ -I$(SDKSTAGE)/opt/vc/include/interface/vcos/pthreads -I$(SDKSTAGE)/opt/vc/include/interface/vmcs_host/linux

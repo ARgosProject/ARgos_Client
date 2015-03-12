@@ -6,7 +6,7 @@
 namespace argosClient {
 
   GfxShader::GfxShader()
-    : _src(NULL), _id(0), _glShaderType(0) {
+    : _src(nullptr), _id(0), _glShaderType(0) {
 
   }
 
