@@ -18,6 +18,7 @@ namespace argosClient {
 
   private:
     AudioManager& _audioManager;
+    std::string _lastSound;
   };
 
 }

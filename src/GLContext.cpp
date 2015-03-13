@@ -47,7 +47,7 @@ namespace argosClient {
       delete pair.second;
     }
 
-    //delete _fingerPoint;
+    delete _fingerPoint;
     delete _projArea;
 
     for(int i = 0; i < 2; ++i) {
@@ -83,11 +83,11 @@ namespace argosClient {
     _gcManager.setFontsPath("data/fonts/");
 
     // Finger point
-    //_fingerPoint = new RectangleComponent(0.5f, 0.5f);
-    //_fingerPoint->setProjectionMatrix(_projectionMatrix);
-    //_fingerPoint->setColor(1.0f, 0.0f, 0.0f, 1.0f);
-    //_fingerPoint->setPosition(glm::vec3(-6.69f, -3.072f, 0.0f));
-    //_fingerPoint->show(true);
+    _fingerPoint = new RectangleComponent(0.5f, 0.5f);
+    _fingerPoint->setProjectionMatrix(_projectionMatrix);
+    _fingerPoint->setColor(1.0f, 0.0f, 0.0f, 1.0f);
+    _fingerPoint->setPosition(glm::vec3(-6.69f, -3.072f, 0.0f));
+    _fingerPoint->show(true);
 
     // Projection area
     _projArea = new ImageComponent("data/images/background.jpg", 1.0f, 1.0f);
@@ -125,12 +125,12 @@ namespace argosClient {
     _helpButtonInv[1]->setProjectionMatrix(_projectionMatrix);
     _helpButtonInv[1]->setPosition(glm::vec3(-9.00f, -2.65f, 0.00f));
     _helpButtonInv[1]->show(false);
-    /*
+
     _helpButtonInv[2] = new ImageComponent("data/images/HelpButton_inv.jpg", -1.25f, 1.25f);
     _helpButtonInv[2]->setProjectionMatrix(_projectionMatrix);
     _helpButtonInv[2]->setPosition(glm::vec3(-9.00f, -8.85f, 0.00f));
     _helpButtonInv[2]->show(false);
-    */
+
 
     // PointsFlags
     for(int i = 0; i < 7; ++i) {
@@ -148,9 +148,9 @@ namespace argosClient {
     GraphicComponentsManager::getInstance().update(modelview_matrix);
 
     glm::vec3 point(paper.x, paper.y, 0.0f);
-    //_fingerPoint->setModelMatrix(glm::mat4(1.0f));
-    //_fingerPoint->setPosition(point);
-    //_fingerPoint->setModelViewMatrix(modelview_matrix);
+    _fingerPoint->setModelMatrix(glm::mat4(1.0f));
+    _fingerPoint->setPosition(point);
+    _fingerPoint->setModelViewMatrix(modelview_matrix);
     Log::info("Finger point: (" + std::to_string(point.x) + ", " + std::to_string(point.y) + ")");
 
     // Operarios
@@ -262,7 +262,7 @@ namespace argosClient {
         _pointsFlags[5] = false;
         _helpButtonInv[1]->show(false);
       }
-      /*
+
       if(isInRegion(point, glm::vec4(-9.00f, -8.85f, 2.50f, 2.50f)) && !_pointsFlags[6]) {
         _pointsFlags[6] = true;
         _helpButtonInv[2]->show(true);
@@ -274,7 +274,7 @@ namespace argosClient {
         _pointsFlags[6] = false;
         _helpButtonInv[2]->show(false);
       }
-      */
+
     }
 
     if(paper.id != oldId) {
@@ -284,7 +284,7 @@ namespace argosClient {
         _handButtonInv[i]->show(false);
         _helpButtonInv[i]->show(false);
       }
-      //_helpButtonInv[2]->show(false);
+      _helpButtonInv[2]->show(false);
       _gcManager.cleanForId(oldId);
     }
 
@@ -318,9 +318,9 @@ namespace argosClient {
       _handButtonInv[i]->render();
       _helpButtonInv[i]->render();
     }
-    //_helpButtonInv[2]->render();
+    _helpButtonInv[2]->render();
 
-    //_fingerPoint->render();
+    _fingerPoint->render();
 
     // To update we need to swap the buffers
     swapBuffers();
